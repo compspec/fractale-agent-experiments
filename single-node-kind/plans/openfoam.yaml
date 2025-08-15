@@ -1,0 +1,22 @@
+name: Build and Deploy OpenFOAM
+description: Build a Docker container with OpenFOAM and run the 'cavity' CFD tutorial as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes"
+    application: openfoam
+    max_attempts: 10
+    details: |
+      Clone the latest version of OpenFOAM from the official ESI-OpenCFD repository.
+      From the OpenFOAM tutorials, copy the entire incompressible flow cavity case directory ('tutorials/incompressible/icoFoam/cavity/cavity') into the WORKDIR of the container.
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes"
+    max_attempts: 10
+    details: |
+      Execute the driven cavity simulation. This is a two-step process that must be run in a shell.
+      First, run the 'blockMesh' utility to generate the mesh.
+      Second, run the 'icoFoam' solver. Put those into one bash entrypoint command.

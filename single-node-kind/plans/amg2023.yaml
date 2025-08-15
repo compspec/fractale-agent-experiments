@@ -1,0 +1,19 @@
+name: Build and Deploy AMG2023
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes"
+    application: amg2023
+    max_attempts: 10
+    details: |
+      Clone the latest branch of amg2023.
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes" 
+    max_attempts: 10
+    details: |
+      Run -n 16 16 16 -P 2 2 2 -problem 2 in the pwd

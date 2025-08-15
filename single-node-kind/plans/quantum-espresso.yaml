@@ -1,0 +1,21 @@
+name: Build and Deploy Quantum ESPRESSO
+description: Build the Quantum ESPRESSO suite and run a plane-wave self-consistent field calculation as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes with MPI"
+    application: quantum-espresso
+    max_attempts: 10
+    details: |
+      Clone the latest stable version of Quantum ESPRESSO from the official GitLab repository and compile the main tool suite.
+      The WORKDIR must contain a simple example directory for a silicon (Si) calculation. This directory must include the input file si.in and Si.upf
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes with MPI"
+    max_attempts: 10
+    details: |
+      Execute a plane-wave calculation using the pw.x executable from the Quantum ESPRESSO suite.
+      The command must specify the input file and should be run in parallel with MPI: mpirun -np 8 pw.x -in si.in

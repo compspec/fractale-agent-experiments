@@ -1,0 +1,26 @@
+    
+name: Build and Deploy GROMACS
+description: Build a Docker container with GROMACS and run a molecular dynamics simulation as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes with MPI"
+    application: gromacs
+    max_attempts: 10
+    details: |
+      Clone the latest stable version of GROMACS from its official source. Compile with MPI support. 
+      Ensure the WORKDIR contains a standard GROMACS input file set, specifically a TPR file (e.g., "md.tpr") for a simple simulation like lysozyme in water.
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes"
+    max_attempts: 10
+    details: |
+      Execute the molecular dynamics simulation using the 'gmx mdrun' command. 
+      The command should be: "mpirun -np 8 gmx mdrun -deffnm md" which tells GROMACS to use input files prefixed with 'md' (like md.tpr) and to run on 8 CPU cores.
+
+  
+
+

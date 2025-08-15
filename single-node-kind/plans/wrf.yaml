@@ -1,0 +1,22 @@
+name: Build and Deploy WRF
+description: Build the WRF atmospheric model and run a simulation as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes with MPI"
+    application: wrf
+    max_attempts: 10
+    details: |
+      Clone the latest version of the Weather Research and Forecasting (WRF) model from the official GitHub repository.
+      Compile the model for the em_real case with MPI support (dmpar). Ensure that all necessary executables, like 'wrf.exe', are in the WORKDIR.
+      Also include a complete 'em_real' run directory containing a standard namelist.input file.
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes with MPI"
+    max_attempts: 10
+    details: |
+      Run the WRF simulation executable. The model reads its configuration from namelist.input in the current directory.
+      The command should be an MPI execution: mpirun -np 8 ./wrf.exe
