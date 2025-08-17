@@ -9,7 +9,7 @@ plan:
     load: true
     max_attempts: 10
     details: |
-      Clone the latest branch of amg2023, NOT the previous amg.
+      Clone the latest branch of amg2023
 
 - agent: kubernetes-job
   context:

@@ -133,6 +133,11 @@ def process_results(directory: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         print(f"Warning: results directory {directory} does not exist.")
         return pd.DataFrame(), pd.DataFrame()
 
+    step_df = pandas.DataFrame(columns=['application', 'agent', 'attempts', 'total_seconds'])
+    log_df = pandas.DataFrame(columns=['application', 'agent', 'metric', 'value'])
+    log_df_idx = 0
+    step_df_idx = 0
+
     for app in os.listdir(directory):
         app_dir = os.path.join(directory, app)
         if not os.path.isdir(app_dir):
@@ -147,15 +152,13 @@ def process_results(directory: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         for iteration, filename in enumerate(result_files):
             filepath = os.path.join(app_dir, filename)
             data = read_json(filepath)
-            import IPython
-            IPython.embed()
 
             for step in data:
                 step_info = {
                     "application": app,
-                    "agent": step.get("agent"),
-                    "total_seconds": step.get("total_seconds"),
-                    "attempts": step.get("attempts", 0) + 1,
+                    "agent": step['agent'],
+                    "total_seconds": step["total_seconds"],
+                    "attempts": step["attempts"],
                     "metadata": step.get("metadata", {}),
                 }
                 steps.append(step_info)
