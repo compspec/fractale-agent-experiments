@@ -145,14 +145,14 @@ def process_results(directory: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         ]
 
         for iteration, filename in enumerate(result_files):
-            run_id = f"{app}-{iteration + 1}"
             filepath = os.path.join(app_dir, filename)
             data = read_json(filepath)
+            import IPython
+            IPython.embed()
 
             for step in data:
                 step_info = {
                     "application": app,
-                    "run_id": run_id,
                     "agent": step.get("agent"),
                     "total_seconds": step.get("total_seconds"),
                     "attempts": step.get("attempts", 0) + 1,
@@ -174,7 +174,6 @@ def process_results(directory: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
                     if wall_time is not None and cpu_utilization is not None:
                         logs.append(
                             {
-                                "run_id": run_id,
                                 "application": app,
                                 "wall_time": wall_time,
                                 "cpu_utilization": cpu_utilization,

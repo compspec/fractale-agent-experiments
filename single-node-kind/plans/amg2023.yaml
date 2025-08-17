@@ -9,7 +9,7 @@ plan:
     load: true
     max_attempts: 10
     details: |
-      Clone the latest branch of amg2023.
+      Clone the latest branch of amg2023, NOT the previous amg.
 
 - agent: kubernetes-job
   context:
@@ -17,4 +17,4 @@ plan:
     environment: "google cloud CPU instance in Kubernetes" 
     max_attempts: 10
     details: |
-      Run -n 16 16 16 -P 2 2 2 -problem 2 in the pwd
+      Run -n 8 8 8 -P 2 2 2 -problem 2 in the pwd
