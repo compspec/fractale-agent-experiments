@@ -6,6 +6,7 @@ plan:
   context:
     environment: "google cloud CPU instance in Kubernetes with MPI"
     application: wrf
+    load: true
     max_attempts: 10
     details: |
       Clone the latest version of the Weather Research and Forecasting (WRF) model from the official GitHub repository.

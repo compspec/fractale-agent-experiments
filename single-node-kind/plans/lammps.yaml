@@ -9,6 +9,7 @@ plan:
     environment: "google cloud CPU instance in Kubernetes"
     application: lammps
     max_attempts: 10
+    load: true
     details: |
       Ensure all globbed files from examples/reaxff/HNS from the root of the lammps codebase are in the WORKDIR. Clone the latest branch of LAMMPS.
 

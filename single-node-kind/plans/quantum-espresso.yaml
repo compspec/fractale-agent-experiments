@@ -6,6 +6,7 @@ plan:
   context:
     environment: "google cloud CPU instance in Kubernetes with MPI"
     application: quantum-espresso
+    load: true    
     max_attempts: 10
     details: |
       Clone the latest stable version of Quantum ESPRESSO from the official GitLab repository and compile the main tool suite.

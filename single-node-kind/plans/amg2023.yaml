@@ -6,6 +6,7 @@ plan:
   context:
     environment: "google cloud CPU instance in Kubernetes"
     application: amg2023
+    load: true
     max_attempts: 10
     details: |
       Clone the latest branch of amg2023.

@@ -6,6 +6,7 @@ plan:
   context:
     environment: "google cloud CPU instance in Kubernetes"
     application: openfoam
+    load: true    
     max_attempts: 10
     details: |
       Clone the latest version of OpenFOAM from the official ESI-OpenCFD repository.
