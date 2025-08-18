@@ -241,7 +241,7 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
     df = metric_df.df
     for metric in df.metric.unique():
         # This is incorrect - need to fix
-        if metric == "retries":
+        if metric == "total_retries":
             continue
         metric_df = df[df.metric == metric]
         fig = plt.figure(figsize=(10, 6))
