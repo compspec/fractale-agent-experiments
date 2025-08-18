@@ -49,7 +49,7 @@ def main():
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    output_path = os.path.join(outdir, "analysis_report.html")
+    output_path = os.path.join(outdir, "index.html")
     metric_df, gemini_data, diffs = process_results(args.results)
     create_report(metric_df, gemini_data, diffs, output_path=output_path)
 
@@ -207,7 +207,7 @@ def generate_html(diffs) -> str:
     for app, assets in diffs.items():
         html += f"<h4>{app.upper()} Diffs</h4>"
         for filename, listings in assets.items():
-            if app != "lammps" and filename == "logs":
+            if app not in ["lammps", "gromacs"] and filename == "logs":
                 continue
             html += f"<h4>{filename} Changes</h4>"
             for i, listing in enumerate(listings):

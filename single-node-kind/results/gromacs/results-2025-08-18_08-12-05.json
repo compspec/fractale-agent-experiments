@@ -1,0 +1,143 @@
+[
+    {
+        "agent": "build",
+        "total_seconds": 307.2332165890002,
+        "result": "# Base Image: Use Ubuntu 22.04 LTS for a modern and stable environment.\nFROM ubuntu:22.04\n\n# Avoid interactive prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install core dependencies for building GROMACS.\n# Includes C++ toolchain, CMake build system, download tools, and OpenMPI for MPI support.\n# Cleans up apt cache to reduce image size.\nRUN apt-get update && apt-get install -y \\\n    build-essential \\\n    cmake \\\n    wget \\\n    tar \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && apt-get clean && rm -rf /var/lib/apt/lists/*\n\n# Set a persistent build directory.\nWORKDIR /build\n\n# This single RUN command downloads, extracts, configures, builds, and installs GROMACS.\n# This minimizes the number of Docker layers for a more optimized image.\nRUN wget http://ftp.gromacs.org/pub/gromacs/gromacs-2024.2.tar.gz && \\\n    tar xfz gromacs-2024.2.tar.gz && \\\n    cd gromacs-2024.2 && \\\n    mkdir build && \\\n    cd build && \\\n    # Configure the build with CMake.\n    # - DGMX_MPI=ON: Enables MPI support, essential for running on a Kubernetes cluster.\n    # - DGMX_BUILD_OWN_FFTW=ON: GROMACS will build its own version of FFTW, avoiding system library conflicts.\n    # - DREGRESSIONTEST_DOWNLOAD=ON: Downloads the regression tests needed for the final WORKDIR.\n    # - CMAKE_INSTALL_PREFIX: Sets a clean, isolated installation path.\n    cmake .. \\\n        -DGMX_MPI=ON \\\n        -DGMX_BUILD_OWN_FFTW=ON \\\n        -DREGRESSIONTEST_DOWNLOAD=ON \\\n        -DCMAKE_INSTALL_PREFIX=/usr/local/gromacs && \\\n    # Compile GROMACS using all available CPU cores to speed up the build.\n    make -j$(nproc) && \\\n    # Install the compiled binaries and libraries to the specified prefix.\n    make install\n\n# Add the GROMACS installation bin directory to the system's PATH.\n# This allows running GROMACS executables (e.g., gmx_mpi) without specifying the full path.\nENV PATH=\"/usr/local/gromacs/bin:${PATH}\"\n\n# Add the GROMACS library path to LD_LIBRARY_PATH.\n# This ensures that the system's dynamic linker can find the GROMACS shared libraries at runtime.\nENV LD_LIBRARY_PATH=\"/usr/local/gromacs/lib:${LD_LIBRARY_PATH}\"\n\n# As requested, set the final working directory to the specified regression test path.\n# This path is relative to the CMake build directory (/build/gromacs-2024.2/build).\nWORKDIR /build/gromacs-2024.2/build/tests/regressiontests-2024.2/complex/argon\n\n# Provide a default command. Starting a bash shell is common for scientific\n# computing containers, allowing for interactive use or script execution.\nCMD [\"/bin/bash\"]",
+        "attempts": 1,
+        "metadata": {
+            "times": {
+                "generate_dockerfile_seconds": [
+                    60.099570279000545
+                ],
+                "build_seconds": [
+                    220.44926059099998
+                ],
+                "load_seconds": [
+                    26.641218468999796
+                ],
+                "run_step_seconds": [
+                    307.23318815400035
+                ]
+            },
+            "assets": {
+                "dockerfile": [
+                    {
+                        "item": "# Base Image: Use Ubuntu 22.04 LTS for a modern and stable environment.\nFROM ubuntu:22.04\n\n# Avoid interactive prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install core dependencies for building GROMACS.\n# Includes C++ toolchain, CMake build system, download tools, and OpenMPI for MPI support.\n# Cleans up apt cache to reduce image size.\nRUN apt-get update && apt-get install -y \\\n    build-essential \\\n    cmake \\\n    wget \\\n    tar \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && apt-get clean && rm -rf /var/lib/apt/lists/*\n\n# Set a persistent build directory.\nWORKDIR /build\n\n# This single RUN command downloads, extracts, configures, builds, and installs GROMACS.\n# This minimizes the number of Docker layers for a more optimized image.\nRUN wget http://ftp.gromacs.org/pub/gromacs/gromacs-2024.2.tar.gz && \\\n    tar xfz gromacs-2024.2.tar.gz && \\\n    cd gromacs-2024.2 && \\\n    mkdir build && \\\n    cd build && \\\n    # Configure the build with CMake.\n    # - DGMX_MPI=ON: Enables MPI support, essential for running on a Kubernetes cluster.\n    # - DGMX_BUILD_OWN_FFTW=ON: GROMACS will build its own version of FFTW, avoiding system library conflicts.\n    # - DREGRESSIONTEST_DOWNLOAD=ON: Downloads the regression tests needed for the final WORKDIR.\n    # - CMAKE_INSTALL_PREFIX: Sets a clean, isolated installation path.\n    cmake .. \\\n        -DGMX_MPI=ON \\\n        -DGMX_BUILD_OWN_FFTW=ON \\\n        -DREGRESSIONTEST_DOWNLOAD=ON \\\n        -DCMAKE_INSTALL_PREFIX=/usr/local/gromacs && \\\n    # Compile GROMACS using all available CPU cores to speed up the build.\n    make -j$(nproc) && \\\n    # Install the compiled binaries and libraries to the specified prefix.\n    make install\n\n# Add the GROMACS installation bin directory to the system's PATH.\n# This allows running GROMACS executables (e.g., gmx_mpi) without specifying the full path.\nENV PATH=\"/usr/local/gromacs/bin:${PATH}\"\n\n# Add the GROMACS library path to LD_LIBRARY_PATH.\n# This ensures that the system's dynamic linker can find the GROMACS shared libraries at runtime.\nENV LD_LIBRARY_PATH=\"/usr/local/gromacs/lib:${LD_LIBRARY_PATH}\"\n\n# As requested, set the final working directory to the specified regression test path.\n# This path is relative to the CMake build directory (/build/gromacs-2024.2/build).\nWORKDIR /build/gromacs-2024.2/build/tests/regressiontests-2024.2/complex/argon\n\n# Provide a default command. Starting a bash shell is common for scientific\n# computing containers, allowing for interactive use or script execution.\nCMD [\"/bin/bash\"]",
+                        "attempt": 0
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 282,
+                    "candidates_token_count": 746,
+                    "total_token_count": 6299,
+                    "time_seconds": 60.09738268000001
+                }
+            ],
+            "retries": 0,
+            "failures": [],
+            "result": {
+                "item": "# Base Image: Use Ubuntu 22.04 LTS for a modern and stable environment.\nFROM ubuntu:22.04\n\n# Avoid interactive prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install core dependencies for building GROMACS.\n# Includes C++ toolchain, CMake build system, download tools, and OpenMPI for MPI support.\n# Cleans up apt cache to reduce image size.\nRUN apt-get update && apt-get install -y \\\n    build-essential \\\n    cmake \\\n    wget \\\n    tar \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && apt-get clean && rm -rf /var/lib/apt/lists/*\n\n# Set a persistent build directory.\nWORKDIR /build\n\n# This single RUN command downloads, extracts, configures, builds, and installs GROMACS.\n# This minimizes the number of Docker layers for a more optimized image.\nRUN wget http://ftp.gromacs.org/pub/gromacs/gromacs-2024.2.tar.gz && \\\n    tar xfz gromacs-2024.2.tar.gz && \\\n    cd gromacs-2024.2 && \\\n    mkdir build && \\\n    cd build && \\\n    # Configure the build with CMake.\n    # - DGMX_MPI=ON: Enables MPI support, essential for running on a Kubernetes cluster.\n    # - DGMX_BUILD_OWN_FFTW=ON: GROMACS will build its own version of FFTW, avoiding system library conflicts.\n    # - DREGRESSIONTEST_DOWNLOAD=ON: Downloads the regression tests needed for the final WORKDIR.\n    # - CMAKE_INSTALL_PREFIX: Sets a clean, isolated installation path.\n    cmake .. \\\n        -DGMX_MPI=ON \\\n        -DGMX_BUILD_OWN_FFTW=ON \\\n        -DREGRESSIONTEST_DOWNLOAD=ON \\\n        -DCMAKE_INSTALL_PREFIX=/usr/local/gromacs && \\\n    # Compile GROMACS using all available CPU cores to speed up the build.\n    make -j$(nproc) && \\\n    # Install the compiled binaries and libraries to the specified prefix.\n    make install\n\n# Add the GROMACS installation bin directory to the system's PATH.\n# This allows running GROMACS executables (e.g., gmx_mpi) without specifying the full path.\nENV PATH=\"/usr/local/gromacs/bin:${PATH}\"\n\n# Add the GROMACS library path to LD_LIBRARY_PATH.\n# This ensures that the system's dynamic linker can find the GROMACS shared libraries at runtime.\nENV LD_LIBRARY_PATH=\"/usr/local/gromacs/lib:${LD_LIBRARY_PATH}\"\n\n# As requested, set the final working directory to the specified regression test path.\n# This path is relative to the CMake build directory (/build/gromacs-2024.2/build).\nWORKDIR /build/gromacs-2024.2/build/tests/regressiontests-2024.2/complex/argon\n\n# Provide a default command. Starting a bash shell is common for scientific\n# computing containers, allowing for interactive use or script execution.\nCMD [\"/bin/bash\"]",
+                "total_seconds": 307.23319619300037,
+                "type": "dockerfile"
+            }
+        }
+    },
+    {
+        "agent": "kubernetes-job",
+        "total_seconds": 211.33455916599996,
+        "result": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'Never' is the correct policy for Jobs. If the container fails, the Pod is marked as Failed,\n      # allowing the Job controller to correctly manage retries by creating a new Pod.\n      restartPolicy: Never\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # 'mpirun' is the standard launcher for MPI applications.\n        command: [\"mpirun\"]\n        # Arguments passed to the command.\n        # --allow-run-as-root: Overrides the Open MPI security check to allow execution as the root user, which is the default in Kubernetes pods.\n        # -np 8: Tells mpirun to launch 8 parallel processes (ranks).\n        # gmx_mpi mdrun: The GROMACS command to be executed by each process.\n        # -s reference_s.tpr: The input file for the simulation.\n        args:\n          - \"--allow-run-as-root\"\n          - \"-np\"\n          - \"8\"\n          - \"gmx_mpi\"\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"",
+        "attempts": 4,
+        "metadata": {
+            "times": {
+                "generate_job_manifest_seconds": [
+                    20.203578498000752,
+                    12.508078566999757,
+                    15.395153936000497,
+                    15.595515642000464
+                ],
+                "deploy_seconds": [
+                    37.66809996699976,
+                    5.458184645000074,
+                    5.457300340000074,
+                    10.380594587000814
+                ],
+                "run_step_seconds": [
+                    25.983785223999803,
+                    73.36369556799946,
+                    120.31619792600031,
+                    211.3345291200003
+                ]
+            },
+            "assets": {
+                "kubernetes-job-manifest": [
+                    {
+                        "item": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'OnFailure' will restart the container on failure, but the Job's backoffLimit controls retries.\n      # 'Never' is the other option for Jobs.\n      restartPolicy: OnFailure\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # Assumes gmx_mpi is in the system's PATH.\n        command: [\"gmx_mpi\"]\n        # Arguments passed to the command.\n        # mdrun: The molecular dynamics simulation subcommand.\n        # -s reference_s.tpr: Specifies the input run file, assumed to be in the WORKDIR.\n        # -nt 8: Specifies the use of 8 CPU cores for the simulation.\n        args:\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"\n          - \"-nt\"\n          - \"8\"",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'Never' is the correct policy for Jobs. If the container fails, the Pod is marked as Failed,\n      # allowing the Job controller to correctly manage retries by creating a new Pod.\n      restartPolicy: Never\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # Assumes gmx_mpi is in the system's PATH.\n        command: [\"gmx_mpi\"]\n        # Arguments passed to the command.\n        # mdrun: The molecular dynamics simulation subcommand.\n        # -s reference_s.tpr: Specifies the input run file, assumed to be in the WORKDIR.\n        # -nt 8: Specifies the use of 8 CPU cores for the simulation.\n        args:\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"\n          - \"-nt\"\n          - \"8\"",
+                        "attempt": 1
+                    },
+                    {
+                        "item": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'Never' is the correct policy for Jobs. If the container fails, the Pod is marked as Failed,\n      # allowing the Job controller to correctly manage retries by creating a new Pod.\n      restartPolicy: Never\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # 'mpirun' is the standard launcher for MPI applications, required when the GROMACS build is not thread-MPI.\n        command: [\"mpirun\"]\n        # Arguments passed to the command.\n        # -np 8: Tells mpirun to launch 8 parallel processes (ranks).\n        # gmx_mpi mdrun: The GROMACS command to be executed by each process.\n        # -s reference_s.tpr: The input file for the simulation.\n        args:\n          - \"-np\"\n          - \"8\"\n          - \"gmx_mpi\"\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"",
+                        "attempt": 2
+                    },
+                    {
+                        "item": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'Never' is the correct policy for Jobs. If the container fails, the Pod is marked as Failed,\n      # allowing the Job controller to correctly manage retries by creating a new Pod.\n      restartPolicy: Never\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # 'mpirun' is the standard launcher for MPI applications.\n        command: [\"mpirun\"]\n        # Arguments passed to the command.\n        # --allow-run-as-root: Overrides the Open MPI security check to allow execution as the root user, which is the default in Kubernetes pods.\n        # -np 8: Tells mpirun to launch 8 parallel processes (ranks).\n        # gmx_mpi mdrun: The GROMACS command to be executed by each process.\n        # -s reference_s.tpr: The input file for the simulation.\n        args:\n          - \"--allow-run-as-root\"\n          - \"-np\"\n          - \"8\"\n          - \"gmx_mpi\"\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"",
+                        "attempt": 3
+                    }
+                ],
+                "logs": [
+                    {
+                        "item": "                      :-) GROMACS - gmx mdrun, 2024.2 (-:\n\nExecutable:   /usr/local/gromacs/bin/gmx_mpi\nData prefix:  /usr/local/gromacs\nWorking dir:  /build/gromacs-2024.2/build/tests/regressiontests-2024.2/complex/argon\nCommand line:\n  gmx_mpi mdrun -s reference_s.tpr -nt 8\n\nReading file reference_s.tpr, VERSION 2019-dev-20180518-7d5382b-local (single precision)\nNote: file tpx version 113, software tpx version 133\n\n-------------------------------------------------------\nProgram:     gmx mdrun, version 2024.2\nSource file: src/gromacs/taskassignment/resourcedivision.cpp (line 711)\n\nFatal error:\nSetting the total number of threads is only supported with thread-MPI and\nGROMACS was compiled without thread-MPI\n\nFor more information and tips for troubleshooting, please check the GROMACS\nwebsite at https://manual.gromacs.org/current/user-guide/run-time-errors.html\n-------------------------------------------------------\n--------------------------------------------------------------------------\nMPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD\nwith errorcode 1.\n\nNOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.\nYou may or may not see output from other processes, depending on\nexactly when Open MPI kills them.\n--------------------------------------------------------------------------\n",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "                      :-) GROMACS - gmx mdrun, 2024.2 (-:\n\nExecutable:   /usr/local/gromacs/bin/gmx_mpi\nData prefix:  /usr/local/gromacs\nWorking dir:  /build/gromacs-2024.2/build/tests/regressiontests-2024.2/complex/argon\nCommand line:\n  gmx_mpi mdrun -s reference_s.tpr\n\nReading file reference_s.tpr, VERSION 2019-dev-20180518-7d5382b-local (single precision)\nNote: file tpx version 113, software tpx version 133\nUsing 8 MPI processes\nUsing 1 OpenMP thread per MPI process\n\nstarting mdrun 'Argon'\n20 steps,      0.0 ps.\n\nWriting final coordinates.\n\n\nDynamic load balancing report:\n DLB was off during the run due to low measured imbalance.\n Average load imbalance: 18.1%.\n The balanceable part of the MD step is 10%, load imbalance is computed from this.\n Part of the total run time spent waiting due to load imbalance: 1.8%.\n\n\nNOTE: 75 % of the run time was spent communicating energies,\n      you might want to increase some nst* mdp options\n\n               Core t (s)   Wall t (s)        (%)\n       Time:        0.066        0.008      793.3\n                 (ns/day)    (hour/ns)\nPerformance:      438.761        0.055\n\nGROMACS reminds you: \"Quite frankly, even if the choice of C were to do *nothing* but keep the C++ programmers out, that in itself would be a huge reason to use C.\" (Linus Torvalds)\n\n",
+                        "attempt": 3
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 367,
+                    "candidates_token_count": 438,
+                    "total_token_count": 2196,
+                    "time_seconds": 20.20061332500063
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1703,
+                    "candidates_token_count": 441,
+                    "total_token_count": 2859,
+                    "time_seconds": 12.502938591999737
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 2954,
+                    "candidates_token_count": 465,
+                    "total_token_count": 4431,
+                    "time_seconds": 15.39022818400008
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 4270,
+                    "candidates_token_count": 499,
+                    "total_token_count": 5628,
+                    "time_seconds": 15.590502729000036
+                }
+            ],
+            "retries": 0,
+            "failures": [],
+            "result": {
+                "item": "# Kubernetes Job manifest for a GROMACS MPI simulation.\n# API Version for the Job resource.\napiVersion: batch/v1\n# Specifies the kind of resource, which is a Job.\nkind: Job\nmetadata:\n  # The name of the Job. Must be unique within the namespace.\n  name: gromacs-mpi-simulation\n  # The namespace where the Job will be created.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # Per requirements, if it fails once, do not retry.\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # Defines the behavior of the Pod if it fails.\n      # 'Never' is the correct policy for Jobs. If the container fails, the Pod is marked as Failed,\n      # allowing the Job controller to correctly manage retries by creating a new Pod.\n      restartPolicy: Never\n      containers:\n        # The primary container running the simulation.\n      - name: gromacs\n        # The exact container image name as requested.\n        image: gromacs\n        # Specifies that the image should not be pulled from a registry.\n        # Assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command to be executed in the container.\n        # 'mpirun' is the standard launcher for MPI applications.\n        command: [\"mpirun\"]\n        # Arguments passed to the command.\n        # --allow-run-as-root: Overrides the Open MPI security check to allow execution as the root user, which is the default in Kubernetes pods.\n        # -np 8: Tells mpirun to launch 8 parallel processes (ranks).\n        # gmx_mpi mdrun: The GROMACS command to be executed by each process.\n        # -s reference_s.tpr: The input file for the simulation.\n        args:\n          - \"--allow-run-as-root\"\n          - \"-np\"\n          - \"8\"\n          - \"gmx_mpi\"\n          - \"mdrun\"\n          - \"-s\"\n          - \"reference_s.tpr\"",
+                "total_seconds": 211.33453815400026,
+                "type": "kubernetes-job-manifest"
+            }
+        }
+    }
+]
