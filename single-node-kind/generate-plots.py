@@ -5,7 +5,7 @@ import sys
 import os
 import re
 import difflib
-import pandas as pd
+import pandas
 import matplotlib.pyplot as plt
 import seaborn as sns
 import base64
@@ -50,13 +50,8 @@ def main():
         os.makedirs(outdir)
 
     output_path = os.path.join(outdir, "analysis_report.html")
-    steps_df, lammps_df = process_results(args.results)
-
-    if steps_df.empty:
-        print("No valid result files found. Report cannot be generated.")
-        return
-
-    create_report(steps_df, lammps_df, output_path=output_path)
+    metric_df, gemini_data, diffs = process_results(args.results)
+    create_report(metric_df, gemini_data, diffs, output_path=output_path)
 
 
 def convert_walltime_to_seconds(walltime):
@@ -121,101 +116,93 @@ def plot_to_base64(plt_figure) -> str:
     plt.close(plt_figure)
     return f"data:image/png;base64,{img_str}"
 
+class MetricDataFrame:
+    """
+    Easy accessor class for a data frame.
+    """
+    def __init__(self):
+         self.df = pandas.DataFrame(columns=['application', 'agent', 'metric', 'value', 'unit'])
+         self.idx = 0
 
-def process_results(directory: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def add_entry(self, app, agent, metric, value, unit=None):
+         self.df.loc[self.idx, :] = [app, agent, metric, value, unit]
+         self.idx += 1
+
+
+def process_results(directory):
     """
     Reads and processes all results-*.json files, creating a unique run_id.
     """
-    steps = []
-    logs = []
-
-    if not os.path.exists(directory):
-        print(f"Warning: results directory {directory} does not exist.")
-        return pd.DataFrame(), pd.DataFrame()
-
-    step_df = pandas.DataFrame(columns=['application', 'agent', 'attempts', 'total_seconds'])
-    log_df = pandas.DataFrame(columns=['application', 'agent', 'metric', 'value'])
-    log_df_idx = 0
-    step_df_idx = 0
+    # Dataframe, and anticipate using Gemini for linear stuff
+    # let's also save the logs for diffs
+    gemini_data = {}
+    metric_df = MetricDataFrame()
+    diffs = {}
 
     for app in os.listdir(directory):
         app_dir = os.path.join(directory, app)
-        if not os.path.isdir(app_dir):
-            continue
-
-        result_files = [
-            f
-            for f in os.listdir(app_dir)
-            if f.startswith("results-") and f.endswith(".json")
-        ]
-
+        result_files = [f for f in os.listdir(app_dir) if f.startswith("results-")]
         for iteration, filename in enumerate(result_files):
             filepath = os.path.join(app_dir, filename)
             data = read_json(filepath)
-
             for step in data:
-                step_info = {
-                    "application": app,
-                    "agent": step['agent'],
-                    "total_seconds": step["total_seconds"],
-                    "attempts": step["attempts"],
-                    "metadata": step.get("metadata", {}),
-                }
-                steps.append(step_info)
+                agent = step['agent']
+                metric_df.add_entry(app, agent, "attempts", step['attempts'], "Count")
+                metric_df.add_entry(app, agent, "total_seconds", step['total_seconds'], "Seconds")
+                metric_df.add_entry(app, agent, "total_retries", step['metadata']['retries'], "Count")
+                # Add all function times
+                for func, times in step['metadata']['times'].items():
+                    func = func.replace('_seconds', '')
+                    for timestamp in times:
+                        metric_df.add_entry(app, agent, func + " Function Time", timestamp, "Seconds")
 
-                if step.get("agent") == "kubernetes-job":
-                    log_items = [
-                        x
-                        for x in step.get("metadata", {}).get("logs", [])
-                        if x["type"] == "log"
-                    ]
-                    if not log_items:
-                        continue
-
-                    log = log_items[0]["item"]
+                # Not sure if we want to compare these, e.g., tokens vs. asking gemini.
+                for entry in step['metadata']['ask_gemini']:
+                    for key, value in entry.items():
+                        if key not in gemini_data:
+                            gemini_data[key] = []
+                        gemini_data[key].append(value)
+                            
+                if agent == "kubernetes-job" and app == 'lammps':
+                    # Get the final log
+                    log = step['metadata']['assets']['logs'][-1]['item']
                     wall_time, cpu_utilization = parse_lammps_log(log)
-                    if wall_time is not None and cpu_utilization is not None:
-                        logs.append(
-                            {
-                                "application": app,
-                                "wall_time": wall_time,
-                                "cpu_utilization": cpu_utilization,
-                            }
-                        )
+                    if wall_time is None or cpu_utilization is None:
+                        raise ValueError(f"Issue with log for {filename}")
+                    metric_df.add_entry(app, agent, "wall_time", wall_time, "Seconds")
+                    metric_df.add_entry(app, agent, "cpu_utilization", cpu_utilization, "%s")
 
-    return pd.DataFrame(steps), pd.DataFrame(logs)
+                # Save logs for diffs - how do we want to do this?
+                for key, assets in step['metadata']['assets'].items():
+                    if key not in diffs:
+                        diffs[key] = []
+                    # Each entry is one set of files for a run.
+                    # Will need to figure out what to do with.
+                    diffs[key].append(assets)
+                
+    # Return metrics, and gemini data
+    return metric_df, gemini_data, diffs
 
 
-def generate_all_diffs_html(steps_df: pd.DataFrame) -> str:
+def generate_all_diffs_html(diffs) -> str:
     """
     Generates collapsible HTML diffs for every attempt in every run.
     """
-    if steps_df.empty:
-        return "<p>No data available to generate diffs.</p>"
-
-    all_runs_html = ""
-    for run_id, group in steps_df.groupby("run_id"):
-        run_html = ""
-
-        build_step = group[group["agent"] == "build"]
-        if not build_step.empty:
-            metadata = build_step.iloc[0]["metadata"]
-            dockerfiles = sorted(
-                [s for s in metadata.get("steps", []) if s.get("type") == "dockerfile"],
-                key=lambda x: x.get("attempt", 0),
-            )
-
-            if len(dockerfiles) > 1:
-                run_html += "<h4>Dockerfile Changes</h4>"
-                for i in range(len(dockerfiles) - 1):
-                    old = dockerfiles[i]
-                    new = dockerfiles[i + 1]
-                    from_desc = f"Attempt {old.get('attempt', 0)}"
-                    to_desc = f"Attempt {new.get('attempt', 0)}"
-                    diff = generate_diff_html(
+    html = ""
+    dockerfiles = diffs['dockerfile']
+    html += "<h4>Dockerfile Changes</h4>"
+    # TODO need to loop through here and calculate diffs
+    # need to rewrite with new idea...
+    # for i in range(len(dockerfiles) - 1):
+    old = dockerfiles[i]
+    new = dockerfiles[i + 1]
+    from_desc = f"Attempt {old.get('attempt', 0)}"
+    if 1==1:
+        to_desc = f"Attempt {new.get('attempt', 0)}"
+        diff = generate_diff_html(
                         old.get("item", ""), new.get("item", ""), from_desc, to_desc
-                    )
-                    run_html += f"<details><summary>{from_desc} vs. {to_desc}</summary><div class='diff-content'>{diff}</div></details>"
+        )
+        run_html += f"<details><summary>{from_desc} vs. {to_desc}</summary><div class='diff-content'>{diff}</div></details>"
 
         k8s_step = group[group["agent"] == "kubernetes-job"]
         if not k8s_step.empty:
@@ -246,52 +233,31 @@ def generate_all_diffs_html(steps_df: pd.DataFrame) -> str:
     return all_runs_html
 
 
-def create_report(
-    steps_df: pd.DataFrame,
-    lammps_df: pd.DataFrame,
-    output_path="index.html",
-):
-    plot_b64 = {}
+def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
+    """
+    Create web report for all results.
+    """
+    plots = []
+    df = metric_df.df
+    for metric in df.metric.unique():
+        metric_df = df[df.metric == metric]
+        fig = plt.figure(figsize=(10, 6))
+        ax = sns.boxplot(x="application", y="value", hue="agent", data=metric_df)
+        if metric in ['attempts']:
+            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        title = metric
+        if "Function Time" not in metric:
+            title = " ".join([x.capitalize() for x in metric.split('_')]) 
+        plt.title(title, fontsize=16)
+        plt.xlabel("")
+        plt.ylabel(title + " (%s) " % metric_df.unit.unique()[0])
+        plt.tight_layout()
+        plots.append(f'<img src="{plot_to_base64(fig)}" alt="{metric.capitalize()} Plot">')
 
-    fig = plt.figure(figsize=(10, 6))
-    ax = sns.boxplot(x="application", y="attempts", hue="agent", data=steps_df)
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.title("Attempts By Application", fontsize=16)
-    plt.xlabel("")
-    plt.ylabel("Count Attempts")
-    plt.tight_layout()
-    plot_b64["iterations"] = plot_to_base64(fig)
+    plots = "\n".join(plots)
 
-    fig = plt.figure(figsize=(10, 6))
-    sns.boxplot(x="agent", y="total_seconds", data=steps_df)
-    plt.title("Elapsed Time per Step", fontsize=16)
-    plt.xlabel("Agent")
-    plt.ylabel("Seconds")
-    plt.tight_layout()
-    plot_b64["elapsed_time"] = plot_to_base64(fig)
-
-    # LAMMPS Wall Time Plot - Conditional check removed as requested
-    fig = plt.figure(figsize=(10, 6))
-    sns.boxplot(x="application", y="wall_time", data=lammps_df, palette="viridis")
-    plt.title("LAMMPS Total Wall Time", fontsize=16)
-    plt.ylabel("Seconds")
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
-    plot_b64["lammps_wall_time"] = plot_to_base64(fig)
-
-    # LAMMPS CPU Utilization Plot - Conditional check removed as requested
-    fig = plt.figure(figsize=(10, 6))
-    sns.boxplot(x="application", y="cpu_utilization", data=lammps_df, palette="plasma")
-    plt.title("LAMMPS CPU Utilization", fontsize=16)
-    plt.xlabel("")
-    plt.ylabel("CPU Utilization (%)")
-    plt.ylim(0, 105)
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
-    plot_b64["lammps_cpu"] = plot_to_base64(fig)
-
-    diff_html_content = generate_all_diffs_html(steps_df)
-
+    # diff_html_content = generate_all_diffs_html(steps_df)
+    diff_html_content = ""
     html_template = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -325,19 +291,12 @@ def create_report(
     <body>
         <h1>Fractale Agent Report</h1>
         <div class="container">
-            <img src="{plot_b64.get('iterations', '')}" alt="Iterations Plot">
-            <img src="{plot_b64.get('elapsed_time', '')}" alt="Elapsed Time Plot">
-        </div>
-        <div class="container">
-            <h2>LAMMPS Logs</h2>
-            {'<img src="' + plot_b64.get('lammps_wall_time', '') + '" alt="LAMMPS Wall Time Plot">' if 'lammps_wall_time' in plot_b64 else ''}
-            {'<img src="' + plot_b64.get('lammps_cpu', '') + '" alt="LAMMPS CPU Plot">' if 'lammps_cpu' in plot_b64 else ''}
-        </div>
-        <div class="container">
+            {plots}
+        <!--<div class="container">
             <h2>Incremental Change Log (Diffs)</h2>
             <p>Collapsible report of changes for each attempt within every run.</p>
             {diff_html_content}
-        </div>
+        </div>-->
     </body>
     </html>
     """

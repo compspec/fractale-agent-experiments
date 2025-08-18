@@ -1,0 +1,137 @@
+[
+    {
+        "agent": "build",
+        "total_seconds": 191.0793303089995,
+        "result": "# Dockerfile for amg2023 application\n# Target Environment: Google Cloud CPU instance in Kubernetes\n# Base Image: Ubuntu 22.04 LTS provides a stable and modern environment.\nFROM ubuntu:22.04\n\n# Set non-interactive frontend for package installers to avoid prompts\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies, git, Open MPI, and CA certificates.\n# The 'ca-certificates' package is required for 'git clone' over HTTPS.\n# Clean up apt cache in the same layer to reduce image size.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for containerized environments.\n# These settings allow running as the root user and can improve stability\n# in environments like Docker and Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_rmaps_base_oversubscribe=1\n\n# Set a working directory for building the application\nWORKDIR /opt/build\n\n# Clone the latest branch of the AMG (amg2023) source code from the official LLNL repository.\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the root of the cloned repository.\nWORKDIR /opt/build/AMG\n\n# Compile prerequisite libraries and then the main 'amg' executable.\n# This fixes linker errors by ensuring all component libraries are built before the final binary.\nRUN make -C utilities && \\\n    make -C krylov && \\\n    make -C IJ_mv && \\\n    make -C seq_mv && \\\n    make -C parcsr_mv && \\\n    make -C parcsr_ls && \\\n    make -C test\n\n# Add the directory containing the 'amg' executable to the system's PATH.\n# This allows the binary to be called directly without specifying its full path.\nENV PATH=\"/opt/build/AMG/test:${PATH}\"\n\n# Reset the working directory to the root for a clean user experience upon container launch.\nWORKDIR /\n\n# Set the default command to launch a bash shell.\n# This provides an interactive entrypoint for users to run mpirun with custom parameters.\n# Example execution command for a Kubernetes Job:\n# command: [\"/bin/sh\", \"-c\"]\n# args: [\"mpirun -np 4 amg -P 2 2 1 -r 40 40 40\"]\nCMD [\"/bin/bash\"]",
+        "attempts": 3,
+        "metadata": {
+            "times": {
+                "generate_dockerfile_seconds": [
+                    29.03490024200073,
+                    10.376219158999447,
+                    13.207923355003004
+                ],
+                "build_seconds": [
+                    18.333778415002598,
+                    17.632127255998057,
+                    17.116337178998947
+                ],
+                "load_seconds": [
+                    11.503146377999656
+                ],
+                "run_step_seconds": [
+                    41.840427776998695,
+                    121.18790278199958,
+                    191.0793022450016
+                ]
+            },
+            "assets": {
+                "dockerfile": [
+                    {
+                        "item": "# Dockerfile for amg2023 application\n# Target Environment: Google Cloud CPU instance in Kubernetes\n# Base Image: Ubuntu 22.04 LTS provides a stable and modern environment.\nFROM ubuntu:22.04\n\n# Set non-interactive frontend for package installers to avoid prompts\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies, git for cloning the source, and Open MPI for parallel execution.\n# Clean up apt cache in the same layer to reduce image size.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for containerized environments.\n# These settings allow running as the root user and can improve stability\n# in environments like Docker and Kubernetes by avoiding certain shared memory issues\n# and allowing oversubscription of resources.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_rmaps_base_oversubscribe=1\n\n# Set a working directory for building the application\nWORKDIR /opt/build\n\n# Clone the latest branch of the AMG (amg2023) source code from the official LLNL repository.\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Change working directory to the test subdirectory where the Makefile is located.\nWORKDIR /opt/build/AMG/test\n\n# Compile the application. The executable 'amg' will be created in the current directory.\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH.\n# This allows the binary to be called directly without specifying its full path.\nENV PATH=\"/opt/build/AMG/test:${PATH}\"\n\n# Reset the working directory to the root for a clean user experience upon container launch.\nWORKDIR /\n\n# Set the default command to launch a bash shell.\n# This provides an interactive entrypoint for users to run mpirun with custom parameters.\n# Example execution command for a Kubernetes Job:\n# command: [\"/bin/sh\", \"-c\"]\n# args: [\"mpirun -np 4 amg -P 2 2 1 -r 40 40 40\"]\nCMD [\"/bin/bash\"]",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# Dockerfile for amg2023 application\n# Target Environment: Google Cloud CPU instance in Kubernetes\n# Base Image: Ubuntu 22.04 LTS provides a stable and modern environment.\nFROM ubuntu:22.04\n\n# Set non-interactive frontend for package installers to avoid prompts\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies, git, Open MPI, and CA certificates.\n# The 'ca-certificates' package is added to fix SSL verification issues during 'git clone'.\n# Clean up apt cache in the same layer to reduce image size.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for containerized environments.\n# These settings allow running as the root user and can improve stability\n# in environments like Docker and Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_rmaps_base_oversubscribe=1\n\n# Set a working directory for building the application\nWORKDIR /opt/build\n\n# Clone the latest branch of the AMG (amg2023) source code from the official LLNL repository.\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Change working directory to the test subdirectory where the Makefile is located.\nWORKDIR /opt/build/AMG/test\n\n# Compile the application. The executable 'amg' will be created in the current directory.\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH.\n# This allows the binary to be called directly without specifying its full path.\nENV PATH=\"/opt/build/AMG/test:${PATH}\"\n\n# Reset the working directory to the root for a clean user experience upon container launch.\nWORKDIR /\n\n# Set the default command to launch a bash shell.\n# This provides an interactive entrypoint for users to run mpirun with custom parameters.\n# Example execution command for a Kubernetes Job:\n# command: [\"/bin/sh\", \"-c\"]\n# args: [\"mpirun -np 4 amg -P 2 2 1 -r 40 40 40\"]\nCMD [\"/bin/bash\"]",
+                        "attempt": 1
+                    },
+                    {
+                        "item": "# Dockerfile for amg2023 application\n# Target Environment: Google Cloud CPU instance in Kubernetes\n# Base Image: Ubuntu 22.04 LTS provides a stable and modern environment.\nFROM ubuntu:22.04\n\n# Set non-interactive frontend for package installers to avoid prompts\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies, git, Open MPI, and CA certificates.\n# The 'ca-certificates' package is required for 'git clone' over HTTPS.\n# Clean up apt cache in the same layer to reduce image size.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for containerized environments.\n# These settings allow running as the root user and can improve stability\n# in environments like Docker and Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_rmaps_base_oversubscribe=1\n\n# Set a working directory for building the application\nWORKDIR /opt/build\n\n# Clone the latest branch of the AMG (amg2023) source code from the official LLNL repository.\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the root of the cloned repository.\nWORKDIR /opt/build/AMG\n\n# Compile prerequisite libraries and then the main 'amg' executable.\n# This fixes linker errors by ensuring all component libraries are built before the final binary.\nRUN make -C utilities && \\\n    make -C krylov && \\\n    make -C IJ_mv && \\\n    make -C seq_mv && \\\n    make -C parcsr_mv && \\\n    make -C parcsr_ls && \\\n    make -C test\n\n# Add the directory containing the 'amg' executable to the system's PATH.\n# This allows the binary to be called directly without specifying its full path.\nENV PATH=\"/opt/build/AMG/test:${PATH}\"\n\n# Reset the working directory to the root for a clean user experience upon container launch.\nWORKDIR /\n\n# Set the default command to launch a bash shell.\n# This provides an interactive entrypoint for users to run mpirun with custom parameters.\n# Example execution command for a Kubernetes Job:\n# command: [\"/bin/sh\", \"-c\"]\n# args: [\"mpirun -np 4 amg -P 2 2 1 -r 40 40 40\"]\nCMD [\"/bin/bash\"]",
+                        "attempt": 2
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 223,
+                    "candidates_token_count": 576,
+                    "total_token_count": 3429,
+                    "time_seconds": 29.032741162001912
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1765,
+                    "candidates_token_count": 585,
+                    "total_token_count": 2993,
+                    "time_seconds": 10.374235193998175
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 3529,
+                    "candidates_token_count": 655,
+                    "total_token_count": 5066,
+                    "time_seconds": 13.205914514997858
+                }
+            ],
+            "retries": 0,
+            "result": {
+                "item": "# Dockerfile for amg2023 application\n# Target Environment: Google Cloud CPU instance in Kubernetes\n# Base Image: Ubuntu 22.04 LTS provides a stable and modern environment.\nFROM ubuntu:22.04\n\n# Set non-interactive frontend for package installers to avoid prompts\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies, git, Open MPI, and CA certificates.\n# The 'ca-certificates' package is required for 'git clone' over HTTPS.\n# Clean up apt cache in the same layer to reduce image size.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for containerized environments.\n# These settings allow running as the root user and can improve stability\n# in environments like Docker and Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_rmaps_base_oversubscribe=1\n\n# Set a working directory for building the application\nWORKDIR /opt/build\n\n# Clone the latest branch of the AMG (amg2023) source code from the official LLNL repository.\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the root of the cloned repository.\nWORKDIR /opt/build/AMG\n\n# Compile prerequisite libraries and then the main 'amg' executable.\n# This fixes linker errors by ensuring all component libraries are built before the final binary.\nRUN make -C utilities && \\\n    make -C krylov && \\\n    make -C IJ_mv && \\\n    make -C seq_mv && \\\n    make -C parcsr_mv && \\\n    make -C parcsr_ls && \\\n    make -C test\n\n# Add the directory containing the 'amg' executable to the system's PATH.\n# This allows the binary to be called directly without specifying its full path.\nENV PATH=\"/opt/build/AMG/test:${PATH}\"\n\n# Reset the working directory to the root for a clean user experience upon container launch.\nWORKDIR /\n\n# Set the default command to launch a bash shell.\n# This provides an interactive entrypoint for users to run mpirun with custom parameters.\n# Example execution command for a Kubernetes Job:\n# command: [\"/bin/sh\", \"-c\"]\n# args: [\"mpirun -np 4 amg -P 2 2 1 -r 40 40 40\"]\nCMD [\"/bin/bash\"]",
+                "total_seconds": 191.0793106199999,
+                "type": "dockerfile"
+            }
+        }
+    },
+    {
+        "agent": "kubernetes-job",
+        "total_seconds": 478.4653779100008,
+        "result": "# Kubernetes Job manifest for the amg2023 benchmark.\n# This manifest is designed for a production-ready environment on a Google Cloud CPU instance.\n# Corrected based on debugging feedback to use mpirun and the correct executable name.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # Job name for easy identification.\n  name: amg2023-benchmark-job\n  # Deploying to the 'default' namespace as requested.\n  namespace: default\nspec:\n  # The number of times to retry a failed Pod before marking the Job as failed.\n  # Set to 1, as requested, to retry once upon failure.\n  backoffLimit: 1\n  # The template for the Pods that the Job will create.\n  template:\n    spec:\n      # The restart policy for Pods in the Job. 'OnFailure' is appropriate for batch jobs.\n      restartPolicy: OnFailure\n      containers:\n        # The container must be named 'amg2023' as per the requirement.\n      - name: amg2023\n        # The image name is assumed to be the same as the application.\n        image: amg2023\n        # As requested, 'Never' assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command is 'mpirun' to launch the parallel MPI application.\n        command:\n          - \"mpirun\"\n        # Arguments include the number of processes for mpirun (-np 4),\n        # the correct executable name ('amg'), and the user-specified parameters.\n        args:\n          - \"-np\"\n          - \"4\"\n          - \"amg\"\n          - \"-n\"\n          - \"4\"\n          - \"4\"\n          - \"4\"\n          - \"-P\"\n          - \"2\"\n          - \"1\"\n          - \"2\"\n          - \"-problem\"\n          - \"2\"\n        # Resource requests and limits are critical for production-ready jobs in a cloud environment.\n        # They ensure predictable performance and stable node operation.\n        resources:\n          # 'requests' are guaranteed resources for the pod. A 4-process MPI job needs at least 4 CPUs.\n          requests:\n            cpu: \"4\"\n            memory: \"2Gi\"\n          # 'limits' prevent the container from consuming more resources than allocated.\n          limits:\n            cpu: \"4\"\n            memory: \"4Gi\"",
+        "attempts": 2,
+        "metadata": {
+            "times": {
+                "generate_job_manifest_seconds": [
+                    25.35818289799863,
+                    14.468924468001205
+                ],
+                "deploy_seconds": [
+                    5.474304857998504,
+                    411.7745378289983
+                ],
+                "run_step_seconds": [
+                    426.2526533700002,
+                    478.4653487079995
+                ]
+            },
+            "assets": {
+                "kubernetes-job-manifest": [
+                    {
+                        "item": "# Kubernetes Job manifest for the amg2023 benchmark.\n# This manifest is designed for a production-ready environment on a Google Cloud CPU instance.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # Job name for easy identification.\n  name: amg2023-benchmark-job\n  # Deploying to the 'default' namespace as requested.\n  namespace: default\nspec:\n  # The number of times to retry a failed Pod before marking the Job as failed.\n  # Set to 1, as requested, to retry once upon failure.\n  backoffLimit: 1\n  # The template for the Pods that the Job will create.\n  template:\n    spec:\n      # The restart policy for Pods in the Job. 'OnFailure' is appropriate for batch jobs.\n      # 'Never' is also a valid option.\n      restartPolicy: OnFailure\n      containers:\n        # The container must be named 'amg2023' as per the requirement.\n      - name: amg2023\n        # The image name is assumed to be the same as the application.\n        image: amg2023\n        # As requested, 'Never' assumes the image is already present on the node.\n        # This is common in air-gapped or pre-loaded environments.\n        imagePullPolicy: Never\n        # Sets the executable to run. Assumes 'amg2023' is in the system's PATH.\n        command:\n          - \"amg2023\"\n        # Arguments for the command, as specified in the request.\n        args:\n          - \"-n\"\n          - \"4\"\n          - \"4\"\n          - \"4\"\n          - \"-P\"\n          - \"2\"\n          - \"1\"\n          - \"2\"\n          - \"-problem\"\n          - \"2\"\n        # Resource requests and limits are critical for production-ready jobs in a cloud environment.\n        # They ensure predictable performance and stable node operation.\n        resources:\n          # 'requests' are guaranteed resources for the pod.\n          requests:\n            cpu: \"1\"\n            memory: \"2Gi\"\n          # 'limits' prevent the container from consuming more resources than allocated.\n          limits:\n            cpu: \"2\"\n            memory: \"4Gi\"",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# Kubernetes Job manifest for the amg2023 benchmark.\n# This manifest is designed for a production-ready environment on a Google Cloud CPU instance.\n# Corrected based on debugging feedback to use mpirun and the correct executable name.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # Job name for easy identification.\n  name: amg2023-benchmark-job\n  # Deploying to the 'default' namespace as requested.\n  namespace: default\nspec:\n  # The number of times to retry a failed Pod before marking the Job as failed.\n  # Set to 1, as requested, to retry once upon failure.\n  backoffLimit: 1\n  # The template for the Pods that the Job will create.\n  template:\n    spec:\n      # The restart policy for Pods in the Job. 'OnFailure' is appropriate for batch jobs.\n      restartPolicy: OnFailure\n      containers:\n        # The container must be named 'amg2023' as per the requirement.\n      - name: amg2023\n        # The image name is assumed to be the same as the application.\n        image: amg2023\n        # As requested, 'Never' assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command is 'mpirun' to launch the parallel MPI application.\n        command:\n          - \"mpirun\"\n        # Arguments include the number of processes for mpirun (-np 4),\n        # the correct executable name ('amg'), and the user-specified parameters.\n        args:\n          - \"-np\"\n          - \"4\"\n          - \"amg\"\n          - \"-n\"\n          - \"4\"\n          - \"4\"\n          - \"4\"\n          - \"-P\"\n          - \"2\"\n          - \"1\"\n          - \"2\"\n          - \"-problem\"\n          - \"2\"\n        # Resource requests and limits are critical for production-ready jobs in a cloud environment.\n        # They ensure predictable performance and stable node operation.\n        resources:\n          # 'requests' are guaranteed resources for the pod. A 4-process MPI job needs at least 4 CPUs.\n          requests:\n            cpu: \"4\"\n            memory: \"2Gi\"\n          # 'limits' prevent the container from consuming more resources than allocated.\n          limits:\n            cpu: \"4\"\n            memory: \"4Gi\"",
+                        "attempt": 1
+                    }
+                ],
+                "logs": [
+                    {
+                        "item": "Running with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (8, 4, 8)\n    (Px, Py, Pz) = (2, 1, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.332000 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.371982 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.101468 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.090067 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 399.187003 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 406.780893 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 162\nFinal Relative Residual Norm = 1.161957e-18\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 2.189290e+03\n\n\n",
+                        "attempt": 1
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 327,
+                    "candidates_token_count": 533,
+                    "total_token_count": 3150,
+                    "time_seconds": 25.35543088600025
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1827,
+                    "candidates_token_count": 566,
+                    "total_token_count": 3315,
+                    "time_seconds": 14.463357354998152
+                }
+            ],
+            "retries": 0,
+            "result": {
+                "item": "# Kubernetes Job manifest for the amg2023 benchmark.\n# This manifest is designed for a production-ready environment on a Google Cloud CPU instance.\n# Corrected based on debugging feedback to use mpirun and the correct executable name.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # Job name for easy identification.\n  name: amg2023-benchmark-job\n  # Deploying to the 'default' namespace as requested.\n  namespace: default\nspec:\n  # The number of times to retry a failed Pod before marking the Job as failed.\n  # Set to 1, as requested, to retry once upon failure.\n  backoffLimit: 1\n  # The template for the Pods that the Job will create.\n  template:\n    spec:\n      # The restart policy for Pods in the Job. 'OnFailure' is appropriate for batch jobs.\n      restartPolicy: OnFailure\n      containers:\n        # The container must be named 'amg2023' as per the requirement.\n      - name: amg2023\n        # The image name is assumed to be the same as the application.\n        image: amg2023\n        # As requested, 'Never' assumes the image is already present on the node.\n        imagePullPolicy: Never\n        # The command is 'mpirun' to launch the parallel MPI application.\n        command:\n          - \"mpirun\"\n        # Arguments include the number of processes for mpirun (-np 4),\n        # the correct executable name ('amg'), and the user-specified parameters.\n        args:\n          - \"-np\"\n          - \"4\"\n          - \"amg\"\n          - \"-n\"\n          - \"4\"\n          - \"4\"\n          - \"4\"\n          - \"-P\"\n          - \"2\"\n          - \"1\"\n          - \"2\"\n          - \"-problem\"\n          - \"2\"\n        # Resource requests and limits are critical for production-ready jobs in a cloud environment.\n        # They ensure predictable performance and stable node operation.\n        resources:\n          # 'requests' are guaranteed resources for the pod. A 4-process MPI job needs at least 4 CPUs.\n          requests:\n            cpu: \"4\"\n            memory: \"2Gi\"\n          # 'limits' prevent the container from consuming more resources than allocated.\n          limits:\n            cpu: \"4\"\n            memory: \"4Gi\"",
+                "total_seconds": 478.4653572919997,
+                "type": "kubernetes-job-manifest"
+            }
+        }
+    }
+]
