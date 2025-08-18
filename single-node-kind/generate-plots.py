@@ -228,6 +228,7 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
     """
     Create web report for all results.
     """
+    gemini_plots = []
     log_plots = []
     plots = []
     df = metric_df.df
@@ -256,9 +257,29 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
                 f'<img src="{plot_to_base64(fig)}" alt="{metric.capitalize()} Plot">'
             )
 
+
+    # Gemini data (linear plots)
+    del gemini_data['conversation_history']
+    gemini_df = pandas.DataFrame(gemini_data)
+
+    # Melt the DataFrame to a long format suitable for hue/style
+    df_melted = gemini_df.melt(id_vars=['time_seconds'], var_name='x_type', value_name='x_value')
+    fig = plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=df_melted, x='x_value', y='time_seconds', hue='x_type')
+    plt.title('Gemini Token Counts vs. Total Time')
+    plt.xlabel('')
+    plt.ylabel('Seconds')
+    plt.legend(title='Token Scope')
+    plt.grid(True)
+    plt.tight_layout()
+    gemini_plots.append(
+      f'<img src="{plot_to_base64(fig)}" alt="Gemini Token Plot">'
+    )
+
     plots = "\n".join(plots)
     log_plots = "\n".join(log_plots)
-
+    gemini_plots = "\n".join(gemini_plots)
+ 
     diff_html_content = generate_html(diffs)
     html_template = f"""
     <!DOCTYPE html>
@@ -292,6 +313,10 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
     </head>
     <body>
         <h1>Fractale Agent Report</h1>
+        <div class="container">
+            <h2>LLM Metrics</h2>
+            {gemini_plots}
+        </div>
         <div class="container">
             <h2>Agent Metrics</h2>
             {plots}
