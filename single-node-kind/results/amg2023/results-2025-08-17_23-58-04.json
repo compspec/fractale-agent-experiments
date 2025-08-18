@@ -1,0 +1,151 @@
+[
+    {
+        "agent": "build",
+        "total_seconds": 115.10903795199556,
+        "result": "# Use a standard Ubuntu base image suitable for compiling C/C++ applications\nFROM ubuntu:22.04\n\n# Set environment variables to enable non-interactive installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Update package lists and install dependencies\n# - build-essential: Compilers (gcc, g++) and build tools.\n# - git: For cloning the source code.\n# - ca-certificates: Added to fix SSL verification issues during git clone.\n# - openmpi-bin, libopenmpi-dev: Open MPI runtime and development libraries.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    ca-certificates \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for robust performance in containerized environments (e.g., Kubernetes)\n# - Use TCP for network communication instead of fabric-specific or shared-memory mechanisms\n#   that can be problematic in some container networking setups.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_pml=ob1\n\n# Create a working directory for the application\nWORKDIR /opt/app\n\n# Clone the latest version of the AMG (amg2023) source code from the official repository\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the cloned source code directory\nWORKDIR /opt/app/AMG\n\n# Compile the application using the provided Makefile\n# This builds the 'amg' executable in the 'test' subdirectory\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH\n# This allows the executable to be run without specifying its full path\nENV PATH=\"/opt/app/AMG/test:${PATH}\"\n\n# Set the default command to the compiled application\n# Users can append arguments (e.g., `docker run amg2023 -n 10 10 10`)\n# For MPI jobs, this will be overridden by the mpirun command.\nCMD [\"amg\"]",
+        "attempts": 2,
+        "metadata": {
+            "times": {
+                "generate_dockerfile_seconds": [
+                    25.2050327859979,
+                    11.674693860994012
+                ],
+                "build_seconds": [
+                    14.821467333000328,
+                    31.401791594005772
+                ],
+                "load_seconds": [
+                    12.232073545004823
+                ],
+                "run_step_seconds": [
+                    55.319622697999876,
+                    115.10901069900137
+                ]
+            },
+            "assets": {
+                "dockerfile": [
+                    {
+                        "item": "# Use a standard Ubuntu base image suitable for compiling C/C++ applications\nFROM ubuntu:22.04\n\n# Set environment variables to enable non-interactive installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Update package lists and install necessary build tools, git, and Open MPI\n# This provides a complete environment for compiling and running the MPI-based application\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for optimal performance and compatibility in containerized environments like Kubernetes\n# - Disable shared memory transport (vader) single-copy mechanism to avoid issues with some container runtimes.\n# - Explicitly disable high-performance network fabrics like InfiniBand (openib) and use standard TCP/IP networking.\n#   This is a robust default for typical cloud CPU instances which use Ethernet for pod-to-pod communication.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_pml=ob1\n\n# Create and set the main working directory for the application\nWORKDIR /opt/app\n\n# Clone the latest version of the AMG (amg2023) source code from the official repository\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the cloned source code directory\nWORKDIR /opt/app/AMG\n\n# Compile the application using the provided Makefile\n# The 'make' command will build the 'amg' executable inside the 'test' subdirectory\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH\n# This allows the executable to be called directly without specifying its full path\nENV PATH=\"/opt/app/AMG/test:${PATH}\"\n\n# Set the entrypoint to the compiled application\n# This allows the container to be run directly to execute 'amg', and users can\n# append arguments (e.g., docker run amg2023 -n 10 10 10).\n# For MPI runs, users will override this with 'mpirun', e.g., `mpirun -np 4 amg ...`\nCMD [\"amg\"]",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# Use a standard Ubuntu base image suitable for compiling C/C++ applications\nFROM ubuntu:22.04\n\n# Set environment variables to enable non-interactive installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Update package lists and install dependencies\n# - build-essential: Compilers (gcc, g++) and build tools.\n# - git: For cloning the source code.\n# - ca-certificates: Added to fix SSL verification issues during git clone.\n# - openmpi-bin, libopenmpi-dev: Open MPI runtime and development libraries.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    ca-certificates \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for robust performance in containerized environments (e.g., Kubernetes)\n# - Use TCP for network communication instead of fabric-specific or shared-memory mechanisms\n#   that can be problematic in some container networking setups.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_pml=ob1\n\n# Create a working directory for the application\nWORKDIR /opt/app\n\n# Clone the latest version of the AMG (amg2023) source code from the official repository\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the cloned source code directory\nWORKDIR /opt/app/AMG\n\n# Compile the application using the provided Makefile\n# This builds the 'amg' executable in the 'test' subdirectory\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH\n# This allows the executable to be run without specifying its full path\nENV PATH=\"/opt/app/AMG/test:${PATH}\"\n\n# Set the default command to the compiled application\n# Users can append arguments (e.g., `docker run amg2023 -n 10 10 10`)\n# For MPI jobs, this will be overridden by the mpirun command.\nCMD [\"amg\"]",
+                        "attempt": 1
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 223,
+                    "candidates_token_count": 543,
+                    "total_token_count": 2895,
+                    "time_seconds": 25.203031329001533
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1661,
+                    "candidates_token_count": 511,
+                    "total_token_count": 2930,
+                    "time_seconds": 11.67274423600611
+                }
+            ],
+            "retries": 0,
+            "result": {
+                "item": "# Use a standard Ubuntu base image suitable for compiling C/C++ applications\nFROM ubuntu:22.04\n\n# Set environment variables to enable non-interactive installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Update package lists and install dependencies\n# - build-essential: Compilers (gcc, g++) and build tools.\n# - git: For cloning the source code.\n# - ca-certificates: Added to fix SSL verification issues during git clone.\n# - openmpi-bin, libopenmpi-dev: Open MPI runtime and development libraries.\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    build-essential \\\n    git \\\n    ca-certificates \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && apt-get clean \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure Open MPI for robust performance in containerized environments (e.g., Kubernetes)\n# - Use TCP for network communication instead of fabric-specific or shared-memory mechanisms\n#   that can be problematic in some container networking setups.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_pml=ob1\n\n# Create a working directory for the application\nWORKDIR /opt/app\n\n# Clone the latest version of the AMG (amg2023) source code from the official repository\nRUN git clone https://github.com/LLNL/AMG.git\n\n# Set the working directory to the cloned source code directory\nWORKDIR /opt/app/AMG\n\n# Compile the application using the provided Makefile\n# This builds the 'amg' executable in the 'test' subdirectory\nRUN make\n\n# Add the directory containing the 'amg' executable to the system's PATH\n# This allows the executable to be run without specifying its full path\nENV PATH=\"/opt/app/AMG/test:${PATH}\"\n\n# Set the default command to the compiled application\n# Users can append arguments (e.g., `docker run amg2023 -n 10 10 10`)\n# For MPI jobs, this will be overridden by the mpirun command.\nCMD [\"amg\"]",
+                "total_seconds": 115.10901831999945,
+                "type": "dockerfile"
+            }
+        }
+    },
+    {
+        "agent": "kubernetes-job",
+        "total_seconds": 420.02744959999836,
+        "result": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # MPI applications must be launched with mpirun to set up the parallel environment.\n        command: [\"mpirun\"]\n        # The arguments passed to the command.\n        # --allow-run-as-root: Permits mpirun to execute as the root user inside the container.\n        # -np 4: Launches 4 processes, as required by the -P 2 1 2 processor grid.\n        # amg: The executable to run.\n        # The remaining arguments are passed to the amg executable.\n        args:\n        - \"--allow-run-as-root\"\n        - \"-np\"\n        - \"4\"\n        - \"amg\"\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+        "attempts": 4,
+        "metadata": {
+            "times": {
+                "generate_job_manifest_seconds": [
+                    26.849834763001127,
+                    13.781126249996305,
+                    12.026173958001891,
+                    15.421619005996035
+                ],
+                "deploy_seconds": [
+                    5.446920440001122,
+                    25.43995133900171,
+                    25.438476920004177,
+                    218.81760323300114
+                ],
+                "run_step_seconds": [
+                    234.24723856100172,
+                    300.6567744339991,
+                    363.9752636600024,
+                    420.0274212259974
+                ]
+            },
+            "assets": {
+                "kubernetes-job-manifest": [
+                    {
+                        "item": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # This overrides the default ENTRYPOINT of the container image.\n        command: [\"Run\"]\n        # The arguments passed to the command.\n        # This corresponds to the requested execution: Run -n 4 4 4 -P 2 1 2 -problem 2\n        args:\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # This is the 'amg' executable, as identified during debugging.\n        command: [\"amg\"]\n        # The arguments passed to the command.\n        # This corresponds to the requested execution: amg -n 4 4 4 -P 2 1 2 -problem 2\n        args:\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+                        "attempt": 1
+                    },
+                    {
+                        "item": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # MPI applications must be launched with mpirun to set up the parallel environment.\n        command: [\"mpirun\"]\n        # The arguments passed to the command.\n        # -np 4: Launches 4 processes, as required by the -P 2 1 2 processor grid.\n        # amg: The executable to run.\n        # The remaining arguments are passed to the amg executable.\n        args:\n        - \"-np\"\n        - \"4\"\n        - \"amg\"\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+                        "attempt": 2
+                    },
+                    {
+                        "item": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # MPI applications must be launched with mpirun to set up the parallel environment.\n        command: [\"mpirun\"]\n        # The arguments passed to the command.\n        # --allow-run-as-root: Permits mpirun to execute as the root user inside the container.\n        # -np 4: Launches 4 processes, as required by the -P 2 1 2 processor grid.\n        # amg: The executable to run.\n        # The remaining arguments are passed to the amg executable.\n        args:\n        - \"--allow-run-as-root\"\n        - \"-np\"\n        - \"4\"\n        - \"amg\"\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+                        "attempt": 3
+                    }
+                ],
+                "logs": [
+                    {
+                        "item": "Running with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (8, 4, 8)\n    (Px, Py, Pz) = (2, 1, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.201900 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.390521 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.053696 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.084745 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 206.742858 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 416.445967 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 162\nFinal Relative Residual Norm = 9.852761e-19\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 4.227164e+03\n\n\n",
+                        "attempt": 3
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 353,
+                    "candidates_token_count": 532,
+                    "total_token_count": 3126,
+                    "time_seconds": 26.84721385800367
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1744,
+                    "candidates_token_count": 537,
+                    "total_token_count": 3390,
+                    "time_seconds": 13.776329541004088
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 3170,
+                    "candidates_token_count": 580,
+                    "total_token_count": 4627,
+                    "time_seconds": 12.021244593001029
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 4709,
+                    "candidates_token_count": 618,
+                    "total_token_count": 6342,
+                    "time_seconds": 15.416581819001294
+                }
+            ],
+            "retries": 0,
+            "result": {
+                "item": "# This is a Kubernetes Job manifest.\n# It is designed to run a one-off task using the 'amg2023' container image.\n# The Job is configured for a Google Cloud Kubernetes environment but is generic.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: amg2023-job\n  # Specifies that the Job will be created in the 'default' namespace.\n  namespace: default\nspec:\n  # The number of retries before considering a Job as failed.\n  # A value of 1 means the Job will run a maximum of two times (initial run + 1 retry).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy for the containers in the Pod.\n      # 'OnFailure' ensures that the Job controller, not the kubelet, handles retries by creating a new Pod.\n      # This is a required setting for Jobs.\n      restartPolicy: OnFailure\n      containers:\n      - # The name of the container running the job.\n        name: amg2023\n        # The exact container image to use.\n        image: amg2023\n        # Specifies that the image should not be pulled from a registry.\n        # This requires the 'amg2023' image to be pre-loaded on the cluster nodes.\n        imagePullPolicy: Never\n        # The command that will be executed inside the container.\n        # MPI applications must be launched with mpirun to set up the parallel environment.\n        command: [\"mpirun\"]\n        # The arguments passed to the command.\n        # --allow-run-as-root: Permits mpirun to execute as the root user inside the container.\n        # -np 4: Launches 4 processes, as required by the -P 2 1 2 processor grid.\n        # amg: The executable to run.\n        # The remaining arguments are passed to the amg executable.\n        args:\n        - \"--allow-run-as-root\"\n        - \"-np\"\n        - \"4\"\n        - \"amg\"\n        - \"-n\"\n        - \"4\"\n        - \"4\"\n        - \"4\"\n        - \"-P\"\n        - \"2\"\n        - \"1\"\n        - \"2\"\n        - \"-problem\"\n        - \"2\"\n        # No resource requests or limits are specified, as requested.\n        # This places the Pod in the 'BestEffort' Quality of Service (QoS) class.\n        # It will be the first to be evicted if the node experiences memory pressure.",
+                "total_seconds": 420.02742967000086,
+                "type": "kubernetes-job-manifest"
+            }
+        }
+    }
+]

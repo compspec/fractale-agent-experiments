@@ -86,12 +86,11 @@ def parse_lammps_log(log_content):
     return wall_time, cpu_utilization
 
 
-def generate_diff_html(
+def generate_diff(
     old_content: str, new_content: str, from_desc: str, to_desc: str
 ) -> str:
     if not old_content or not new_content or old_content == new_content:
         return "<p>No changes detected between these attempts.</p>"
-
     differ = difflib.HtmlDiff(wrapcolumn=80)
     diff_html = differ.make_file(
         old_content.splitlines(),
@@ -116,17 +115,21 @@ def plot_to_base64(plt_figure) -> str:
     plt.close(plt_figure)
     return f"data:image/png;base64,{img_str}"
 
+
 class MetricDataFrame:
     """
     Easy accessor class for a data frame.
     """
+
     def __init__(self):
-         self.df = pandas.DataFrame(columns=['application', 'agent', 'metric', 'value', 'unit'])
-         self.idx = 0
+        self.df = pandas.DataFrame(
+            columns=["application", "agent", "metric", "value", "unit"]
+        )
+        self.idx = 0
 
     def add_entry(self, app, agent, metric, value, unit=None):
-         self.df.loc[self.idx, :] = [app, agent, metric, value, unit]
-         self.idx += 1
+        self.df.loc[self.idx, :] = [app, agent, metric, value, unit]
+        self.idx += 1
 
 
 def process_results(directory):
@@ -146,121 +149,117 @@ def process_results(directory):
             filepath = os.path.join(app_dir, filename)
             data = read_json(filepath)
             for step in data:
-                agent = step['agent']
-                metric_df.add_entry(app, agent, "attempts", step['attempts'], "Count")
-                metric_df.add_entry(app, agent, "total_seconds", step['total_seconds'], "Seconds")
-                metric_df.add_entry(app, agent, "total_retries", step['metadata']['retries'], "Count")
+                agent = step["agent"]
+                metric_df.add_entry(app, agent, "attempts", step["attempts"], "Count")
+                metric_df.add_entry(
+                    app, agent, "total_seconds", step["total_seconds"], "Seconds"
+                )
+                metric_df.add_entry(
+                    app, agent, "total_retries", step["metadata"]["retries"], "Count"
+                )
                 # Add all function times
-                for func, times in step['metadata']['times'].items():
-                    func = func.replace('_seconds', '')
+                for func, times in step["metadata"]["times"].items():
+                    func = func.replace("_seconds", "")
                     for timestamp in times:
-                        metric_df.add_entry(app, agent, func + " Function Time", timestamp, "Seconds")
+                        metric_df.add_entry(
+                            app, agent, func + " Function Time", timestamp, "Seconds"
+                        )
 
                 # Not sure if we want to compare these, e.g., tokens vs. asking gemini.
-                for entry in step['metadata']['ask_gemini']:
+                for entry in step["metadata"]["ask_gemini"]:
                     for key, value in entry.items():
                         if key not in gemini_data:
                             gemini_data[key] = []
                         gemini_data[key].append(value)
-                            
-                if agent == "kubernetes-job" and app == 'lammps':
+
+                if agent == "kubernetes-job" and app == "lammps":
                     # Get the final log
-                    log = step['metadata']['assets']['logs'][-1]['item']
+                    log = step["metadata"]["assets"]["logs"][-1]["item"]
                     wall_time, cpu_utilization = parse_lammps_log(log)
                     if wall_time is None or cpu_utilization is None:
                         raise ValueError(f"Issue with log for {filename}")
-                    metric_df.add_entry(app, agent, "wall_time", wall_time, "Seconds")
-                    metric_df.add_entry(app, agent, "cpu_utilization", cpu_utilization, "%s")
+                    metric_df.add_entry(
+                        app, agent, f"{app}_wall_time", wall_time, "Seconds"
+                    )
+                    metric_df.add_entry(
+                        app, agent, f"{app}_cpu_utilization", cpu_utilization, "%s"
+                    )
 
                 # Save logs for diffs - how do we want to do this?
-                for key, assets in step['metadata']['assets'].items():
-                    if key not in diffs:
-                        diffs[key] = []
+                if app not in diffs:
+                    diffs[app] = {}
+                for key, assets in step["metadata"]["assets"].items():
+                    if key not in diffs[app]:
+                        diffs[app][key] = []
                     # Each entry is one set of files for a run.
                     # Will need to figure out what to do with.
-                    diffs[key].append(assets)
-                
+                    diffs[app][key].append(assets)
+
     # Return metrics, and gemini data
     return metric_df, gemini_data, diffs
 
 
-def generate_all_diffs_html(diffs) -> str:
+def generate_html(diffs) -> str:
     """
     Generates collapsible HTML diffs for every attempt in every run.
     """
     html = ""
-    dockerfiles = diffs['dockerfile']
-    html += "<h4>Dockerfile Changes</h4>"
-    # TODO need to loop through here and calculate diffs
-    # need to rewrite with new idea...
-    # for i in range(len(dockerfiles) - 1):
-    old = dockerfiles[i]
-    new = dockerfiles[i + 1]
-    from_desc = f"Attempt {old.get('attempt', 0)}"
-    if 1==1:
-        to_desc = f"Attempt {new.get('attempt', 0)}"
-        diff = generate_diff_html(
-                        old.get("item", ""), new.get("item", ""), from_desc, to_desc
-        )
-        run_html += f"<details><summary>{from_desc} vs. {to_desc}</summary><div class='diff-content'>{diff}</div></details>"
-
-        k8s_step = group[group["agent"] == "kubernetes-job"]
-        if not k8s_step.empty:
-            metadata = k8s_step.iloc[0]["metadata"]
-            crds = sorted(
-                [s for s in metadata.get("steps", []) if s.get("type") == "crd"],
-                key=lambda x: x.get("attempt", 0),
-            )
-
-            if len(crds) > 1:
-                run_html += "<h4>Kubernetes Job YAML Changes</h4>"
-                for i in range(len(crds) - 1):
-                    old = crds[i]
-                    new = crds[i + 1]
-                    from_desc = f"Attempt {old.get('attempt', 0)}"
-                    to_desc = f"Attempt {new.get('attempt', 0)}"
-                    diff = generate_diff_html(
-                        old.get("item", ""), new.get("item", ""), from_desc, to_desc
-                    )
-                    run_html += f"<details><summary>{from_desc} vs. {to_desc}</summary><div class='diff-content'>{diff}</div></details>"
-
-        if run_html:
-            all_runs_html += f"<details class='run-details'><summary>{run_id}</summary><div class='diff-container'>{run_html}</div></details>"
-
-    if not all_runs_html:
-        return "<p>No runs had multiple attempts to generate a diff.</p>"
-
-    return all_runs_html
+    for app, assets in diffs.items():
+        html += f"<h4>{app.upper()} Diffs</h4>"
+        for filename, listings in assets.items():
+            if app != "lammps" and filename == "logs":
+                continue
+            html += f"<h4>{filename} Changes</h4>"
+            for i, listing in enumerate(listings):
+                if len(listing) == 1:
+                    continue
+                html += f"<h5>Result {i}</h5>"
+                for i in range(len(listing) - 1):
+                    old = listing[i]
+                    new = listing[i + 1]
+                    from_desc = f"Attempt {old['attempt']}"
+                    to_desc = f"Attempt {new['attempt']}"
+                    diff = generate_diff(old["item"], new["item"], from_desc, to_desc)
+                    html += f"<details><summary>{from_desc} vs. {to_desc}</summary><div class='diff-content'>{diff}</div></details>"
+    return html
 
 
 def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
     """
     Create web report for all results.
     """
+    log_plots = []
     plots = []
     df = metric_df.df
     for metric in df.metric.unique():
-        # This is incorrect - need to fix
-        if metric == "total_retries":
+        # This was wrong (reset) for lammps and amg
+        if "retries" in metric:
             continue
         metric_df = df[df.metric == metric]
         fig = plt.figure(figsize=(10, 6))
         ax = sns.boxplot(x="application", y="value", hue="agent", data=metric_df)
-        if metric in ['attempts']:
+        if metric in ["attempts"]:
             ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         title = metric
         if "Function Time" not in metric:
-            title = " ".join([x.capitalize() for x in metric.split('_')]) 
+            title = " ".join([x.capitalize() for x in metric.split("_")])
         plt.title(title, fontsize=16)
         plt.xlabel("")
         plt.ylabel(title + " (%s) " % metric_df.unit.unique()[0])
         plt.tight_layout()
-        plots.append(f'<img src="{plot_to_base64(fig)}" alt="{metric.capitalize()} Plot">')
+        if "wall_time" in metric or "cpu" in metric:
+            log_plots.append(
+                f'<img src="{plot_to_base64(fig)}" alt="{metric.capitalize()} Plot">'
+            )
+        else:
+            plots.append(
+                f'<img src="{plot_to_base64(fig)}" alt="{metric.capitalize()} Plot">'
+            )
 
     plots = "\n".join(plots)
+    log_plots = "\n".join(log_plots)
 
-    # diff_html_content = generate_all_diffs_html(steps_df)
-    diff_html_content = ""
+    diff_html_content = generate_html(diffs)
     html_template = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -272,7 +271,7 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 20px auto; padding: 0 20px; }}
             h1, h2, h4 {{ color: #2c3e50; }}
             h1, h2 {{ border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }}
-            .container {{ background-color: #fdfdfd; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }}
+            .container {{ padding: 20px; margin-bottom: 30px; }}
             img {{ max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px; }}
             table.diff {{ font-family: "Courier New", Courier, monospace; border-collapse: collapse; width: 100%; margin-top: 10px; }}
             .diff_header {{ background-color: #e6e6e6; }}
@@ -294,12 +293,18 @@ def create_report(metric_df, gemini_data, diffs, output_path="index.html"):
     <body>
         <h1>Fractale Agent Report</h1>
         <div class="container">
+            <h2>Agent Metrics</h2>
             {plots}
-        <!--<div class="container">
+        </div>
+        <div class="container">
+            <h2>Application Metrics</h2>
+            {log_plots}
+        </div>
+        <div class="container">
             <h2>Incremental Change Log (Diffs)</h2>
             <p>Collapsible report of changes for each attempt within every run.</p>
             {diff_html_content}
-        </div>-->
+        </div>
     </body>
     </html>
     """
