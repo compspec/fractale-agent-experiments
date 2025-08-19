@@ -1,0 +1,181 @@
+[
+    {
+        "agent": "build",
+        "total_seconds": 485.23377692100075,
+        "result": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies. Kripke requires a newer CMake than is available via apt.\n# We manually download and install a specific CMake version (3.23.1 or higher).\n# Other dependencies like git, wget, build-essential, and OpenMPI are installed via apt.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    git \\\n    wget \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/* && \\\n    CMAKE_VERSION=3.23.1 && \\\n    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \\\n         -O /tmp/cmake.sh && \\\n    sh /tmp/cmake.sh --prefix=/usr/local --skip-license && \\\n    rm /tmp/cmake.sh\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is used to fetch required build dependencies.\n# - Explicitly set MPI compilers (mpicc/mpicxx) for CMake.\n# - DENABLE_OPENMP=ON is added to enable OpenMP support in the underlying build system (BLT).\n# - Configure a Release build with MPI and OpenMP enabled.\n# - Install to /usr/local to place the executable on the system PATH.\n# - Clean up build artifacts to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DCMAKE_C_COMPILER=mpicc \\\n      -DCMAKE_CXX_COMPILER=mpicxx \\\n      -DENABLE_OPENMP=ON \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+        "attempts": 6,
+        "metadata": {
+            "times": {
+                "generate_dockerfile_seconds": [
+                    29.025351276999572,
+                    11.531952684999851,
+                    19.5173382640005,
+                    19.663177304999408,
+                    12.617876796000928,
+                    12.906704910999906
+                ],
+                "build_seconds": [
+                    21.177723737000633,
+                    21.153345488000923,
+                    39.16693479700007,
+                    58.02020260899917,
+                    41.10647341099866,
+                    51.221770071999345
+                ],
+                "load_seconds": [
+                    14.051566001999163
+                ],
+                "run_step_seconds": [
+                    78.19295369900101,
+                    165.37395676199958,
+                    277.4034325470002,
+                    367.3262120719992,
+                    417.63979718500013,
+                    485.2337483400006
+                ]
+            },
+            "assets": {
+                "dockerfile": [
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies: git, cmake, build-essential (for C++ compiler),\n# and OpenMPI for parallel execution.\n# Clean up apt cache to keep the image layer small.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    cmake \\\n    git \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The source code is cloned into a temporary directory.\n# - CMake is configured for a Release build with MPI and OpenMP enabled.\n# - The install prefix is set to /usr/local, so the executable is on the system's PATH.\n# - After installation, the source and build directories are removed to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies: git, cmake, build-essential (for C++ compiler),\n# ca-certificates (for HTTPS connections), and OpenMPI for parallel execution.\n# Clean up apt cache to keep the image layer small.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    cmake \\\n    git \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The source code is cloned into a temporary directory.\n# - CMake is configured for a Release build with MPI and OpenMP enabled.\n# - The install prefix is set to /usr/local, so the executable is on the system's PATH.\n# - After installation, the source and build directories are removed to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 1
+                    },
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies: git, cmake, build-essential (for C++ compiler),\n# ca-certificates (for HTTPS connections), and OpenMPI for parallel execution.\n# Clean up apt cache to keep the image layer small.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    cmake \\\n    git \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is added to git clone to fetch required build dependencies (BLT).\n# - CMake is configured for a Release build with MPI and OpenMP enabled.\n# - The install prefix is set to /usr/local, so the executable is on the system's PATH.\n# - After installation, the source and build directories are removed to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 2
+                    },
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies. Kripke requires a newer CMake than is available via apt.\n# We manually download and install a specific CMake version (3.23.1 or higher).\n# Other dependencies like git, wget, build-essential, and OpenMPI are installed via apt.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    git \\\n    wget \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/* && \\\n    CMAKE_VERSION=3.23.1 && \\\n    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \\\n         -O /tmp/cmake.sh && \\\n    sh /tmp/cmake.sh --prefix=/usr/local --skip-license && \\\n    rm /tmp/cmake.sh\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is used to fetch required build dependencies (e.g., BLT, RAJA).\n# - CMake is configured for a Release build with MPI and OpenMP enabled.\n# - The install prefix is set to /usr/local, so the executable is on the system's PATH.\n# - After installation, the source and build directories are removed to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 3
+                    },
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies. Kripke requires a newer CMake than is available via apt.\n# We manually download and install a specific CMake version (3.23.1 or higher).\n# Other dependencies like git, wget, build-essential, and OpenMPI are installed via apt.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    git \\\n    wget \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/* && \\\n    CMAKE_VERSION=3.23.1 && \\\n    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \\\n         -O /tmp/cmake.sh && \\\n    sh /tmp/cmake.sh --prefix=/usr/local --skip-license && \\\n    rm /tmp/cmake.sh\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is used to fetch required build dependencies.\n# - Explicitly set MPI compilers (mpicc/mpicxx) for CMake to correctly find MPI and OpenMP headers.\n# - Configure a Release build with MPI and OpenMP enabled.\n# - Install to /usr/local to place the executable on the system PATH.\n# - Clean up build artifacts to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DCMAKE_C_COMPILER=mpicc \\\n      -DCMAKE_CXX_COMPILER=mpicxx \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 4
+                    },
+                    {
+                        "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies. Kripke requires a newer CMake than is available via apt.\n# We manually download and install a specific CMake version (3.23.1 or higher).\n# Other dependencies like git, wget, build-essential, and OpenMPI are installed via apt.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    git \\\n    wget \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/* && \\\n    CMAKE_VERSION=3.23.1 && \\\n    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \\\n         -O /tmp/cmake.sh && \\\n    sh /tmp/cmake.sh --prefix=/usr/local --skip-license && \\\n    rm /tmp/cmake.sh\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is used to fetch required build dependencies.\n# - Explicitly set MPI compilers (mpicc/mpicxx) for CMake.\n# - DENABLE_OPENMP=ON is added to enable OpenMP support in the underlying build system (BLT).\n# - Configure a Release build with MPI and OpenMP enabled.\n# - Install to /usr/local to place the executable on the system PATH.\n# - Clean up build artifacts to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DCMAKE_C_COMPILER=mpicc \\\n      -DCMAKE_CXX_COMPILER=mpicxx \\\n      -DENABLE_OPENMP=ON \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                        "attempt": 5
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 217,
+                    "candidates_token_count": 582,
+                    "total_token_count": 3636,
+                    "time_seconds": 29.023283300999537
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1666,
+                    "candidates_token_count": 596,
+                    "total_token_count": 3219,
+                    "time_seconds": 11.530165460999342
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 3194,
+                    "candidates_token_count": 614,
+                    "total_token_count": 5743,
+                    "time_seconds": 19.515410992999023
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 5068,
+                    "candidates_token_count": 729,
+                    "total_token_count": 7297,
+                    "time_seconds": 19.66121651800131
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 6983,
+                    "candidates_token_count": 759,
+                    "total_token_count": 8258,
+                    "time_seconds": 12.615907736000736
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 8993,
+                    "candidates_token_count": 788,
+                    "total_token_count": 10312,
+                    "time_seconds": 12.904779481001242
+                }
+            ],
+            "retries": 0,
+            "failures": [],
+            "result": {
+                "item": "# Dockerfile for building the 'kripke' application for a CPU environment.\n# This Dockerfile is designed for production use in a containerized environment\n# like Google Kubernetes Engine (GKE).\n\n# Use a standard, recent base image.\nFROM ubuntu:22.04\n\n# Avoid prompts during package installation.\nENV DEBIAN_FRONTEND=noninteractive\n\n# Install build dependencies. Kripke requires a newer CMake than is available via apt.\n# We manually download and install a specific CMake version (3.23.1 or higher).\n# Other dependencies like git, wget, build-essential, and OpenMPI are installed via apt.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    git \\\n    wget \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    && rm -rf /var/lib/apt/lists/* && \\\n    CMAKE_VERSION=3.23.1 && \\\n    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \\\n         -O /tmp/cmake.sh && \\\n    sh /tmp/cmake.sh --prefix=/usr/local --skip-license && \\\n    rm /tmp/cmake.sh\n\n# Configure OpenMPI for container environments.\n# This ensures MPI uses standard TCP networking, which is typical in Kubernetes,\n# and avoids trying to use specialized hardware or problematic network interfaces.\nENV OMPI_MCA_pml=ob1\nENV OMPI_MCA_btl=self,tcp\nENV OMPI_MCA_btl_tcp_if_exclude=lo,docker0\n\n# Clone the Kripke source code, build it, and install it.\n# - The --recurse-submodules flag is used to fetch required build dependencies.\n# - Explicitly set MPI compilers (mpicc/mpicxx) for CMake.\n# - DENABLE_OPENMP=ON is added to enable OpenMP support in the underlying build system (BLT).\n# - Configure a Release build with MPI and OpenMP enabled.\n# - Install to /usr/local to place the executable on the system PATH.\n# - Clean up build artifacts to minimize image size.\nRUN mkdir -p /opt/build && \\\n    cd /opt/build && \\\n    git clone --recurse-submodules https://github.com/LLNL/Kripke.git && \\\n    cd Kripke && \\\n    mkdir build && \\\n    cd build && \\\n    cmake \\\n      -DCMAKE_BUILD_TYPE=Release \\\n      -DCMAKE_C_COMPILER=mpicc \\\n      -DCMAKE_CXX_COMPILER=mpicxx \\\n      -DENABLE_OPENMP=ON \\\n      -DKRIPKE_USE_MPI=ON \\\n      -DKRIPKE_USE_OPENMP=ON \\\n      -DCMAKE_INSTALL_PREFIX=/usr/local \\\n      .. && \\\n    make -j$(nproc) install && \\\n    cd / && \\\n    rm -rf /opt/build\n\n# The kripke.exe executable is now located at /usr/local/bin/kripke.exe\n# and can be run directly, e.g., with 'mpirun -n 4 kripke.exe --zones 16,16,16'",
+                "total_seconds": 485.2337559459993,
+                "type": "dockerfile"
+            }
+        }
+    },
+    {
+        "agent": "kubernetes-job",
+        "total_seconds": 65.06835291000061,
+        "result": "# This manifest creates a Kubernetes Job to run the 'kripke' container.\n# It is configured for a Google Cloud environment but is cloud-agnostic.\n# The Job is non-resilient, designed for a single successful execution.\n# Corrected image name to 'kripke' as per debugging feedback.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: kripke-job\n  # The Job will be deployed to the 'default' namespace as none is specified.\nspec:\n  # The number of retries before considering a Job as failed.\n  # Set to 1, allowing for one retry if the initial attempt fails (total of 2 attempts).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy applies to containers within the Pod.\n      # For Jobs, 'OnFailure' or 'Never' are the only valid options.\n      restartPolicy: OnFailure\n      containers:\n        # The container is named 'kripke' as per the exact requirement.\n      - name: kripke\n        # The image name is 'kripke', as specified by the requirements and feedback.\n        image: kripke\n        # The imagePullPolicy is set to 'Never' as requested.\n        # This requires the 'kripke' image to be present on the node beforehand.\n        imagePullPolicy: Never\n        # No resource requests or limits are set, per the explicit instruction.\n        # This gives the Pod a 'BestEffort' Quality of Service (QoS) class,\n        # allowing it to use available node resources without guarantees.\n        # The application itself is configured to use 8 threads via OMP_NUM_THREADS.\n        env:\n        - name: OMP_NUM_THREADS\n          value: \"8\"\n        # The container's default entrypoint is used with default arguments for a standard run.",
+        "attempts": 2,
+        "metadata": {
+            "times": {
+                "generate_job_manifest_seconds": [
+                    25.979850525000074,
+                    12.389915726998879
+                ],
+                "deploy_seconds": [
+                    0.001420872999005951,
+                    10.383500109999659
+                ],
+                "run_step_seconds": [
+                    22.780621435000285,
+                    65.06832425399989
+                ]
+            },
+            "assets": {
+                "kubernetes-job-manifest": [
+                    {
+                        "item": "# This manifest creates a Kubernetes Job to run the 'kripke' container.\n# It is configured for a Google Cloud environment but is cloud-agnostic.\n# The Job is non-resilient, designed for a single successful execution.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: kripke-job\n  # The Job will be deployed to the 'default' namespace as none is specified.\nspec:\n  # The number of retries before considering a Job as failed.\n  # Set to 1, allowing for one retry if the initial attempt fails (total of 2 attempts).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy applies to containers within the Pod.\n      # For Jobs, 'OnFailure' or 'Never' are the only valid options.\n      restartPolicy: OnFailure\n      containers:\n        # The container is named 'kripke' as per the exact requirement.\n      - name: kripke\n        # A plausible public image for the Kripke proxy application.\n        image: llnl/kripke\n        # The imagePullPolicy is set to 'Never' as requested.\n        # This requires the 'llnl/kripke' image to be pre-pulled on the node.\n        imagePullPolicy: Never\n        # No resource requests or limits are set, per the explicit instruction.\n        # This gives the Pod a 'BestEffort' Quality of Service (QoS) class,\n        # allowing it to use available node resources without guarantees.\n        # The application itself is configured to use 8 threads via OMP_NUM_THREADS.\n        env:\n        - name: OMP_NUM_THREADS\n          value: \"8\"\n        # The container's default entrypoint is used with default arguments for a standard run.",
+                        "attempt": 0
+                    },
+                    {
+                        "item": "# This manifest creates a Kubernetes Job to run the 'kripke' container.\n# It is configured for a Google Cloud environment but is cloud-agnostic.\n# The Job is non-resilient, designed for a single successful execution.\n# Corrected image name to 'kripke' as per debugging feedback.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: kripke-job\n  # The Job will be deployed to the 'default' namespace as none is specified.\nspec:\n  # The number of retries before considering a Job as failed.\n  # Set to 1, allowing for one retry if the initial attempt fails (total of 2 attempts).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy applies to containers within the Pod.\n      # For Jobs, 'OnFailure' or 'Never' are the only valid options.\n      restartPolicy: OnFailure\n      containers:\n        # The container is named 'kripke' as per the exact requirement.\n      - name: kripke\n        # The image name is 'kripke', as specified by the requirements and feedback.\n        image: kripke\n        # The imagePullPolicy is set to 'Never' as requested.\n        # This requires the 'kripke' image to be present on the node beforehand.\n        imagePullPolicy: Never\n        # No resource requests or limits are set, per the explicit instruction.\n        # This gives the Pod a 'BestEffort' Quality of Service (QoS) class,\n        # allowing it to use available node resources without guarantees.\n        # The application itself is configured to use 8 threads via OMP_NUM_THREADS.\n        env:\n        - name: OMP_NUM_THREADS\n          value: \"8\"\n        # The container's default entrypoint is used with default arguments for a standard run.",
+                        "attempt": 1
+                    }
+                ],
+                "logs": [
+                    {
+                        "item": "",
+                        "attempt": 1
+                    }
+                ]
+            },
+            "ask_gemini": [
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 351,
+                    "candidates_token_count": 438,
+                    "total_token_count": 3243,
+                    "time_seconds": 25.977204341999823
+                },
+                {
+                    "conversation_history": true,
+                    "prompt_token_count": 1106,
+                    "candidates_token_count": 451,
+                    "total_token_count": 2505,
+                    "time_seconds": 12.38760419999926
+                }
+            ],
+            "retries": 0,
+            "failures": [],
+            "result": {
+                "item": "# This manifest creates a Kubernetes Job to run the 'kripke' container.\n# It is configured for a Google Cloud environment but is cloud-agnostic.\n# The Job is non-resilient, designed for a single successful execution.\n# Corrected image name to 'kripke' as per debugging feedback.\napiVersion: batch/v1\nkind: Job\nmetadata:\n  # The name of the Job resource.\n  name: kripke-job\n  # The Job will be deployed to the 'default' namespace as none is specified.\nspec:\n  # The number of retries before considering a Job as failed.\n  # Set to 1, allowing for one retry if the initial attempt fails (total of 2 attempts).\n  backoffLimit: 1\n  # The template for the Pod that the Job will create.\n  template:\n    spec:\n      # The restart policy applies to containers within the Pod.\n      # For Jobs, 'OnFailure' or 'Never' are the only valid options.\n      restartPolicy: OnFailure\n      containers:\n        # The container is named 'kripke' as per the exact requirement.\n      - name: kripke\n        # The image name is 'kripke', as specified by the requirements and feedback.\n        image: kripke\n        # The imagePullPolicy is set to 'Never' as requested.\n        # This requires the 'kripke' image to be present on the node beforehand.\n        imagePullPolicy: Never\n        # No resource requests or limits are set, per the explicit instruction.\n        # This gives the Pod a 'BestEffort' Quality of Service (QoS) class,\n        # allowing it to use available node resources without guarantees.\n        # The application itself is configured to use 8 threads via OMP_NUM_THREADS.\n        env:\n        - name: OMP_NUM_THREADS\n          value: \"8\"\n        # The container's default entrypoint is used with default arguments for a standard run.",
+                "total_seconds": 65.06833319200086,
+                "type": "kubernetes-job-manifest"
+            }
+        }
+    }
+]
