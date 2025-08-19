@@ -1,0 +1,19 @@
+name: Build and Deploy Laghos
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes"
+    application: kripke
+    load: true
+    max_attempts: 10
+    details: |
+      Clone the latest branch of laghos. Ensure that the laghos binary is copied to be on the PATH.
+
+- agent: kubernetes-job
+  context:
+    no_pull: true
+    environment: "google cloud CPU instance in Kubernetes" 
+    max_attempts: 10
+    details: |
+      Run laghos.
