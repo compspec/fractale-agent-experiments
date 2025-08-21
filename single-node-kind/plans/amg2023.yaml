@@ -16,5 +16,17 @@ plan:
     no_pull: true
     environment: "google cloud CPU instance in Kubernetes" 
     max_attempts: 10
+    # TODO is this the best way to define nested agent?
+    # Where do we put ranges of resources? Should it just be one 
+    # section where the user describes how to optimize?
+    optimize: "Maximize the amg2023 figure of merit"
     details: |
       Run -n 4 4 4 -P 2 1 2 -problem 2 in the pwd
+
+# Note that no regular expression is provded - we assume parsing the result from the log
+# We also assume that the log is provided as the output
+# TODO we should also save the entire plan with the output
+#- agent: optimization
+#  context:
+#    metric: "figure of merit" 
+#    direction: "maximize"
