@@ -17,6 +17,7 @@ plan:
     environment: "AWS CPU instance in Kubernetes" 
     container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
     max_attempts: 10
+    max_runtime: 300
     optimize: |
       Maximize the amg2023 figure of merit. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
