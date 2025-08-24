@@ -42,5 +42,5 @@ plan:
       Run amg with -problem 2 in the pwd. Choose -n x y z -P X Y Z 
       based on initial node resources with 24 CPU and 96 GiB Memory 
       but don't go over a problem size of 150 in any dimension. 
-      When you are optimizing use your judgment. If the pod fails 
-      and it is unclear why, it is often the problem size too big.
+      When you are optimizing use your judgment.  Keep in mind 2 
+      vCPU == logical 1 cpu, and MPI sees logical CPU
