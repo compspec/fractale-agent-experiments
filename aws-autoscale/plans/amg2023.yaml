@@ -1,0 +1,54 @@
+name: Build and Deploy AMG2023
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+
+- agent: build
+  context:
+    environment: "google cloud CPU instance in Kubernetes"
+    application: amg2023
+    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    push: true
+    max_attempts: 10
+    details: |
+      Clone the latest branch of amg2023
+
+- agent: kubernetes-job
+  context:
+    environment: "google cloud CPU instance in Kubernetes" 
+    max_attempts: 10
+    # TODO is this the best way to define nested agent?
+    # Where do we put ranges of resources? Should it just be one 
+    # section where the user describes how to optimize?
+    # TODO: need to specify the command and resource limits.
+    # If no resource limits specified - can we get from 
+    # Kubernetes?
+    optimize: |
+      Maximize the amg2023 figure of merit. The resource spec you got earlier is for an autoscaling cluster,
+      so the possible nodes are not there. For your optimization you can choose from the following instance types,
+      and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
+      choice.
+        c7a.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (AMD)
+        c6in.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (Intel)
+        r7iz.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
+        t3a.2xlarge: 8 vCPUs, 32 GiB Memory, x86_64 (AMD)
+        t3.2xlarge: 8 vCPUs, 32 GiB Memory, x86_64 (Intel)
+        m6id.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (Intel)
+        c6id.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (Intel)
+        m6i.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (Intel)
+        m6a.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (AMD)
+        c6i.16xlarge: 64 vCPUs, 128 GiB Memory, x86_64 (Intel)
+        c6a.16xlarge: 64 vCPUs, 128 GiB Memory, x86_64 (AMD)
+        r6i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
+        r6a.12xlarge: 48 vCPUs, 384 GiB Memory, x86_64 (AMD)
+        i4i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
+        d3.4xlarge: 16 vCPUs, 128 GiB Memory, x86_64 (Intel)
+    details: |
+      Run -n 8 8 8 -P 4 1 4 -problem 2 in the pwd
+
+# Note that no regular expression is provded - we assume parsing the result from the log
+# We also assume that the log is provided as the output
+# TODO we should also save the entire plan with the output
+#- agent: optimization
+#  context:
+#    metric: "figure of merit" 
+#    direction: "maximize"

@@ -19,6 +19,9 @@ plan:
     # TODO is this the best way to define nested agent?
     # Where do we put ranges of resources? Should it just be one 
     # section where the user describes how to optimize?
+    # TODO: need to specify the command and resource limits.
+    # If no resource limits specified - can we get from 
+    # Kubernetes?
     optimize: "Maximize the amg2023 figure of merit"
     details: |
       Run -n 4 4 4 -P 2 1 2 -problem 2 in the pwd
