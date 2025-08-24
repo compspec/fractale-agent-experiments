@@ -4,7 +4,7 @@ plan:
 
 - agent: build
   context:
-    environment: "google cloud CPU instance in Kubernetes"
+    environment: "AWS CPU instance in Kubernetes"
     application: amg2023
     container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
     push: true
@@ -14,19 +14,13 @@ plan:
 
 - agent: kubernetes-job
   context:
-    environment: "google cloud CPU instance in Kubernetes" 
+    environment: "AWS CPU instance in Kubernetes" 
     max_attempts: 10
-    # TODO is this the best way to define nested agent?
-    # Where do we put ranges of resources? Should it just be one 
-    # section where the user describes how to optimize?
-    # TODO: need to specify the command and resource limits.
-    # If no resource limits specified - can we get from 
-    # Kubernetes?
     optimize: |
       Maximize the amg2023 figure of merit. The resource spec you got earlier is for an autoscaling cluster,
-      so the possible nodes are not there. For your optimization you can choose from the following instance types,
+      so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
-      choice.
+      choice. You are still limited to one node.
         c7a.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (AMD)
         c6in.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (Intel)
         r7iz.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
