@@ -39,5 +39,6 @@ plan:
         d3.4xlarge: 16 vCPUs, 128 GiB Memory, x86_64 (Intel)
     details: |
       Run amg with -problem 2 in the pwd. Choose -n x y z -P X Y Z 
-      based on initial node resources with 48vCPU and when you are optimization
-      use your judgment.
+      based on initial node resources with 48 vCPU and 96 GiB Memory 
+      and when you are optimizing use your judgment. If the pod fails 
+      and it is unclear why, it is often the problem size too big.
