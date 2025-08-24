@@ -38,4 +38,6 @@ plan:
         i4i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
         d3.4xlarge: 16 vCPUs, 128 GiB Memory, x86_64 (Intel)
     details: |
-      Run -n 8 8 8 -P 4 1 4 -problem 2 in the pwd
+      Run amg with -problem 2 in the pwd. Choose -n x y z -P X Y Z 
+      based on initial node resources with 48vCPU and when you are optimization
+      use your judgment.
