@@ -1,25 +1,24 @@
-name: Build and Deploy AMG2023
+name: Build and Deploy LAMMPS
 description: Build a Docker container and deploy it as a Kubernetes Job.
 plan:
-
 - agent: build
   context:
     environment: "AWS CPU instance in Kubernetes"
-    application: amg2023
-    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    application: lammps-reax
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
     push: true
     max_attempts: 10
     details: |
-      Clone the latest branch of amg2023
+      Ensure all globbed files from examples/reaxff/HNS from the root of the lammps codebase are in the WORKDIR. Clone the latest branch of LAMMPS.
 
 - agent: minicluster
   context:
     environment: "AWS CPU instance in Kubernetes" 
-    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Maximize the amg2023 figure of merit. The resource spec you got earlier is for an autoscaling cluster,
+      Minimize the lammps wall time. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
       choice. You are still limited to one node.
@@ -39,8 +38,5 @@ plan:
         i4i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
         d3.4xlarge: 16 vCPUs, 128 GiB Memory, x86_64 (Intel)
     details: |
-      Run amg with -problem 2 in the pwd. Choose -n x y z -P X Y Z 
-      for node resources 24 CPU and 96 GiB Memory. Before you have
-      instructions to optimize you should focus on getting a small
-      problem size working. Do not oversubscribe. Keep in mind 2 
-      vCPU == logical 1 cpu, and MPI sees logical CPU
+      Run in.reaxff.hns in the pwd with /lammps/build/lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
