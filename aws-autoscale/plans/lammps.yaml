@@ -46,6 +46,8 @@ plan:
         r7g.12xlarge, 48 vCPU, 384 GiB Memory, ARM (Graviton3)
         i4i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
         d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
+      If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
     details: |
       Run in.reaxff.hns in the pwd with /lammps/build/lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
       You MUST run on only one node.
