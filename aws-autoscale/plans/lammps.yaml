@@ -49,6 +49,6 @@ plan:
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
     details: |
-      Run in.reaxff.hns in the pwd with /lammps/build/lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
+      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
       You MUST run on only one node.
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
