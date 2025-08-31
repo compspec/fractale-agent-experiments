@@ -48,6 +48,7 @@ plan:
         r7g.12xlarge, 48 vCPU, 384 GiB Memory, ARM (Graviton3)
         i4i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
         d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
+      You MUST remember that most instances map 2vCPU to 1CPU, with the exception of Graviton.       
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
     details: |

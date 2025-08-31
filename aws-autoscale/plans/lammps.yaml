@@ -3,7 +3,6 @@ description: Build a Docker container and deploy it as a Kubernetes Job.
 plan:
 - agent: build
   context:
-    # TODO need to add arm instance types
     environment: "AWS CPU instance in Kubernetes"
     application: lammps-reax
     platforms: linux/amd64,linux/arm64
@@ -46,9 +45,11 @@ plan:
         r7g.12xlarge, 48 vCPU, 384 GiB Memory, ARM (Graviton3)
         i4i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
         d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
+      You MUST remember that most instances map 2vCPU to 1CPU, with the exception of Graviton.
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      You MUST increase the problem size to -v x 8 -v y 8 -v z 8 when you are optimizing.
     details: |
       Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
-      You MUST run on only one node.
+      You MUST run on only one node. 
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
