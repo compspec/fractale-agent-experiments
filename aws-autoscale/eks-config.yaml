@@ -210,28 +210,6 @@ managedNodeGroups:
       Name: 'nfd-cluster'
     propagateASGTags: true
 
-  # AWS Inferentia2 - ML Inference
-  # ARM-based, purpose-built for deep learning inference. Adds a specialized ML instance.
-  # Requires specific Neuron SDK and compiled models.
-  - name: ng-inf2-xlarge
-    instanceType: inf2.xlarge
-    volumeSize: 20
-    volumeType: gp2
-    desiredCapacity: 0
-    minSize: 0
-    maxSize: 1
-    iam:
-      withAddonPolicies:
-        autoScaler: true
-    tags:
-      nodegroup: ng-inf2-xlarge
-      kubernetes.io/cluster/nfd-cluster: "owned"
-      k8s.io/cluster-autoscaler/enabled: "true"
-      k8s.io/cluster-autoscaler/nfd-cluster: "owned"
-      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-inf2-xlarge
-      Name: 'nfd-cluster'
-    propagateASGTags: true
-
   # ARM
   - name: ng-t4g-medium
     instanceType: t4g.2xlarge

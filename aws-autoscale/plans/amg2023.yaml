@@ -8,9 +8,11 @@ plan:
     application: amg2023
     container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
     push: true
+    platforms: linux/amd64,linux/arm64
+    platforms:
     max_attempts: 10
     details: |
-      Clone the latest branch of amg2023
+      Clone the latest branch of amg2023. You MUST put amg on the PATH.
 
 - agent: minicluster
   context:
@@ -19,28 +21,34 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Maximize the amg2023 figure of merit. The resource spec you got earlier is for an autoscaling cluster,
+      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources 24 CPU and 96 GiB Memory. To decide on the parameters
+      you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
+      across nodes, in this case, just one. If you go over it will OOM. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
       choice. You are still limited to one node.
-        c7a.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (AMD)
-        c6in.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (Intel)
-        r7iz.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
-        t3a.2xlarge: 8 vCPUs, 32 GiB Memory, x86_64 (AMD)
-        t3.2xlarge: 8 vCPUs, 32 GiB Memory, x86_64 (Intel)
-        m6id.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (Intel)
-        c6id.12xlarge: 48 vCPUs, 96 GiB Memory, x86_64 (Intel)
-        m6i.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (Intel)
-        m6a.12xlarge: 48 vCPUs, 192 GiB Memory, x86_64 (AMD)
-        c6i.16xlarge: 64 vCPUs, 128 GiB Memory, x86_64 (Intel)
-        c6a.16xlarge: 64 vCPUs, 128 GiB Memory, x86_64 (AMD)
-        r6i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
-        r6a.12xlarge: 48 vCPUs, 384 GiB Memory, x86_64 (AMD)
-        i4i.8xlarge: 32 vCPUs, 256 GiB Memory, x86_64 (Intel)
-        d3.4xlarge: 16 vCPUs, 128 GiB Memory, x86_64 (Intel)
+        c7a.12xlarge, 48 vCPU, 96 GiB Memory, AMD
+        hpc7g.16xlarge, 64 vCPU, 128 GiB Memory, ARM (Graviton3)
+        c6in.12xlarge, 48 vCPU, 96 GiB Memory, Intel
+        r7iz.8xlarge, 32 vCPU, 256 GiB Memory, Intel
+        m6g.12xlarge, 48 vCPU, 192 GiB Memory, ARM (Graviton2)
+        t3a.2xlarge, 8 vCPU, 32 GiB Memory, AMD
+        t3.2xlarge, 8 vCPU, 32 GiB Memory, Intel
+        m6id.12xlarge, 48 vCPU, 192 GiB Memory, Intel
+        c6id.12xlarge, 48 vCPU, 96 GiB Memory, Intel
+        t4g.2xlarge, 8 vCPU, 32 GiB Memory, ARM (Graviton2)
+        m6i.12xlarge, 48 vCPU, 192 GiB Memory, Intel
+        m6a.12xlarge, 48 vCPU, 192 GiB Memory, AMD
+        m7g.16xlarge, 64 vCPU, 256 GiB Memory, ARM (Graviton3)
+        c6i.16xlarge, 64 vCPU, 128 GiB Memory, Intel
+        c6a.16xlarge, 64 vCPU, 128 GiB Memory, AMD
+        c7g.16xlarge, 64 vCPU, 128 GiB Memory, ARM (Graviton3)
+        r6i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
+        r6a.12xlarge, 48 vCPU, 384 GiB Memory, AMD
+        r7g.12xlarge, 48 vCPU, 384 GiB Memory, ARM (Graviton3)
+        i4i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
+        d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
     details: |
-      Run amg with -problem 2 in the pwd. Choose -n x y z -P X Y Z 
-      for node resources 24 CPU and 96 GiB Memory. Before you have
-      instructions to optimize you should focus on getting a small
-      problem size working. Do not oversubscribe. Keep in mind 2 
-      vCPU == logical 1 cpu, and MPI sees logical CPU
+      Run amg with -problem 2 in the pwd. Keep in mind 2 vCPU == logical 1 cpu, and MPI sees logical CPU
+      If you are NOT optimizing you should focus on getting a small problem size working first. 
+      You MUST NOT oversubscribe.
