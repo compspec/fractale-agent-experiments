@@ -20,7 +20,8 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Minimize the lammps wall time. The resource spec you got earlier is for an autoscaling cluster,
+      Run in.reaxff.hns in the pwd with lmp -v x 8 -v y 8 -v z 8 -in ./in.reaxff.hns -nocite      
+      You MUST Minimize the lammps wall time. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
       choice. You are still limited to one node.
@@ -48,8 +49,8 @@ plan:
       You MUST remember that most instances map 2vCPU to 1CPU, with the exception of Graviton.
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
-      You MUST increase the problem size to -v x 8 -v y 8 -v z 8 when you are optimizing.
+    testing:
+      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite.    
     details: |
-      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
       You MUST run on only one node. 
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
