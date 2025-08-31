@@ -48,4 +48,5 @@ plan:
         d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
     details: |
       Run in.reaxff.hns in the pwd with /lammps/build/lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite
+      You MUST run on only one node.
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.

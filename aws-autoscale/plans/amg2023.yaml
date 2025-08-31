@@ -21,8 +21,8 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources 24 CPU and 96 GiB Memory. To decide on the parameters
-      you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
+      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources 24 CPU and 96 GiB Memory. You MUST run on only one node.
+      To decide on the parameters you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
       across nodes, in this case, just one. If you go over it will OOM. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
