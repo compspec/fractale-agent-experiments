@@ -9,7 +9,6 @@ plan:
     container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
     push: true
     platforms: linux/amd64,linux/arm64
-    platforms:
     max_attempts: 10
     details: |
       Clone the latest branch of amg2023. You MUST put amg on the PATH.
@@ -21,37 +20,36 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources 24 CPU and 96 GiB Memory. You MUST run on only one node.
+      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources. You MUST run on only one node.
       To decide on the parameters you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
       across nodes, in this case, just one. If you go over it will OOM. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
       and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
       choice. You are still limited to one node.
-        c7a.12xlarge, 48 vCPU, 96 GiB Memory, AMD
-        hpc7g.16xlarge, 64 vCPU, 128 GiB Memory, ARM (Graviton3)
-        c6in.12xlarge, 48 vCPU, 96 GiB Memory, Intel
-        r7iz.8xlarge, 32 vCPU, 256 GiB Memory, Intel
+        c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
+        hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        r7iz.8xlarge, 16 vCPU, 256 GiB Memory, Intel
         m6g.12xlarge, 48 vCPU, 192 GiB Memory, ARM (Graviton2)
-        t3a.2xlarge, 8 vCPU, 32 GiB Memory, AMD
-        t3.2xlarge, 8 vCPU, 32 GiB Memory, Intel
-        m6id.12xlarge, 48 vCPU, 192 GiB Memory, Intel
-        c6id.12xlarge, 48 vCPU, 96 GiB Memory, Intel
-        t4g.2xlarge, 8 vCPU, 32 GiB Memory, ARM (Graviton2)
-        m6i.12xlarge, 48 vCPU, 192 GiB Memory, Intel
-        m6a.12xlarge, 48 vCPU, 192 GiB Memory, AMD
-        m7g.16xlarge, 64 vCPU, 256 GiB Memory, ARM (Graviton3)
-        c6i.16xlarge, 64 vCPU, 128 GiB Memory, Intel
-        c6a.16xlarge, 64 vCPU, 128 GiB Memory, AMD
-        c7g.16xlarge, 64 vCPU, 128 GiB Memory, ARM (Graviton3)
-        r6i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
-        r6a.12xlarge, 48 vCPU, 384 GiB Memory, AMD
-        r7g.12xlarge, 48 vCPU, 384 GiB Memory, ARM (Graviton3)
-        i4i.8xlarge, 32 vCPU, 256 GiB Memory, Intel
-        d3.4xlarge, 16 vCPU, 128 GiB Memory, Intel
-      You MUST remember that most instances map 2vCPU to 1CPU, with the exception of Graviton.       
+        t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
+        t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
+        m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)
+        m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD
+        m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
+        c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
+        c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
+        c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD
+        r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
+        i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        d3.4xlarge, 8 CPU, 128 GiB Memory, Intel
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
-    details: |
-      Run amg with -problem 2 in the pwd. Keep in mind 2 vCPU == logical 1 cpu, and MPI sees logical CPU
+    details: | 
+      You MUST run AMG -problem 2 and choose the problem size, topology, and resources to run.
       If you are NOT optimizing you should focus on getting a small problem size working first. 
       You MUST NOT oversubscribe.
