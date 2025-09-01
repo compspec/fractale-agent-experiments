@@ -20,7 +20,7 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources. You MUST run on only one node.
+      Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources. You MUST run on only one node. The size of the MiniCluster MUST be 1.
       To decide on the parameters you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
       across nodes, in this case, just one. If you go over it will OOM. The resource spec you got earlier is for an autoscaling cluster,
       so the nodes possible are not there. For your optimization you can choose from the following instance types,
@@ -50,6 +50,6 @@ plan:
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
     details: | 
-      You MUST run on only one node.       
+      You MUST run on only one node. The size of the MiniCluster MUST be 1.
       You MUST run AMG -problem 2 and choose a small problem size for testing no greater than 10 in any dimension.
       You MUST NOT oversubscribe.
