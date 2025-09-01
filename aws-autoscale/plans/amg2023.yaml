@@ -50,6 +50,7 @@ plan:
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
     details: | 
+      You MUST run on only one node.       
       You MUST run AMG -problem 2 and choose the problem size, topology, and resources to run.
       If you are NOT optimizing you should focus on getting a small problem size working first. 
       You MUST NOT oversubscribe.
