@@ -10,7 +10,7 @@ plan:
     push: true
     max_attempts: 10
     details: |
-      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
+      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch. You will need to install library dependencies for hypre, metis, and mfem.
 
 - agent: minicluster
   context:
