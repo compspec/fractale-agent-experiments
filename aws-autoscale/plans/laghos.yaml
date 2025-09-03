@@ -8,9 +8,9 @@ plan:
     platforms: linux/amd64,linux/arm64
     container: ghcr.io/converged-computing/fractale-agent-experiments:laghos
     push: true
-    max_attempts: 10
+    max_attempts: 20
     details: |
-      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch. You will need to install library dependencies for hypre, metis, and mfem.
+      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
 
 - agent: minicluster
   context:
