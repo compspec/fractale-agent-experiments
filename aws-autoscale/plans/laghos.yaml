@@ -1,0 +1,53 @@
+name: Build and Deploy Laghos
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes"
+    application: laghos
+    platforms: linux/amd64,linux/arm64
+    container: ghcr.io/converged-computing/fractale-agent-experiments:laghos
+    push: true
+    max_attempts: 10
+    details: |
+      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:laghos
+    max_attempts: 10
+    max_runtime: 300
+    optimize: |
+      Run cube_311_hex.mesh with laghos in the pwd. You MUST maximize the Major kernels total rate (megadofs x time steps / second). The resource spec you got earlier is for an autoscaling cluster,
+      so the nodes possible are not there. For your optimization you can choose from the following instance types,
+      and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
+      choice. You are still limited to one node.
+        c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
+        hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        r7iz.8xlarge, 16 vCPU, 256 GiB Memory, Intel
+        m6g.12xlarge, 48 vCPU, 192 GiB Memory, ARM (Graviton2)
+        t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
+        t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
+        m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)
+        m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD
+        m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
+        c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
+        c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
+        c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD
+        r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
+        i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        d3.4xlarge, 8 CPU, 128 GiB Memory, Intel
+      If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+    testing:
+      Run cube_311_hex.mesh with laghos in the pwd      
+    details: |
+      You MUST run on only one node. 
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
