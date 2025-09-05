@@ -1,0 +1,536 @@
+{
+    "steps": [
+        {
+            "agent": "build",
+            "total_seconds": 421.46055988699663,
+            "result": "# Base image: Ubuntu 22.04 LTS for a stable, well-supported foundation\nFROM ubuntu:22.04\n\n# Set non-interactive frontend to avoid prompts during package installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Configure Open MPI for containerized environments like Kubernetes.\n# - Allow running as the root user, which is common in containers.\n# - Force the use of TCP for inter-process communication, as InfiniBand/RDMA is not typically available.\n# - Specify the primary network interface, usually 'eth0' in Docker/Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=^openib\nENV OMPI_MCA_btl_tcp_if_include=eth0\n\n# Install build dependencies, clone, compile the application, and clean up in a single layer\n# This approach minimizes the final image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    gfortran \\\n    git \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && \\\n    # Clone the latest version of the AMG (amg2023) source code\n    git clone https://github.com/LLNL/AMG.git /opt/amg2023 && \\\n    # FIX: Change to the project's root directory before building.\n    # The top-level Makefile correctly builds prerequisite libraries before the final executable.\n    cd /opt/amg2023 && \\\n    # Compile the entire application suite\n    make && \\\n    # Clean up to reduce image size\n    # Remove the git repository history\n    rm -rf /opt/amg2023/.git && \\\n    # Clean apt caches\n    apt-get clean && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Add the application directory to the system's PATH environment variable.\n# The 'amg' executable is located in the 'test' subdirectory after compilation.\nENV PATH=\"/opt/amg2023/test:${PATH}\"\n\n# Set a default working directory\nWORKDIR /root\n\n# Define the default command to be executed when the container starts\n# This provides a shell for interactive use or can be overridden.\nCMD [\"/bin/bash\"]",
+            "attempts": 2,
+            "metadata": {
+                "times": {
+                    "generate_dockerfile_seconds": [
+                        25.191402294003638,
+                        14.542351726995548
+                    ],
+                    "build_seconds": [
+                        17.042726395011414,
+                        339.6478091989993
+                    ],
+                    "load_seconds": [
+                        6.960006430745125e-06
+                    ],
+                    "run_step_seconds": [
+                        354.20471537002595,
+                        421.4605352660001
+                    ]
+                },
+                "assets": {
+                    "dockerfile": [
+                        {
+                            "item": "# Base image: Ubuntu 22.04 LTS for a stable, well-supported foundation\nFROM ubuntu:22.04\n\n# Set non-interactive frontend to avoid prompts during package installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Configure Open MPI for containerized environments like Kubernetes.\n# - Allow running as the root user, which is common in containers.\n# - Force the use of TCP for inter-process communication, as InfiniBand/RDMA is not typically available.\n# - Specify the primary network interface, usually 'eth0' in Docker/Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=^openib\nENV OMPI_MCA_btl_tcp_if_include=eth0\n\n# Install build dependencies, clone, compile the application, and clean up in a single layer\n# This approach minimizes the final image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    gfortran \\\n    git \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && \\\n    # Clone the latest version of the AMG (amg2023) source code\n    git clone https://github.com/LLNL/AMG.git /opt/amg2023 && \\\n    # Navigate to the test directory which contains the main Makefile\n    cd /opt/amg2023/test && \\\n    # Compile the application; the Makefile is configured to automatically use 'mpicc'\n    make && \\\n    # Clean up to reduce image size\n    # Remove the git repository history\n    rm -rf /opt/amg2023/.git && \\\n    # Clean apt caches\n    apt-get clean && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Add the application directory to the system's PATH environment variable\n# This ensures the 'amg' executable can be called directly without specifying its full path.\nENV PATH=\"/opt/amg2023/test:${PATH}\"\n\n# Set a default working directory\nWORKDIR /root\n\n# Define the default command to be executed when the container starts\n# This provides a shell for interactive use or can be overridden.\nCMD [\"/bin/bash\"]",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "# Base image: Ubuntu 22.04 LTS for a stable, well-supported foundation\nFROM ubuntu:22.04\n\n# Set non-interactive frontend to avoid prompts during package installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Configure Open MPI for containerized environments like Kubernetes.\n# - Allow running as the root user, which is common in containers.\n# - Force the use of TCP for inter-process communication, as InfiniBand/RDMA is not typically available.\n# - Specify the primary network interface, usually 'eth0' in Docker/Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=^openib\nENV OMPI_MCA_btl_tcp_if_include=eth0\n\n# Install build dependencies, clone, compile the application, and clean up in a single layer\n# This approach minimizes the final image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    gfortran \\\n    git \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && \\\n    # Clone the latest version of the AMG (amg2023) source code\n    git clone https://github.com/LLNL/AMG.git /opt/amg2023 && \\\n    # FIX: Change to the project's root directory before building.\n    # The top-level Makefile correctly builds prerequisite libraries before the final executable.\n    cd /opt/amg2023 && \\\n    # Compile the entire application suite\n    make && \\\n    # Clean up to reduce image size\n    # Remove the git repository history\n    rm -rf /opt/amg2023/.git && \\\n    # Clean apt caches\n    apt-get clean && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Add the application directory to the system's PATH environment variable.\n# The 'amg' executable is located in the 'test' subdirectory after compilation.\nENV PATH=\"/opt/amg2023/test:${PATH}\"\n\n# Set a default working directory\nWORKDIR /root\n\n# Define the default command to be executed when the container starts\n# This provides a shell for interactive use or can be overridden.\nCMD [\"/bin/bash\"]",
+                            "attempt": 1
+                        }
+                    ]
+                },
+                "retries": 0,
+                "failures": [],
+                "ask_gemini": [
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 407,
+                        "candidates_token_count": 569,
+                        "total_token_count": 3132,
+                        "time_seconds": 25.186637789011
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 2269,
+                        "candidates_token_count": 577,
+                        "total_token_count": 3929,
+                        "time_seconds": 14.538380323996535
+                    }
+                ],
+                "result": {
+                    "item": "# Base image: Ubuntu 22.04 LTS for a stable, well-supported foundation\nFROM ubuntu:22.04\n\n# Set non-interactive frontend to avoid prompts during package installation\nENV DEBIAN_FRONTEND=noninteractive\n\n# Configure Open MPI for containerized environments like Kubernetes.\n# - Allow running as the root user, which is common in containers.\n# - Force the use of TCP for inter-process communication, as InfiniBand/RDMA is not typically available.\n# - Specify the primary network interface, usually 'eth0' in Docker/Kubernetes.\nENV OMPI_ALLOW_RUN_AS_ROOT=1\nENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=^openib\nENV OMPI_MCA_btl_tcp_if_include=eth0\n\n# Install build dependencies, clone, compile the application, and clean up in a single layer\n# This approach minimizes the final image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    ca-certificates \\\n    gfortran \\\n    git \\\n    libopenmpi-dev \\\n    openmpi-bin \\\n    && \\\n    # Clone the latest version of the AMG (amg2023) source code\n    git clone https://github.com/LLNL/AMG.git /opt/amg2023 && \\\n    # FIX: Change to the project's root directory before building.\n    # The top-level Makefile correctly builds prerequisite libraries before the final executable.\n    cd /opt/amg2023 && \\\n    # Compile the entire application suite\n    make && \\\n    # Clean up to reduce image size\n    # Remove the git repository history\n    rm -rf /opt/amg2023/.git && \\\n    # Clean apt caches\n    apt-get clean && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Add the application directory to the system's PATH environment variable.\n# The 'amg' executable is located in the 'test' subdirectory after compilation.\nENV PATH=\"/opt/amg2023/test:${PATH}\"\n\n# Set a default working directory\nWORKDIR /root\n\n# Define the default command to be executed when the container starts\n# This provides a shell for interactive use or can be overridden.\nCMD [\"/bin/bash\"]",
+                    "total_seconds": 421.46054310700856,
+                    "type": "dockerfile"
+                }
+            }
+        },
+        {
+            "agent": "minicluster",
+            "total_seconds": 2032.1076291150239,
+            "result": "apiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  cleanup: false\n  containers:\n  - command: amg -problem 2 -n 10 10 10\n    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n    launcher: false\n  logging:\n    strict: true\n  size: 1\n  tasks: 1\n",
+            "attempts": 8,
+            "metadata": {
+                "times": {
+                    "generate_manifest_seconds": [
+                        19.55871809797827,
+                        15.189198660984403,
+                        16.592706352006644,
+                        14.830785054014996,
+                        17.323952386999736,
+                        11.04404115199577,
+                        13.954531761002727,
+                        18.369685023004422
+                    ],
+                    "deploy_seconds": [
+                        127.79390004300512,
+                        106.63701298797969,
+                        236.89740158099448,
+                        200.40873253697646,
+                        137.9096643050143,
+                        219.3719109959784,
+                        199.66633826799807,
+                        121.20736258599209,
+                        204.08379229699494,
+                        207.68968084201333,
+                        309.18046637199586,
+                        89.96619063199614
+                    ],
+                    "run_step_seconds": [
+                        108.34331485300208,
+                        455.016364554991,
+                        705.6669476569805,
+                        990.1618828119827,
+                        1276.0815172400034,
+                        1558.529835688998,
+                        1867.6285875650065,
+                        2032.1076006049989
+                    ]
+                },
+                "assets": {
+                    "flux-minicluster-manifest": [
+                        {
+                            "item": "# This MiniCluster manifest is designed for a single-node execution of the AMG2023 benchmark\n# on an AWS CPU-based Kubernetes environment using the Flux Operator.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  # A descriptive name for the MiniCluster instance.\n  name: amg2023-experiment-cpu\n  # As per instructions, deploy to the default namespace.\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # The total number of MPI ranks (tasks) for the job.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command to execute the AMG benchmark.\n      # -problem 2 specifies the solver to use.\n      # -n 10 10 10 sets a small problem size for testing purposes, as requested.\n      # The Flux Operator automatically wraps this command with 'flux run'.\n      command: \"AMG -problem 2 -n 10 10 10\"",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "# This MiniCluster manifest is designed for a single-node execution of the AMG2023 benchmark\n# on an AWS CPU-based Kubernetes environment using the Flux Operator.\n# This version corrects the executable name from 'AMG' to 'amg' based on debugging feedback.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  # A descriptive name for the MiniCluster instance.\n  name: amg2023-experiment-cpu\n  # As per instructions, deploy to the default namespace.\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # The total number of MPI ranks (tasks) for the job.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command to execute the amg benchmark. The executable name is 'amg' (lowercase).\n      # The error log indicated \"command not found\" for 'AMG'; this is the fix.\n      # -problem 2 specifies the solver to use.\n      # -n 10 10 10 sets a small problem size for testing purposes, as requested.\n      # The Flux Operator automatically wraps this command with 'flux run'.\n      command: \"amg -problem 2 -n 10 10 10\"",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was an Out Of Memory (OOM) error due to an excessively large\n# problem size (-n 790 790 790) that violated the user's constraints.\n# This version reverts the command, task count, and node-specific settings\n# to run a small, valid test case as originally intended.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # Corrected the number of tasks back to 1, appropriate for the small problem size.\n  # The previous value of 64 was for the oversized problem.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command is reverted to a small problem size to fix the OOM error.\n      # This respects the constraint of \"no greater than 10 in any dimension\".\n      # The processor grid (-P) argument has been removed as it's not needed for a single task.\n      command: \"amg -problem 2 -n 10 10 10\"\n\n  # The 'flux' and 'pod' sections with nodeSelector and ARM-specific flux-view image\n  # have been removed, as they were specific to the failed large-scale run and are\n  # not needed for this general-purpose, small-scale test.",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was an 'ImagePullBackOff' error. The previous manifest\n# specified an ARM-based flux-view container image and a nodeSelector for an ARM\n# instance type, but the job was scheduled on an amd64 node, causing an\n# architecture mismatch.\n# This version removes the architecture-specific 'flux' container and 'pod.nodeSelector'\n# settings to allow the job to run on the available amd64 hardware.\n# The command and task count are also set for a small, valid test case.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # Set tasks to 1, appropriate for the small problem size.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command uses a small problem size to prevent resource exhaustion and\n      # adhere to the testing constraints (\"no greater than 10 in any dimension\").\n      command: \"amg -problem 2 -n 10 10 10\"",
+                            "attempt": 3
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was an Out-of-Memory (OOM) error due to an excessively\n# large problem size (-n 325 325 325) that evicted the pod.\n# This version reverts the command to a small, valid test case as instructed.\n# The task count is also reverted to match the small problem size.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n  # The command is reverted to a small problem size to fix the OOM error.\n  # This respects the constraint of \"no greater than 10 in any dimension\".\n  # The processor grid (-P) is removed as it is not needed for a single task.\n  - command: amg -problem 2 -n 10 10 10\n    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n    # This container is a worker, not the main Flux broker.\n    launcher: false\n\n  # The flux-view image and nodeSelector are kept from the previous attempt,\n  # as the failure was due to memory, not architecture or scheduling.\n  flux:\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Pod-level specifications.\n  pod:\n    nodeSelector:\n      node.kubernetes.io/instance-type: r7g.12xlarge\n\n  # The total number of pods in the MiniCluster, set to 1 for a single-node run.\n  size: 1\n\n  # Corrected the number of tasks back to 1, which is appropriate for a small test problem.\n  # The previous value of 48 was inconsistent with the reduced problem size.\n  tasks: 1",
+                            "attempt": 4
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was a scheduling error ('FailedScheduling') because\n# the specified nodeSelector 'r7g.12xlarge' did not match any available nodes.\n# This version removes the 'pod.nodeSelector' and the architecture-specific 'flux'\n# container to allow the pod to be scheduled on any available node, resolving the error.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # Set tasks to 1, appropriate for the small problem size.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command uses a small problem size to prevent resource exhaustion and\n      # adhere to the testing constraints (\"no greater than 10 in any dimension\").\n      command: \"amg -problem 2 -n 10 10 10\"",
+                            "attempt": 5
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was an Out-of-Memory (OOM) error that caused the pod to be evicted.\n# The error was triggered by an excessively large problem size (-n 225 225 225) that\n# violated the user's constraints.\n# This version reverts the command to a small, valid test case and removes the\n# node-specific settings from the failed optimization attempt.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # Corrected the number of tasks back to 1, which is appropriate for a small test problem.\n  # The previous value of 64 was for the oversized problem.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command is reverted to a small problem size to fix the OOM error.\n      # This respects the constraint of \"no greater than 10 in any dimension\".\n      # The processor grid (-P) argument has been removed as it is not needed for a single task.\n      command: \"amg -problem 2 -n 10 10 10\"\n\n  # The 'flux' and 'pod' sections with nodeSelector and ARM-specific flux-view image\n  # have been removed. They were part of the failed large-scale run and are not\n  # needed for this general-purpose, small-scale test.",
+                            "attempt": 6
+                        },
+                        {
+                            "item": "# This manifest corrects the previous failed attempt.\n# The root cause of failure was an Out-of-Memory (OOM) error that caused the pod to be evicted.\n# The error was triggered by an excessively large problem size (-n 280 280 280) that\n# violated the user's constraints.\n# This version reverts the command to a small, valid test case and removes the\n# node-specific settings from the failed optimization attempt.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  # The total number of pods in the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n\n  # Corrected the number of tasks back to 1, which is appropriate for a small test problem.\n  # The previous value of 64 was for the oversized problem.\n  tasks: 1\n\n  # Logging settings for the Flux Operator.\n  logging:\n    # Fail the job if any log streams are not parsed correctly.\n    strict: true\n\n  # Do not delete the MiniCluster pods after the job completes to allow for log inspection.\n  cleanup: false\n\n  # Define the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This is a worker container, not the lead broker (launcher).\n      launcher: false\n      # The command is reverted to a small problem size to fix the OOM error.\n      # This respects the constraint of \"no greater than 10 in any dimension\".\n      # The processor grid (-P) argument has been removed as it is not needed for a single task.\n      command: \"amg -problem 2 -n 10 10 10\"\n\n  # The 'flux' and 'pod' sections with nodeSelector and ARM-specific flux-view image\n  # have been removed. They were part of the failed large-scale run and are not\n  # needed for this general-purpose, small-scale test.",
+                            "attempt": 7
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 17:39 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"C$0l[=9<p6?F*zYW4$oQxCR8Nd*z](J8<V(SEN+M\"\n    secret-key = \"EP2.>uK$^WU+erpzdF[*WG33>Hk8!>h^!aH&8&$s\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: AMG -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch AMG -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.415823ms\nbroker.info[0]: parent-none: join->init 0.016936ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.0s\nbroker.info[0]: rc1-success: init->quorum 1.00024s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.10063s\nflux-shell[0]: FATAL: task 0 (host amg2023-experiment-cpu-0): start failed: AMG: No such file or directory\njob.exception: type=exec severity=0 task 0 (host amg2023-experiment-cpu-0): start failed: AMG: No such file or directory\nbroker.err[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch AMG -problem 2 -n 10 10 10 Exited (rc=127) 0.5s\nbroker.info[0]: rc2-fail: run->cleanup 0.479328s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.591805s\nbroker.info[0]: children-none: shutdown->finalize 0.031765ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.3s\nbroker.info[0]: rc3-success: finalize->goodbye 0.322695s\nbroker.info[0]: goodbye: goodbye->exit 0.044239ms\n",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 17:42 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"runyNw3QFdygmONv2*T<8pzo7hF4<.eBxz-H{x@$\"\n    secret-key = \"Vkc1{IRUVvW&lP#D[4nfVwPE*zk7(@c8PEYe{J2[\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.426616ms\nbroker.info[0]: parent-none: join->init 0.013016ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.1s\nbroker.info[0]: rc1-success: init->quorum 1.12045s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100862s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (10, 10, 10)\n    (Px, Py, Pz) = (1, 1, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.000669 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000670 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.000018 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000018 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 0.049579 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.091481 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 180\nFinal Relative Residual Norm = 1.721810e-17\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 8.917600e+07\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch amg -problem 2 -n 10 10 10 Exited (rc=0) 1.8s\nbroker.info[0]: rc2-success: run->cleanup 1.78483s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.603258s\nbroker.info[0]: children-none: shutdown->finalize 0.031262ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.3s\nbroker.info[0]: rc3-success: finalize->goodbye 0.341939s\nbroker.info[0]: goodbye: goodbye->exit 0.047678ms\n",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 17:52 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"s<%KW-p7Ls!4cQ[tnBoW8HUt:G=n<wkIa7{()H6>\"\n    secret-key = \"o:rVtUvRG!J$hoG=^m^i=zsVS?NtD1Y+2d}+}&3Q\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.408342ms\nbroker.info[0]: parent-none: join->init 0.012871ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.0s\nbroker.info[0]: rc1-success: init->quorum 0.991147s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100613s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (10, 10, 10)\n    (Px, Py, Pz) = (1, 1, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.002432 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.002343 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.000019 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000018 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 0.050423 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.094605 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 180\nFinal Relative Residual Norm = 1.721810e-17\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 8.768303e+07\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch amg -problem 2 -n 10 10 10 Exited (rc=0) 1.8s\nbroker.info[0]: rc2-success: run->cleanup 1.78293s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.594658s\nbroker.info[0]: children-none: shutdown->finalize 0.033316ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.5s\nbroker.info[0]: rc3-success: finalize->goodbye 0.497932s\nbroker.info[0]: goodbye: goodbye->exit 0.044734ms\n",
+                            "attempt": 3
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  1 17:54 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"m]3?[}yw*oM5M>V>+1VNp7[ZRYecU*hY1eDrN[n<\"\n    secret-key = \"e*P@q8wweOoG0qg+en!=g[ZOaJ2H-jvj9v.EwH@M\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /root, contents include:\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 325 325 325 -P 4 4 3\nFlags for flux are -N 1 -n48  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n48   --quiet --watch amg -problem 2 -n 325 325 325 -P 4 4 3\nFlags for flux are -N 1 -n48  \nbroker.info[0]: start: none->join 0.425175ms\nbroker.info[0]: parent-none: join->init 0.017296ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.596367s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100409s\njob-manager.err[0]: jobtap: job.new: callback returned error\n",
+                            "attempt": 3
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 18:01 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"9S{OT:]cv4>]pWXgAV/M^:##IF>m*DB^kHbPt?y:\"\n    secret-key = \"veMh-ozrRrzJp]ktz=[27UryBGE<b2zc86dMZUiq\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.405552ms\nbroker.info[0]: parent-none: join->init 0.013072ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.0s\nbroker.info[0]: rc1-success: init->quorum 0.958678s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100611s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (10, 10, 10)\n    (Px, Py, Pz) = (1, 1, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.000557 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000557 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.000011 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000011 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 0.043147 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.083555 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 180\nFinal Relative Residual Norm = 1.721810e-17\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.024694e+08\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch amg -problem 2 -n 10 10 10 Exited (rc=0) 1.8s\nbroker.info[0]: rc2-success: run->cleanup 1.8398s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.738753s\nbroker.info[0]: children-none: shutdown->finalize 0.034596ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.4s\nbroker.info[0]: rc3-success: finalize->goodbye 0.4492s\nbroker.info[0]: goodbye: goodbye->exit 0.053245ms\n",
+                            "attempt": 5
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  1 18:04 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"kU+BiVxI%oy86rRyt4]?{Wvc8PGp328><XQb9y2&\"\n    secret-key = \"CDAk<kAsvJeT&J}qslZiucSl0:?b673t3PSwxO72\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /root, contents include:\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 225 225 225 -P 4 4 4\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 225 225 225 -P 4 4 4\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.418393ms\nbroker.info[0]: parent-none: join->init 0.01731ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.596802s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100308s\njob-manager.err[0]: jobtap: job.new: callback returned error\n",
+                            "attempt": 5
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 18:05 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"@Y}&esTu+VKQHE-&{Ow.HuOyExW^6vMlNAb/4!<Y\"\n    secret-key = \"RlI5!re>xFxJ9p#5A<oIyZ+pUUef%@>7k}T*9I+p\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.428491ms\nbroker.info[0]: parent-none: join->init 0.296544ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.2s\nbroker.info[0]: rc1-success: init->quorum 1.15645s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100772s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (10, 10, 10)\n    (Px, Py, Pz) = (1, 1, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.000525 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000525 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.000014 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000014 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 0.044341 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.085506 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 180\nFinal Relative Residual Norm = 1.721810e-17\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 9.971040e+07\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch amg -problem 2 -n 10 10 10 Exited (rc=0) 1.8s\nbroker.info[0]: rc2-success: run->cleanup 1.84069s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.627447s\nbroker.info[0]: children-none: shutdown->finalize 0.035091ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.4s\nbroker.info[0]: rc3-success: finalize->goodbye 0.385707s\nbroker.info[0]: goodbye: goodbye->exit 0.047794ms\n",
+                            "attempt": 6
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  1 18:08 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"DN(?M=3ZV@JC!(HbG>1*J*R1{02hyfyHL<xXBLCQ\"\n    secret-key = \"G{)]OHUBLRv>9=2AFwpiI^P]L/yc}$S3q/1-Twtm\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /root, contents include:\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 280 280 280 -P 4 4 4\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 280 280 280 -P 4 4 4\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.448945ms\nbroker.info[0]: parent-none: join->init 0.016866ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.594804s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100323s\njob-manager.err[0]: jobtap: job.new: callback returned error\n",
+                            "attempt": 6
+                        },
+                        {
+                            "item": "Defaulted container \"amg2023-experiment-cpu\" out of: amg2023-experiment-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /opt/amg2023/test:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  1 18:11 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg2023-experiment-cpu-0\"\ncurve\n    public-key = \"pnEEIwf+$Of.y0{Xv+v4Fh<4#D8!gmZ}R&.B8$L5\"\n    secret-key = \"QX@7P+YWI!Yy2U?rv-Qb7)U*Fm$skjD]<X:dq{&2\"\n\ud83d\udc4b Hello, I'm amg2023-experiment-cpu-0\nThe main host is amg2023-experiment-cpu-0\nThe working directory is /opt, contents include:\namg2023  software\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n1   --quiet --watch amg -problem 2 -n 10 10 10\nFlags for flux are -N 1 -n1  \nbroker.info[0]: start: none->join 0.449518ms\nbroker.info[0]: parent-none: join->init 0.013012ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.1s\nbroker.info[0]: rc1-success: init->quorum 1.06682s\nbroker.info[0]: online: amg2023-experiment-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100823s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (10, 10, 10)\n    (Px, Py, Pz) = (1, 1, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.000660 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000661 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.000017 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.000017 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 0.049324 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.092754 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 180\nFinal Relative Residual Norm = 1.721810e-17\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 8.963674e+07\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n1 --quiet --watch amg -problem 2 -n 10 10 10 Exited (rc=0) 1.9s\nbroker.info[0]: rc2-success: run->cleanup 1.89054s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.844309s\nbroker.info[0]: children-none: shutdown->finalize 0.044147ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.4s\nbroker.info[0]: rc3-success: finalize->goodbye 0.354863s\nbroker.info[0]: goodbye: goodbye->exit 0.051899ms\n",
+                            "attempt": 7
+                        }
+                    ],
+                    "optimize": {
+                        "times": {
+                            "run_seconds": [
+                                69.49435278901365,
+                                28.690343521011528,
+                                35.057088321016636,
+                                41.10293425398413,
+                                50.79908792200149
+                            ]
+                        },
+                        "assets": {
+                            "updates": [
+                                {
+                                    "decision": "RETRY",
+                                    "reason": "The previous attempt had a figure of merit of 8.9e7, which is low due to using a minimal problem size (10x10x10) on a single task. This run was not resource-optimized. This new attempt scales up significantly by selecting a large, modern, memory-bandwidth-optimized instance (m7g.16xlarge) and configuring the problem to use all 64 cores and fill a substantial portion of the node's 256 GiB memory, which should yield a much higher figure of merit.",
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg2023-experiment-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "cleanup": false,
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "logging": {
+                                                "strict": true
+                                            },
+                                            "flux": {
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "command": "amg -problem 2 -n 790 790 790 -P 4 4 4",
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "launcher": false
+                                                }
+                                            ],
+                                            "pod": {
+                                                "spec": {
+                                                    "nodeSelector": {
+                                                        "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "decision": "RETRY",
+                                    "reason": "The previous figure of merit was extremely low, indicating the run was not resource-optimized and likely failed due to a severe overestimation of available memory for the chosen problem size. This new attempt selects a high-memory instance (r7g.12xlarge) with a correctly calculated, large problem size that is designed to fit within its 384 GiB of memory while utilizing all 48 CPU cores. This should result in a significantly higher and more representative figure of merit.",
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg2023-experiment-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "cleanup": false,
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "logging": {
+                                                "strict": true
+                                            },
+                                            "flux": {
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "command": "amg -problem 2 -n 325 325 325 -P 4 4 3",
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "launcher": false
+                                                }
+                                            ],
+                                            "pod": {
+                                                "spec": {
+                                                    "nodeSelector": {
+                                                        "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "decision": "RETRY",
+                                    "reason": "The previous figure of merit of 1.02e8 shows improvement, but is still suboptimal. This attempt targets a compute-optimized 'hpc7g.16xlarge' instance with 64 modern Graviton3 cores. The problem size has been recalculated to fully utilize all 64 cores while fitting within the 128 GiB memory, which should leverage the increased parallelism and superior memory bandwidth of the HPC-focused instance to achieve a significantly higher figure of merit.",
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg2023-experiment-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "cleanup": false,
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "logging": {
+                                                "strict": true
+                                            },
+                                            "flux": {
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "command": "amg -problem 2 -n 225 225 225 -P 4 4 4",
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "launcher": false
+                                                }
+                                            ],
+                                            "pod": {
+                                                "spec": {
+                                                    "nodeSelector": {
+                                                        "node.kubernetes.io/instance-type": "hpc7g.16xlarge"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "decision": "RETRY",
+                                    "reason": "Previous attempts show a strong correlation between figure of merit and total problem size. The last attempt on hpc7g.16xlarge was memory-constrained (128 GiB), leading to a smaller problem and a lower score (9.97e7) than the run before it (1.02e8). This attempt selects the m7g.16xlarge instance, which provides both a high core count (64) and ample memory (256 GiB). The problem is sized to fully utilize all cores while fitting in memory, which should outperform previous runs.",
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg2023-experiment-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "cleanup": false,
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "logging": {
+                                                "strict": true
+                                            },
+                                            "flux": {
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "command": "amg -problem 2 -n 280 280 280 -P 4 4 4",
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "launcher": false
+                                                }
+                                            ],
+                                            "pod": {
+                                                "spec": {
+                                                    "nodeSelector": {
+                                                        "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "decision": "STOP",
+                                    "reason": "After multiple attempts, the figure of merit peaked at 1.02e8 on a high-memory r7g.12xlarge instance but subsequent attempts failed to improve, indicating we have likely reached the performance limit for a single node with the available instance types. The inconsistent results suggest that simply increasing problem size is not sufficient and further optimization is unlikely without more advanced changes beyond instance selection and parameter tuning.",
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg2023-experiment-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "cleanup": false,
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "logging": {
+                                                "strict": true
+                                            },
+                                            "flux": {
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "command": "amg -problem 2 -n 1320 1320 1320 -P 4 4 3",
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "launcher": false
+                                                }
+                                            ],
+                                            "pod": {
+                                                "spec": {
+                                                    "nodeSelector": {
+                                                        "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "regex-attempts": [
+                                1,
+                                1,
+                                1,
+                                1,
+                                1
+                            ]
+                        },
+                        "retries": 0,
+                        "failures": [],
+                        "optimize_attempts": 5,
+                        "foms": [
+                            "8.917600e+07",
+                            "8.768303e+07",
+                            "1.024694e+08",
+                            "9.971040e+07",
+                            "8.963674e+07"
+                        ]
+                    }
+                },
+                "retries": 0,
+                "failures": [],
+                "ask_gemini": [
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 2490,
+                        "candidates_token_count": 369,
+                        "total_token_count": 4428,
+                        "time_seconds": 18.664241412014235
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 3457,
+                        "candidates_token_count": 425,
+                        "total_token_count": 5342,
+                        "time_seconds": 15.18352050500107
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 4762,
+                        "candidates_token_count": 449,
+                        "total_token_count": 7146,
+                        "time_seconds": 20.95662843401078
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 6109,
+                        "candidates_token_count": 474,
+                        "total_token_count": 7744,
+                        "time_seconds": 16.585376173985424
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 7339,
+                        "candidates_token_count": 405,
+                        "total_token_count": 8808,
+                        "time_seconds": 14.824122038000496
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 8624,
+                        "candidates_token_count": 452,
+                        "total_token_count": 10020,
+                        "time_seconds": 12.860133978014346
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 9987,
+                        "candidates_token_count": 517,
+                        "total_token_count": 11810,
+                        "time_seconds": 17.316853055002866
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 11453,
+                        "candidates_token_count": 365,
+                        "total_token_count": 12505,
+                        "time_seconds": 11.036385746992892
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 12699,
+                        "candidates_token_count": 453,
+                        "total_token_count": 13648,
+                        "time_seconds": 9.088632272003451
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 14011,
+                        "candidates_token_count": 488,
+                        "total_token_count": 15395,
+                        "time_seconds": 13.947603346023243
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 15379,
+                        "candidates_token_count": 452,
+                        "total_token_count": 17649,
+                        "time_seconds": 21.592199283011723
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 16602,
+                        "candidates_token_count": 488,
+                        "total_token_count": 18467,
+                        "time_seconds": 18.3632751640107
+                    }
+                ],
+                "result": {
+                    "item": "apiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg2023-experiment-cpu\n  namespace: default\nspec:\n  cleanup: false\n  containers:\n  - command: amg -problem 2 -n 10 10 10\n    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n    launcher: false\n  logging:\n    strict: true\n  size: 1\n  tasks: 1\n",
+                    "total_seconds": 2032.1076098170015,
+                    "type": "flux-minicluster-manifest"
+                }
+            }
+        }
+    ],
+    "manager": {
+        "name": "Build and Deploy AMG2023",
+        "description": "Build a Docker container and deploy it as a Kubernetes Job.",
+        "plan": [
+            {
+                "agent": "build",
+                "context": {
+                    "environment": "AWS CPU instance in Kubernetes",
+                    "application": "amg2023",
+                    "container": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                    "push": true,
+                    "platforms": "linux/amd64,linux/arm64",
+                    "max_attempts": 10,
+                    "details": "Clone the latest branch of amg2023. You MUST put amg on the PATH.\n"
+                }
+            },
+            {
+                "agent": "minicluster",
+                "context": {
+                    "environment": "AWS CPU instance in Kubernetes",
+                    "container": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                    "max_attempts": 10,
+                    "max_runtime": 300,
+                    "optimize": "Maximize the amg2023 figure of merit. Choose -n <nx> <ny> <nz> -P <P> <Q> <R> for node resources. You MUST run on only one node. The size of the MiniCluster MUST be 1.\nTo decide on the parameters you MUST multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory\nacross nodes, in this case, just one. If you go over it will OOM. The resource spec you got earlier is for an autoscaling cluster,\nso the nodes possible are not there. For your optimization you can choose from the following instance types,\nand you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your\nchoice. You are still limited to one node.\n  c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD\n  hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)\n  c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel\n  r7iz.8xlarge, 16 vCPU, 256 GiB Memory, Intel\n  m6g.12xlarge, 48 vCPU, 192 GiB Memory, ARM (Graviton2)\n  t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD\n  t3.2xlarge, 4 CPU, 32 GiB Memory, Intel\n  m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel\n  c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel\n  t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)\n  m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel\n  m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD\n  m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)\n  c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel\n  c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD\n  c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)\n  r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel\n  r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD\n  r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)\n  i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel\n  d3.4xlarge, 8 CPU, 128 GiB Memory, Intel\nIf you choose an ARM (Graviton) instance you MUST change the flux.container.image to be\nghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.\n",
+                    "details": "You MUST run on only one node. The size of the MiniCluster MUST be 1.\nYou MUST run AMG -problem 2 and choose a small problem size for testing no greater than 10 in any dimension.\nYou MUST NOT oversubscribe.\n"
+                }
+            }
+        ],
+        "goal": "Use provided agents to finish the plan"
+    }
+}

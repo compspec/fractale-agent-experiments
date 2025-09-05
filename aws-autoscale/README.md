@@ -15,6 +15,12 @@ Install the autoscaler:
 kubectl apply -f eks-autoscaler.yaml
 ```
 
+Install the flux operator:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator.yaml
+```
+
 ## 2. AMG2023
 
 ```bash
@@ -25,9 +31,6 @@ for i in seq(1 10)
   fractale agent --plan ./plans/amg2023.yaml --results $outdir --incremental
 done
 ```
-
-
-
 
 When you are done:
 
