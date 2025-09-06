@@ -49,7 +49,7 @@ done
 ```bash
 outdir=./results/lammps-2
 mkdir -p $outdir
-for i in seq(1 10)
+for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/lammps.yaml --results $outdir --incremental
 done

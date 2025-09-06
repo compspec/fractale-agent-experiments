@@ -20,10 +20,9 @@ plan:
     max_runtime: 300
     optimize: |
       Run in.reaxff.hns in the pwd with lmp -v x 8 -v y 8 -v z 8 -in ./in.reaxff.hns -nocite      
-      You MUST minimize the lammps wall time. The resource spec you got earlier is for an autoscaling cluster,
-      so the nodes possible are not there. For your optimization you can choose from the following instance types,
-      and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
-      choice. You are still limited to one node.
+      You MUST minimize the lammps wall time. 
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel

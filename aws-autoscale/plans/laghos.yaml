@@ -19,10 +19,9 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Run cube_311_hex.mesh with laghos in the pwd. You MUST maximize the Major kernels total rate (megadofs x time steps / second). You can add additional parameters to achieve that goal. The resource spec you got earlier is for an autoscaling cluster,
-      so the nodes possible are not there. For your optimization you can choose from the following instance types,
-      and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
-      choice. You are still limited to one node.
+      Run cube_311_hex.mesh with laghos in the pwd. You MUST maximize the Major kernels total rate (megadofs x time steps / second). You can add additional parameters to achieve that goal. 
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
