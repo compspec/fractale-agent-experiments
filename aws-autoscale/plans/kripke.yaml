@@ -10,7 +10,7 @@ plan:
     push: true
     max_attempts: 10
     details: |
-      Build kripke from its main branch and ensure it is on the path.
+      Build kripke from its main branch. You MUST have MPI support enabled. You MUST ensure it is on the path.
 
 - agent: minicluster
   context:

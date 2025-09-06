@@ -10,7 +10,7 @@ plan:
     push: true
     max_attempts: 20
     details: |
-      Ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
+      You MUST build the parallel version of Laghos. You MUST use MFEM_USE_MPI=yes. You MUST ensure that mfem is built with parallel MPI-enabled mode. You MUST ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
 
 - agent: minicluster
   context:
