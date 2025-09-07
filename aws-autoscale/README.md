@@ -24,9 +24,9 @@ kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/
 ## 2. AMG2023
 
 ```bash
-outdir=./results/amg2023
+outdir=./results/amg2023-2
 mkdir -p $outdir
-for i in seq(1 10)
+for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/amg2023.yaml --results $outdir --incremental
 done
@@ -37,12 +37,11 @@ done
 ```bash
 outdir=./results/kripke-2
 mkdir -p $outdir
-for i in seq(1 10)
+for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/kripke.yaml --results $outdir --incremental
 done
 ```
-
 
 ## 4. LAMMPS
 
@@ -52,6 +51,17 @@ mkdir -p $outdir
 for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/lammps.yaml --results $outdir --incremental
+done
+```
+
+## 5. Laghos
+
+```bash
+outdir=./results/laghos-2
+mkdir -p $outdir
+for i in $(seq 1 10)
+  do
+  fractale agent --plan ./plans/laghos.yaml --results $outdir --incremental
 done
 ```
 

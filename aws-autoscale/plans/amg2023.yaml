@@ -20,7 +20,7 @@ plan:
     max_attempts: 10
     max_runtime: 600
     optimize: |
-      Maximize the amg2023 figure of merit. Start with -n 32 32 32 -P <P> <Q> <R> and find optimal node resources. 
+      Maximize the amg2023 figure of merit. Start with -n 4 4 4 -P <P> <Q> <R> and find optimal node resources. 
       Then SLOWLY increase the problem size, one dimension at a time, by a small percentage to try to increase the FOM.
       The size of the MiniCluster MUST be 1. Tasks MUST be at least 4.
       To change the parameters you can multiply out 3 -P coordinates by 3 -n parameters and multiple by 64 bits to get a global problem size. The global problem size must fit in memory
