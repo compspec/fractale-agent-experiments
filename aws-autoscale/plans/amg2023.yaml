@@ -52,6 +52,7 @@ plan:
         d3.4xlarge, 8 CPU, 128 GiB Memory, Intel 
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
     testing: |
       You MUST run AMG -problem 2. For testing choose a small problem size no greater than 4 in any dimension.    
       If you see a nodeSelector and larger size in the manifest it is OK to keep that and try to debug the issue.
