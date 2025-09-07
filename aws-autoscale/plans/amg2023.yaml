@@ -21,17 +21,19 @@ plan:
     max_runtime: 600
     optimize: |
       Maximize the amg2023 figure of merit. 
-      You MUST maximize memory per CPU core .
-      You MUST start with -n 8 8 8 -P <P> <Q> <R> and find optimal node resources.
-      YOU MUST SLOWLY increase the problem size, one dimension at a time, by an increment no more than double the current to increase the FOM.
+      You MUST maximize memory per CPU core. More cores are better.
+      YOU MUST SLOWLY increase the problem size, one dimension at a time, by an increment no more than double the current to increase the FOM. A timeout may not require a smaller problem size but rather a different instance.
+      A previous run example that has worked well:
+        amg -problem 2 -n 128 128 128 -P 8 4 1 on m7g.16xlarge with FOM 8.039496e+08
       The size of the MiniCluster MUST be 1. Tasks MUST be at least 4.
+      To reduce noise in logging, you can set logging.quiet to true.
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
-        r7iz.8xlarge, 16 vCPU, 256 GiB Memory, Intel
-        m6g.12xlarge, 48 vCPU, 192 GiB Memory, ARM (Graviton2)
+        r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        m6g.12xlarge, 48 CPU, 192 GiB Memory, ARM (Graviton2)
         t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
         t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
         m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
