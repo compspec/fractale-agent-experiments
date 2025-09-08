@@ -19,8 +19,9 @@ plan:
     max_attempts: 10
     max_runtime: 300
     optimize: |
-      Run in.reaxff.hns in the pwd with lmp -v x 8 -v y 8 -v z 8 -in ./in.reaxff.hns -nocite      
-      You MUST maximize the FOM, the M-atom steps per second.
+      Run in.reaxff.hns in the pwd with lmp -v x X -v y Y -v z Z -in ./in.reaxff.hns -nocite      
+      You MUST choose parameters for lammps that will run in 300 seconds.
+      You MUST maximize the FOM, the M-atom or k-atom steps per second.
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
