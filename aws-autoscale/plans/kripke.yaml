@@ -10,7 +10,7 @@ plan:
     push: true
     max_attempts: 10
     details: |
-      Build kripke from its main branch and ensure it is on the path.
+      Build kripke from its main branch. You MUST have MPI support enabled. You MUST ensure it is on the path.
 
 - agent: minicluster
   context:
@@ -20,10 +20,8 @@ plan:
     max_runtime: 300
     optimize: |
       Run Kripke. You MUST maximize the final reported Grind Time Figure of Merit. Change parameters as you need.     
-      The resource spec you got earlier is for an autoscaling cluster,
-      so the nodes possible are not there. For your optimization you can choose from the following instance types,
-      and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your
-      choice. You are still limited to one node.
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
@@ -47,6 +45,7 @@ plan:
         d3.4xlarge, 8 CPU, 128 GiB Memory, Intel
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
     testing:
       Run kripke
     details: |
