@@ -1,0 +1,1033 @@
+{
+    "steps": [
+        {
+            "agent": "build",
+            "total_seconds": 435.2061952530057,
+            "result": "# Use a standard Ubuntu base image suitable for CPU-based HPC workloads.\nFROM ubuntu:22.04\n\n# Set this environment variable to prevent interactive prompts during package installation.\nARG DEBIAN_FRONTEND=noninteractive\n\n# Install essential build tools, compilers, Git, OpenMPI, and certificates.\n# OpenMPI is the MPI implementation used for this build.\n# We clean up the apt cache in the same layer to reduce image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    gfortran \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for containerized environments like Kubernetes.\n# These settings help prevent common errors related to process binding,\n# network interface selection (disabling InfiniBand which is not present),\n# and shared memory mechanisms within containers.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_plm_rsh_agent=ssh\nENV OMPI_MCA_orte_default_hostfile=/dev/null\nENV OMPI_MCA_rmaps_base_oversubscribe=1\nENV OMPI_MCA_hwloc_base_binding_policy=none\n\n# Set a working directory for the build process.\nWORKDIR /build\n\n# Clone the latest branch of the amg2023 (LLNL AMG) repository.\n# CORRECTION: Run 'make' from the repository root to build all required library\n# dependencies before building the final test executable.\n# Then, copy the executable from its location in 'test/' to a system-wide PATH,\n# and clean up the source code to keep the final image lean.\nRUN git clone https://github.com/llnl/amg.git && \\\n    cd amg && \\\n    make && \\\n    cp test/amg /usr/local/bin/amg && \\\n    cd / && \\\n    rm -rf /build/amg\n\n# Reset the working directory to a neutral location.\nWORKDIR /\n\n# Provide a default command. Running the application with '-h' will display its help/usage info.\nCMD [\"amg\", \"-h\"]",
+            "attempts": 2,
+            "metadata": {
+                "times": {
+                    "generate_dockerfile_seconds": [
+                        25.91277777601499,
+                        14.203547346027335
+                    ],
+                    "build_seconds": [
+                        2.3004840970097575,
+                        369.9930176769849
+                    ],
+                    "load_seconds": [
+                        7.953000022098422e-06
+                    ],
+                    "run_step_seconds": [
+                        384.20988218399,
+                        435.206169453013
+                    ]
+                },
+                "assets": {
+                    "dockerfile": [
+                        {
+                            "item": "# Use a standard Ubuntu base image suitable for CPU-based HPC workloads.\nFROM ubuntu:22.04\n\n# Set this environment variable to prevent interactive prompts during package installation.\nARG DEBIAN_FRONTEND=noninteractive\n\n# Install essential build tools, compilers, Git, OpenMPI, and certificates.\n# OpenMPI is the MPI implementation used for this build.\n# We clean up the apt cache in the same layer to reduce image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    gfortran \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for containerized environments like Kubernetes.\n# These settings help prevent common errors related to process binding,\n# network interface selection (disabling InfiniBand which is not present),\n# and shared memory mechanisms within containers.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_plm_rsh_agent=ssh\nENV OMPI_MCA_orte_default_hostfile=/dev/null\nENV OMPI_MCA_rmaps_base_oversubscribe=1\nENV OMPI_MCA_hwloc_base_binding_policy=none\n\n# Set a working directory for the build process.\nWORKDIR /build\n\n# Clone the latest branch of the amg2023 (LLNL AMG) repository,\n# compile the application, copy the executable to a system-wide PATH location,\n# and then clean up the source code to keep the final image lean.\nRUN git clone https://github.com/llnl/amg.git && \\\n    cd amg/test && \\\n    make && \\\n    cp amg /usr/local/bin/amg && \\\n    cd / && \\\n    rm -rf /build/amg\n\n# Reset the working directory to a neutral location.\nWORKDIR /\n\n# Provide a default command. Running the application with '-h' will display its help/usage info.\nCMD [\"amg\", \"-h\"]",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "# Use a standard Ubuntu base image suitable for CPU-based HPC workloads.\nFROM ubuntu:22.04\n\n# Set this environment variable to prevent interactive prompts during package installation.\nARG DEBIAN_FRONTEND=noninteractive\n\n# Install essential build tools, compilers, Git, OpenMPI, and certificates.\n# OpenMPI is the MPI implementation used for this build.\n# We clean up the apt cache in the same layer to reduce image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    gfortran \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for containerized environments like Kubernetes.\n# These settings help prevent common errors related to process binding,\n# network interface selection (disabling InfiniBand which is not present),\n# and shared memory mechanisms within containers.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_plm_rsh_agent=ssh\nENV OMPI_MCA_orte_default_hostfile=/dev/null\nENV OMPI_MCA_rmaps_base_oversubscribe=1\nENV OMPI_MCA_hwloc_base_binding_policy=none\n\n# Set a working directory for the build process.\nWORKDIR /build\n\n# Clone the latest branch of the amg2023 (LLNL AMG) repository.\n# CORRECTION: Run 'make' from the repository root to build all required library\n# dependencies before building the final test executable.\n# Then, copy the executable from its location in 'test/' to a system-wide PATH,\n# and clean up the source code to keep the final image lean.\nRUN git clone https://github.com/llnl/amg.git && \\\n    cd amg && \\\n    make && \\\n    cp test/amg /usr/local/bin/amg && \\\n    cd / && \\\n    rm -rf /build/amg\n\n# Reset the working directory to a neutral location.\nWORKDIR /\n\n# Provide a default command. Running the application with '-h' will display its help/usage info.\nCMD [\"amg\", \"-h\"]",
+                            "attempt": 1
+                        }
+                    ]
+                },
+                "failures": [],
+                "counts": {
+                    "retries": 0,
+                    "return_to_manager": 0,
+                    "return_to_human": 0
+                },
+                "ask_gemini": [
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 411,
+                        "candidates_token_count": 512,
+                        "total_token_count": 3402,
+                        "time_seconds": 25.907959717995254
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 1938,
+                        "candidates_token_count": 543,
+                        "total_token_count": 3937,
+                        "time_seconds": 14.199677226977656
+                    }
+                ],
+                "result": {
+                    "item": "# Use a standard Ubuntu base image suitable for CPU-based HPC workloads.\nFROM ubuntu:22.04\n\n# Set this environment variable to prevent interactive prompts during package installation.\nARG DEBIAN_FRONTEND=noninteractive\n\n# Install essential build tools, compilers, Git, OpenMPI, and certificates.\n# OpenMPI is the MPI implementation used for this build.\n# We clean up the apt cache in the same layer to reduce image size.\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends \\\n    build-essential \\\n    gfortran \\\n    git \\\n    make \\\n    openmpi-bin \\\n    libopenmpi-dev \\\n    ca-certificates && \\\n    rm -rf /var/lib/apt/lists/*\n\n# Configure OpenMPI for containerized environments like Kubernetes.\n# These settings help prevent common errors related to process binding,\n# network interface selection (disabling InfiniBand which is not present),\n# and shared memory mechanisms within containers.\nENV OMPI_MCA_btl_vader_single_copy_mechanism=none\nENV OMPI_MCA_btl=tcp,self\nENV OMPI_MCA_plm_rsh_agent=ssh\nENV OMPI_MCA_orte_default_hostfile=/dev/null\nENV OMPI_MCA_rmaps_base_oversubscribe=1\nENV OMPI_MCA_hwloc_base_binding_policy=none\n\n# Set a working directory for the build process.\nWORKDIR /build\n\n# Clone the latest branch of the amg2023 (LLNL AMG) repository.\n# CORRECTION: Run 'make' from the repository root to build all required library\n# dependencies before building the final test executable.\n# Then, copy the executable from its location in 'test/' to a system-wide PATH,\n# and clean up the source code to keep the final image lean.\nRUN git clone https://github.com/llnl/amg.git && \\\n    cd amg && \\\n    make && \\\n    cp test/amg /usr/local/bin/amg && \\\n    cd / && \\\n    rm -rf /build/amg\n\n# Reset the working directory to a neutral location.\nWORKDIR /\n\n# Provide a default command. Running the application with '-h' will display its help/usage info.\nCMD [\"amg\", \"-h\"]",
+                    "total_seconds": 435.2061773559835,
+                    "type": "dockerfile"
+                }
+            }
+        },
+        {
+            "agent": "minicluster",
+            "total_seconds": 6702.418040565972,
+            "result": "apiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg-minicluster-aws-cpu\n  namespace: default\nspec:\n  cleanup: false\n  containers:\n  - command: amg -problem 2 -n 128 128 128 -P 8 6 1\n    environment:\n      OMPI_MCA_btl_vader_single_copy_mechanism: cma\n      OMP_NUM_THREADS: '1'\n    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n    launcher: false\n  flux:\n    arch: arm\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n  logging:\n    quiet: true\n  pod:\n    nodeSelector:\n      node.kubernetes.io/instance-type: r7g.12xlarge\n  size: 1\n  tasks: 48\n",
+            "attempts": 5,
+            "metadata": {
+                "times": {
+                    "generate_manifest_seconds": [
+                        19.58258858899353,
+                        11.793988391000312,
+                        18.247931246994995,
+                        14.309336595993955,
+                        16.86864877399057
+                    ],
+                    "deploy_seconds": [
+                        127.81196042799274,
+                        106.11804567297804,
+                        798.3114959310042,
+                        584.8494312469848,
+                        1108.3627261099755,
+                        1553.6747685649898,
+                        1945.415604962007,
+                        2350.8469901139906,
+                        2866.955738677003,
+                        3290.950004571001,
+                        3614.8867135200126,
+                        3878.3659330100054,
+                        4089.217136143998,
+                        4251.196035742003,
+                        4385.955407428992,
+                        4568.087647409993,
+                        533.8086562080134,
+                        485.4182769920153
+                    ],
+                    "run_step_seconds": [
+                        502.29484170500655,
+                        1099.3170786759874,
+                        5708.413543761009,
+                        6541.710721906013,
+                        6702.418009285
+                    ]
+                },
+                "assets": {
+                    "flux-minicluster-manifest": [
+                        {
+                            "item": "# This MiniCluster manifest is designed to run the AMG benchmark on a single AWS CPU instance within Kubernetes.\n# It is configured for a small-scale test run.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  # A descriptive name for the MiniCluster instance.\n  name: amg-minicluster-aws-cpu\n  # The Kubernetes namespace where the MiniCluster will be deployed.\n  namespace: default\nspec:\n  # The total number of pods to create for the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n  # The total number of MPI tasks to run. This should match the number of processes requested by the application.\n  tasks: 4\n\n  # When set to false, the pods and services are not deleted after the job completes.\n  # This is useful for debugging and inspecting logs.\n  cleanup: false\n\n  # Specifies the logging verbosity and behavior for the Flux Operator.\n  logging:\n    # Strict mode ensures that any logging-related errors will cause the job to fail.\n    strict: true\n\n  # Defines the container(s) that will run as part of the MiniCluster.\n  # For this job, we only need one container definition.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This container is a worker, not a launcher. The Flux Operator will inject the flux broker and run the command.\n      launcher: false\n      # The command to execute within the container.\n      # The Flux Operator will automatically wrap this with 'flux run'.\n      # -problem 2: Specifies the AMG benchmark problem type.\n      # -n 4 4 4: Sets a small problem size (4x4x4 grid) for testing purposes.\n      # -np 4: Specifies that 4 MPI processes should be used, matching the 'tasks' field above.\n      command: AMG -problem 2 -n 4 4 4 -np 4",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "# This corrected MiniCluster manifest runs the AMG benchmark on a single AWS CPU instance.\n# The primary fix is correcting the command from 'AMG' to 'amg' to match the case-sensitive executable name in the container.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  # A descriptive name for the MiniCluster instance.\n  name: amg-minicluster-aws-cpu\n  # The Kubernetes namespace where the MiniCluster will be deployed.\n  namespace: default\nspec:\n  # The total number of pods to create for the MiniCluster. Set to 1 for a single-node run.\n  size: 1\n  # The total number of MPI tasks to run. This should match the number of processes requested by the application.\n  tasks: 4\n\n  # When set to false, the pods and services are not deleted after the job completes.\n  # This is useful for debugging and inspecting logs.\n  cleanup: false\n\n  # Specifies the logging verbosity and behavior for the Flux Operator.\n  logging:\n    # Strict mode ensures that any logging-related errors will cause the job to fail.\n    strict: true\n\n  # Defines the container(s) that will run as part of the MiniCluster.\n  # For this job, we only need one container definition.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # This container is a worker, not a launcher. The Flux Operator will inject the flux broker and run the command.\n      launcher: false\n      # The command to execute within the container, corrected to use the lowercase 'amg'.\n      # The Flux Operator will automatically wrap this with 'flux run'.\n      # -problem 2: Specifies the AMG benchmark problem type.\n      # -n 4 4 4: Sets a small problem size (4x4x4 grid) for testing purposes.\n      # -np 4: Specifies that 4 MPI processes should be used, matching the 'tasks' field above.\n      command: amg -problem 2 -n 4 4 4 -np 4",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "# This MiniCluster manifest has been corrected for YAML syntax errors.\n# Stray double quotes were removed from keys in the nodeSelector and environment sections.\n# The configuration is for a larger-scale AMG benchmark on a specific AWS ARM instance.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg-minicluster-aws-cpu\n  namespace: default\nspec:\n  # The MiniCluster will run on a single large node.\n  size: 1\n  # The number of tasks is set to 48, matching the vCPU count of the target r7g.12xlarge instance.\n  tasks: 48\n\n  # Job cleanup is disabled to allow for post-run inspection of logs and artifacts.\n  cleanup: false\n\n  # Defines Flux-specific settings, including the target architecture.\n  flux:\n    # Specifies the target architecture is ARM for AWS Graviton processors.\n    arch: arm\n    # Uses an ARM-compatible image for the Flux view container.\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n\n  # Logging is set to quiet mode to reduce verbosity, as specified in the update.\n  logging:\n    quiet: true\n\n  # Pod-level specifications for scheduling.\n  pod:\n    nodeSelector:\n      # Corrected the node selector key to remove invalid trailing quotes.\n      # This ensures the pod is scheduled on the correct ARM-based AWS instance type.\n      node.kubernetes.io/instance-type: r7g.12xlarge\n\n  # Defines the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # The command runs a larger problem (60x60x60) with a 4x4x3 process grid, totaling 48 tasks.\n      command: amg -problem 2 -n 60 60 60 -P 4 4 3\n      # This container is a worker; the Flux Operator provides the launcher logic.\n      launcher: false\n      # Environment variables to control threading and MPI performance.\n      environment:\n        # Pin OpenMP threads to 1 to ensure one MPI rank per CPU core.\n        OMP_NUM_THREADS: \"1\"\n        # Corrected the environment variable key to remove invalid trailing quotes.\n        # This tunes OpenMPI's shared-memory communication mechanism.\n        OMPI_MCA_btl_vader_single_copy_mechanism: cma",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "# This MiniCluster manifest is corrected to resolve a previous OOMKilled failure.\n# It switches to a memory-optimized instance (r7g.12xlarge) and adjusts the workload accordingly.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg-minicluster-aws-cpu\n  namespace: default\nspec:\n  # The MiniCluster is configured to run on a single node.\n  size: 1\n  # Tasks are set to 48 to match the vCPU count of the new r7g.12xlarge instance, preventing oversubscription.\n  tasks: 48\n\n  # Job cleanup is disabled to allow for post-run inspection of logs and artifacts.\n  cleanup: false\n\n  # Defines Flux-specific settings, including the target architecture.\n  flux:\n    # The r7g instance type uses ARM architecture.\n    arch: arm\n    # An ARM-compatible image is specified for the Flux view container.\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n\n  # Logging is set to strict mode to ensure any logging issues are treated as fatal errors.\n  logging:\n    strict: true\n\n  # Pod-level specifications for scheduling.\n  pod:\n    nodeSelector:\n      # The node selector targets the r7g.12xlarge instance, which provides more memory (384 GiB).\n      node.kubernetes.io/instance-type: r7g.12xlarge\n\n  # Defines the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # The command is updated with a reduced problem size (128x128x128) to ensure it fits in memory.\n      # The process grid (-P 8 6 1) is adjusted to match the new task count of 48.\n      command: amg -problem 2 -n 128 128 128 -P 8 6 1\n      # This container is a worker; the Flux Operator provides the launcher logic.\n      launcher: false\n      # Environment variables to control threading and MPI performance.\n      environment:\n        # Pin OpenMP threads to 1 to ensure one MPI rank per CPU core.\n        OMP_NUM_THREADS: \"1\"\n        # This tunes OpenMPI's shared-memory communication mechanism.\n        OMPI_MCA_btl_vader_single_copy_mechanism: cma",
+                            "attempt": 3
+                        },
+                        {
+                            "item": "# This MiniCluster manifest is corrected to address a job failure caused by strict logging.\n# Although the application pod completed successfully, non-fatal framework errors were\n# treated as a job failure. The logging mode is changed from 'strict' to 'quiet' to resolve this.\napiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg-minicluster-aws-cpu\n  namespace: default\nspec:\n  # The MiniCluster is configured to run on a single node.\n  size: 1\n  # Tasks are set to 48 to match the vCPU count of the r7g.12xlarge instance.\n  tasks: 48\n\n  # Job cleanup is disabled to allow for post-run inspection of logs and artifacts.\n  cleanup: false\n\n  # Defines Flux-specific settings for the ARM architecture.\n  flux:\n    arch: arm\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n\n  # Logging is set to quiet mode to prevent non-fatal framework errors from\n  # incorrectly marking the entire job as failed.\n  logging:\n    quiet: true\n\n  # Pod-level specifications for scheduling on a specific memory-optimized instance.\n  pod:\n    nodeSelector:\n      node.kubernetes.io/instance-type: r7g.12xlarge\n\n  # Defines the main application container.\n  containers:\n    - image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n      # The command runs the AMG benchmark with a specific problem size and process grid.\n      command: amg -problem 2 -n 128 128 128 -P 8 6 1\n      # This container is a worker; the Flux Operator provides the launcher logic.\n      launcher: false\n      # Environment variables for performance tuning.\n      environment:\n        # Pin OpenMP threads to 1 to ensure one MPI rank per CPU core.\n        OMP_NUM_THREADS: '1'\n        # This tunes OpenMPI's shared-memory communication mechanism.\n        OMPI_MCA_btl_vader_single_copy_mechanism: cma",
+                            "attempt": 4
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  7 19:06 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"-DZ]F4Au441!bIR4n4Te*fzUq-YTIRE^PfwNxM*t\"\n    secret-key = \"ID2Fb6kL}cE&DMK{5d2<18zH6OCiS7n#3q}a*K&G\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   dev  flux_operator  lib\t lib64\t media\topt   root  sbin  sys  usr\nboot  etc  home\t\t  lib32  libx32  mnt\tproc  run   srv   tmp  var\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: AMG -problem 2 -n 4 4 4 -np 4\nFlags for flux are -N 1 -n4  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n4   --quiet --watch AMG -problem 2 -n 4 4 4 -np 4\nFlags for flux are -N 1 -n4  \nbroker.info[0]: start: none->join 0.399561ms\nbroker.info[0]: parent-none: join->init 0.012885ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.0s\nbroker.info[0]: rc1-success: init->quorum 1.01207s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100679s\nflux-shell[0]: FATAL: task 0 (host amg-minicluster-aws-cpu-0): start failed: AMG: No such file or directory\njob.exception: type=exec severity=0 task 0 (host amg-minicluster-aws-cpu-0): start failed: AMG: No such file or directory\nbroker.err[0]: rc2.0: flux submit -N 1 -n4 --quiet --watch AMG -problem 2 -n 4 4 4 -np 4 Exited (rc=127) 0.5s\nbroker.info[0]: rc2-fail: run->cleanup 0.478222s\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.595305s\nbroker.info[0]: children-none: shutdown->finalize 0.034343ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.3s\nbroker.info[0]: rc3-success: finalize->goodbye 0.336646s\nbroker.info[0]: goodbye: goodbye->exit 0.04324ms\n",
+                            "attempt": 0
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 36: curl: command not found\n/flux_operator/wait-0.sh: line 36: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 59: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.so\nlrwxrwxrwx. 1 root root 116 Sep  7 19:09 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-x86_64/gcc-11.4.1/python-3.11.7-a7tv2qsheu2mmkjpsn7wmi4o3cll4dmq/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"pJurMeBc5DM3k6-DB@<6h%6cCU}/)3sz7L%&r?5T\"\n    secret-key = \"^<:/TFO}3ugdpiNxh[0WZ42=#0:d+$78cdv{QVy:\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   dev  flux_operator  lib\t lib64\t media\topt   root  sbin  sys  usr\nboot  etc  home\t\t  lib32  libx32  mnt\tproc  run   srv   tmp  var\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 4 4 4 -np 4\nFlags for flux are -N 1 -n4  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local      -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n4   --quiet --watch amg -problem 2 -n 4 4 4 -np 4\nFlags for flux are -N 1 -n4  \nbroker.info[0]: start: none->join 0.39123ms\nbroker.info[0]: parent-none: join->init 0.012553ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc1 Exited (rc=0) 1.0s\nbroker.info[0]: rc1-success: init->quorum 0.955713s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100662s\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (4, 16, 4)\n    (Px, Py, Pz) = (1, 4, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.098187 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.191742 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.028759 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.058096 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 105.496639 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 207.907479 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 156\nFinal Relative Residual Norm = 3.909241e-19\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 7.552051e+03\n\n\nbroker.info[0]: rc2.0: flux submit -N 1 -n4 --quiet --watch amg -problem 2 -n 4 4 4 -np 4 Exited (rc=0) 106.2s\nbroker.info[0]: rc2-success: run->cleanup 1.7701m\nbroker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.2s\nbroker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.2s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.593198s\nbroker.info[0]: children-none: shutdown->finalize 0.029914ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-x86_64/gcc-11.4.1/flux-core-0.61.2-va52p5ph7ylanopgk7ranjgtjgc2wb5y/etc/flux/rc3 Exited (rc=0) 0.3s\nbroker.info[0]: rc3-success: finalize->goodbye 0.295897s\nbroker.info[0]: goodbye: goodbye->exit 0.041406ms\n",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "error: error from server (NotFound): jobs.batch \"amg-minicluster-aws-cpu\" not found in namespace \"default\"\n",
+                            "attempt": 1
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (240, 240, 180)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.388005 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.387636 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.009089 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.009089 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 44.554376 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 44.549341 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 1.125237e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.502733e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (360, 240, 180)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.540844 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.540601 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.014102 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.013768 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 67.011999 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 67.007615 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 1.743335e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.493525e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (360, 360, 180)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 0.788949 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.788150 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.020764 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.020764 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 99.529581 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 99.521274 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 1.877775e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.509827e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (360, 360, 270)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 1.139487 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 1.139005 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.031189 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.031190 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 149.100709 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 149.090582 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 2.913813e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.513966e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (480, 360, 270)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 1.517902 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 1.516671 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.041775 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.041755 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 198.142698 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 198.129575 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 3.345868e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.526721e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (480, 480, 270)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 2.015496 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 2.015231 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.056539 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.056530 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 262.819409 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 262.796080 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 3.237533e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.535537e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (480, 480, 360)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 2.603259 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 2.596914 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.084153 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.075786 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 349.879853 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 349.848304 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 7.220977e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.538914e+09\n\n\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 19:51 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"xv-bnGY.%ACael*l+uSGm8TPZGci7kbdFDal%gGs\"\n    secret-key = \"J6X1zu6U0lo0*As=.{b]lZ.2X3GsQhpZXVFXLb5q\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 150 120 120 -P 4 4 3\nFlags for flux are -N 1 -n48  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n48   --quiet --watch amg -problem 2 -n 150 120 120 -P 4 4 3\nFlags for flux are -N 1 -n48  \nbroker.info[0]: start: none->join 0.422563ms\nbroker.info[0]: parent-none: join->init 0.017145ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.623743s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100322s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (600, 480, 360)\n    (Px, Py, Pz) = (4, 4, 3)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 3.327467 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 3.323441 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.093197 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.093023 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 437.665756 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 437.630283 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 8.905559e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.538240e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n48 --quiet --watch amg -problem 2 -n 150 120 120 -P 4 4 3 Exited (rc=0) 445.7s\nbroker.info[0]: rc2-success: run->cleanup 7.42796m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.305509s\nbroker.info[0]: children-none: shutdown->finalize 0.034195ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.135922s\nbroker.info[0]: goodbye: goodbye->exit 0.022274ms\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:01 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"hMR!}z}ePu7!rXIm7oC?(tkY=]]%!l=xOfy5-M90\"\n    secret-key = \"1b.hfGK48!.r]sXK}uJ)-[+VN}(jwozu#ka=w(ET\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 100 100 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 100 100 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.415842ms\nbroker.info[0]: parent-none: join->init 0.016865ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.590206s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100303s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (800, 400, 200)\n    (Px, Py, Pz) = (8, 4, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 2.026682 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 2.026444 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.056933 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.056935 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 263.836254 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 263.822874 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 2.928073e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.572563e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch amg -problem 2 -n 100 100 100 -P 8 4 2 Exited (rc=0) 269.5s\nbroker.info[0]: rc2-success: run->cleanup 4.49159m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.302782s\nbroker.info[0]: children-none: shutdown->finalize 0.03237ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.130855s\nbroker.info[0]: goodbye: goodbye->exit 0.019769ms\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:06 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"o}iEYx.i9q7{^XAWZ7M[UeODz1WFCCwFf7yH$t{T\"\n    secret-key = \"UZD[(^D1Ei-[I0.ISf/Df}F*mM!-uHr%{kI[6nFQ\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 120 100 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 120 100 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.78694ms\nbroker.info[0]: parent-none: join->init 0.058629ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 2.6s\nbroker.info[0]: rc1-success: init->quorum 2.62138s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.111206s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (960, 400, 200)\n    (Px, Py, Pz) = (8, 4, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 2.445695 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 2.440370 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.068336 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.068072 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 314.366889 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 314.356688 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 3.757730e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.576834e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch amg -problem 2 -n 120 100 100 -P 8 4 2 Exited (rc=0) 321.3s\nbroker.info[0]: rc2-success: run->cleanup 5.35497m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.303899s\nbroker.info[0]: children-none: shutdown->finalize 0.034029ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.134618s\nbroker.info[0]: goodbye: goodbye->exit 0.019411ms\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:13 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"jT:-e==UT:2OQ){NcGR$mx(=%4r%Jd^K/+z0ah@D\"\n    secret-key = \"8Zc0>29gV@d5%0lo]#oNn7Q%c8:y%TZh^%4tg0rD\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 120 120 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 120 120 100 -P 8 4 2\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.434397ms\nbroker.info[0]: parent-none: join->init 0.016934ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.586728s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100314s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (960, 480, 200)\n    (Px, Py, Pz) = (8, 4, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 2.950182 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 2.949337 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.082732 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.082602 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 373.878157 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 373.859060 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 2.988352e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.598763e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch amg -problem 2 -n 120 120 100 -P 8 4 2 Exited (rc=0) 381.5s\nbroker.info[0]: rc2-success: run->cleanup 6.35824m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.300957s\nbroker.info[0]: children-none: shutdown->finalize 0.034209ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.134585s\nbroker.info[0]: goodbye: goodbye->exit 0.020433ms\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:20 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"u[g<ndMO0q?Kh:h/5h2{dxkYMgabZ#=2Wjy?U-PV\"\n    secret-key = \"!TqXlW%(p(xvGa9q^U+WXWB$0IJ}gRw<88Cwj+H@\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 120 120 120 -P 8 4 2\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 120 120 120 -P 8 4 2\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.432977ms\nbroker.info[0]: parent-none: join->init 0.016828ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.638798s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100278s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (960, 480, 240)\n    (Px, Py, Pz) = (8, 4, 2)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 3.559317 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 3.558951 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.099478 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.099480 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 447.911150 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 447.893127 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 215\nFinal Relative Residual Norm = 4.267196e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.602391e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch amg -problem 2 -n 120 120 120 -P 8 4 2 Exited (rc=0) 456.9s\nbroker.info[0]: rc2-success: run->cleanup 7.61503m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.305695s\nbroker.info[0]: children-none: shutdown->finalize 0.034402ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.132772s\nbroker.info[0]: goodbye: goodbye->exit 0.019251ms\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:29 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"V+9-*zJqWTMdh07um#Gx7lgcN4kT}UN%^p>hzfRC\"\n    secret-key = \"<2DTH:tS=h:1f0E+hO&g4vg&(I2zO.giRSmq*mV0\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 150 120 120 -P 8 4 2\nFlags for flux are -N 1 -n64  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 150 120 120 -P 8 4 2\nFlags for flux are -N 1 -n64  \nbroker.info[0]: start: none->join 0.411682ms\nbroker.info[0]: parent-none: join->init 0.01615ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.599765s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100317s\njob-manager.err[0]: jobtap: job.new: callback returned error\n",
+                            "attempt": 2
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\n/flux_operator/wait-0.sh: line 38: curl: command not found\n/flux_operator/wait-0.sh: line 38: wget: command not found\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\n\nFlux install root: /mnt/flux/view\n\n/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found\nPython version: /mnt/flux/view/bin/python3.11\nPython root: /mnt/flux/view/lib/python3.11\nPYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages\nPATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin\n/mnt/flux/view/lib/libpython3.11.so\n/mnt/flux/view/lib/libpython3.11.so.1.0\n/mnt/flux/view/lib/libpython3.so\n./mnt/flux/view/lib/libpython3.11.so\n./mnt/flux/view/lib/libpython3.11.so.1.0\n./mnt/flux/view/lib/libpython3.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so\nlrwxrwxrwx. 1 root root 117 Sep  7 20:41 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0\n\nHello user root\n\n\ud83c\udf1f\ufe0f Curve Certificate\ncurve.cert\n#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****\n#   ZeroMQ CURVE **Secret** Certificate\n#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.\n    \nmetadata\n    name = \"flux-cert-generator\"\n    keygen.hostname = \"amg-minicluster-aws-cpu-0\"\ncurve\n    public-key = \"oZ9p-Szv54gLR*8(jSZ=22lTX-98U@}RVDyxj02R\"\n    secret-key = \"vwb&x-)edDOLKv!LymSs6k#JH}5w?S1cYq8i*.B>\"\n\ud83d\udc4b Hello, I'm amg-minicluster-aws-cpu-0\nThe main host is amg-minicluster-aws-cpu-0\nThe working directory is /, contents include:\nbin   build  etc\t    home  media  opt   root  sbin  sys\tusr\nboot  dev    flux_operator  lib   mnt\t proc  run   srv   tmp\tvar\n\ud83d\udea9\ufe0f Flux Option Flags defined\nCommand provided is: amg -problem 2 -n 128 128 128 -P 8 6 1\nFlags for flux are -N 1 -n48  \n\n\ud83c\udf00 Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n48   --quiet --watch amg -problem 2 -n 128 128 128 -P 8 6 1\nFlags for flux are -N 1 -n48  \nbroker.info[0]: start: none->join 0.428744ms\nbroker.info[0]: parent-none: join->init 0.016543ms\ncron.info[0]: synchronizing cron tasks to event heartbeat.pulse\njob-manager.info[0]: restart: 0 jobs\njob-manager.info[0]: restart: 0 running jobs\njob-manager.info[0]: restart: checkpoint.job-manager not found\nbroker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron\nbroker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s\nbroker.info[0]: rc1-success: init->quorum 0.570153s\nbroker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)\nbroker.info[0]: quorum-full: quorum->run 0.100303s\njob-manager.err[0]: jobtap: job.new: callback returned error\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (1024, 768, 128)\n    (Px, Py, Pz) = (8, 6, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 3.145428 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 3.143138 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.090651 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.090653 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 421.489519 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 421.467971 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 2.009813e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.539733e+09\n\n\njob-manager.err[0]: jobtap: job.inactive-add: callback returned error\nbroker.info[0]: rc2.0: flux submit -N 1 -n48 --quiet --watch amg -problem 2 -n 128 128 128 -P 8 6 1 Exited (rc=0) 429.3s\nbroker.info[0]: rc2-success: run->cleanup 7.15545m\nbroker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s\nbroker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s\nbroker.info[0]: cleanup-success: cleanup->shutdown 0.310025s\nbroker.info[0]: children-none: shutdown->finalize 0.034036ms\nbroker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s\nbroker.info[0]: rc3-success: finalize->goodbye 0.135881s\nbroker.info[0]: goodbye: goodbye->exit 0.020377ms\n",
+                            "attempt": 3
+                        },
+                        {
+                            "item": "Defaulted container \"amg-minicluster-aws-cpu\" out of: amg-minicluster-aws-cpu, flux-view (init)\nchmod: cannot access './wait-fs': No such file or directory\nmv: cannot stat './wait-fs': No such file or directory\nRunning with these driver parameters:\n  solver ID    = 3\n\n  Laplacian_27pt:\n    (Nx, Ny, Nz) = (1024, 768, 128)\n    (Px, Py, Pz) = (8, 6, 1)\n\n=============================================\nGenerate Matrix:\n=============================================\nSpatial Operator:\n  wall clock time = 3.230414 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 3.228341 seconds\n  cpu MFLOPS      = 0.000000\n\n  RHS vector has unit components\n  Initial guess is 0\n=============================================\nIJ Vector Setup:\n=============================================\nRHS and Initial Guess:\n  wall clock time = 0.088679 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 0.088592 seconds\n  cpu MFLOPS      = 0.000000\n\n=============================================\nProblem 2: Cumulative AMG-GMRES Solve Time:\n=============================================\nGMRES Solve:\n  wall clock time = 422.181483 seconds\n  wall MFLOPS     = 0.000000\n  cpu clock time  = 422.157852 seconds\n  cpu MFLOPS      = 0.000000\n\n\nNo. of Time Steps = 6\nCum. No. of Iterations = 214\nFinal Relative Residual Norm = 2.009813e-14\n\n\nnnz AP * (Iterations + time_steps) / Total Time: \n\nFigure of Merit (FOM_2): 1.537209e+09\n\n\n",
+                            "attempt": 4
+                        }
+                    ],
+                    "optimize": {
+                        "times": {
+                            "run_seconds": [
+                                526.3974086019734,
+                                19.264220843993826,
+                                21.198896900983527,
+                                18.52507504899404,
+                                15.761245411995333,
+                                17.693519733991707,
+                                12.101711869996507,
+                                21.434756282018498,
+                                23.115393835993018,
+                                21.507728803000646,
+                                16.077551471011247,
+                                19.32173036999302,
+                                20.1655414919951,
+                                26.638974990986753
+                            ]
+                        },
+                        "assets": {
+                            "updates": [
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 60 60 60 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "Previous FOM was extremely low due to a minimal problem size. This attempt targets a powerful, memory-rich Graviton instance (r7g.12xlarge) with a high core count and significantly increases the problem size to establish a meaningful performance baseline. MPI/OpenMP settings are explicitly configured for single-threaded execution per rank as required for optimization."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 90 60 60 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The previous run achieved an excellent FOM (1.5e9). This attempt follows the optimization strategy by cautiously increasing the problem size in one dimension (from 60x60x60 to 90x60x60) on the same high-memory instance to push the FOM higher without exhausting resources."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 90 90 60 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The previous attempt saw a minor decrease in FOM, which could be noise or related to the problem geometry. This attempt continues the strategy by increasing a second dimension of the problem size on the same high-performing instance (r7g.12xlarge). Pushing the problem size further is necessary to confirm if the peak has been reached for this configuration."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 90 90 90 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The last run yielded the highest FOM so far (1.509e9). The current strategy of incrementally increasing the problem size on the high-memory r7g.12xlarge instance is working. This attempt increases the final dimension of the problem size to see if performance can be pushed even higher before hitting a memory or performance ceiling."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 90 90 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The FOM has consistently increased with problem size, reaching a new peak in the last run. The optimization is not yet complete. This attempt continues to scale the problem size on the current high-memory instance (r7g.12xlarge) to find the performance ceiling."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 120 90 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The Figure of Merit has consistently increased with each incremental increase in problem size. The last run yielded the best result yet (1.526e9). This attempt continues the successful strategy by increasing another dimension of the problem on the same high-memory instance to find the optimal performance point."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 120 120 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The FOM continues to show steady improvement with each increase in problem size, achieving a new peak in the last run. The optimal point has not yet been reached. This attempt increases the problem size to a symmetric `120x120x120` on the proven `r7g.12xlarge` instance to continue exploring the performance curve."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 48,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "r7g.12xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 150 120 120 -P 4 4 3",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The FOM has continued to increase with each attempt, although the gains are diminishing. This indicates we are approaching the performance peak for this instance. This attempt pushes the problem size larger on the same instance to confirm if the performance plateau has been reached or if further gains are possible."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 100 100 100 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The FOM plateaued and then slightly decreased on the r7g.12xlarge instance, indicating we've reached the limit for that configuration. To seek a higher FOM, I am switching to an instance with more cores (m7g.16xlarge, 64 CPUs). This requires adjusting the task count and process layout. I'm starting with a new problem size to establish a baseline on this different hardware."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 100 100 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The previous switch to the m7g.16xlarge instance was successful, yielding a new peak FOM. This attempt continues the optimization strategy by incrementally increasing the problem size on the new hardware to explore its performance potential further."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 120 100 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The switch to the m7g.16xlarge instance continues to yield positive results, with the FOM increasing again in the last run. This attempt continues to slowly scale up the problem size on this new instance to find its performance peak."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 120 120 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The FOM has consistently increased on the m7g.16xlarge instance. This attempt continues the successful strategy by increasing the final dimension of the problem size to 120, creating a symmetric grid to further test the limits of this configuration."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 150 120 120 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "RETRY",
+                                    "reason": "The Figure of Merit has shown consistent improvement since switching to the m7g.16xlarge instance and increasing the problem size. The latest result is the highest yet. This attempt continues the successful strategy by further increasing one dimension of the problem to find the performance peak for this configuration."
+                                },
+                                {
+                                    "manifest": {
+                                        "apiVersion": "flux-framework.org/v1alpha2",
+                                        "kind": "MiniCluster",
+                                        "metadata": {
+                                            "name": "amg-minicluster-aws-cpu",
+                                            "namespace": "default"
+                                        },
+                                        "spec": {
+                                            "size": 1,
+                                            "tasks": 64,
+                                            "cleanup": false,
+                                            "logging": {
+                                                "quiet": true
+                                            },
+                                            "flux": {
+                                                "arch": "arm",
+                                                "container": {
+                                                    "image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"
+                                                }
+                                            },
+                                            "pod": {
+                                                "nodeSelector": {
+                                                    "node.kubernetes.io/instance-type": "m7g.16xlarge"
+                                                }
+                                            },
+                                            "containers": [
+                                                {
+                                                    "image": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                                                    "command": "amg -problem 2 -n 120 120 120 -P 8 4 2",
+                                                    "launcher": false,
+                                                    "environment": {
+                                                        "OMP_NUM_THREADS": "1",
+                                                        "OMPI_MCA_btl_vader_single_copy_mechanism": "cma"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "decision": "STOP",
+                                    "reason": "The FOM decreased on the last attempt after a series of successful increases. This indicates that the optimal problem size for the best-performing instance (m7g.16xlarge) has been found and surpassed. Further iterations are unlikely to yield a higher FOM. The returned manifest reflects the configuration that achieved the peak performance."
+                                }
+                            ],
+                            "regex-attempts": [
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1,
+                                1
+                            ]
+                        },
+                        "failures": [],
+                        "counts": {
+                            "retries": 0,
+                            "return_to_manager": 0,
+                            "return_to_human": 0
+                        },
+                        "optimize_attempts": 14,
+                        "foms": [
+                            "7.552051e+03",
+                            "1.502733e+09",
+                            "1.493525e+09",
+                            "1.509827e+09",
+                            "1.513966e+09",
+                            "1.526721e+09",
+                            "1.535537e+09",
+                            "1.538914e+09",
+                            "1.538240e+09",
+                            "1.572563e+09",
+                            "1.576834e+09",
+                            "1.598763e+09",
+                            "1.602391e+09",
+                            "1.537209e+09"
+                        ]
+                    }
+                },
+                "failures": [],
+                "counts": {
+                    "retries": 0,
+                    "return_to_manager": 0,
+                    "return_to_human": 0
+                },
+                "ask_gemini": [
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 2521,
+                        "candidates_token_count": 463,
+                        "total_token_count": 4639,
+                        "time_seconds": 18.856024956010515
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 3502,
+                        "candidates_token_count": 486,
+                        "total_token_count": 4979,
+                        "time_seconds": 11.788368159002857
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 4906,
+                        "candidates_token_count": 515,
+                        "total_token_count": 7983,
+                        "time_seconds": 25.335951899993233
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 6207,
+                        "candidates_token_count": 589,
+                        "total_token_count": 8126,
+                        "time_seconds": 18.24192529899301
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 7825,
+                        "candidates_token_count": 542,
+                        "total_token_count": 9493,
+                        "time_seconds": 15.189478687010705
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 9396,
+                        "candidates_token_count": 542,
+                        "total_token_count": 10934,
+                        "time_seconds": 14.951794371008873
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 10967,
+                        "candidates_token_count": 542,
+                        "total_token_count": 12030,
+                        "time_seconds": 10.456887309002923
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 12539,
+                        "candidates_token_count": 545,
+                        "total_token_count": 13876,
+                        "time_seconds": 11.866708057001233
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 14116,
+                        "candidates_token_count": 549,
+                        "total_token_count": 15528,
+                        "time_seconds": 12.78128763998393
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 15699,
+                        "candidates_token_count": 553,
+                        "total_token_count": 17194,
+                        "time_seconds": 13.362183218996506
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 17287,
+                        "candidates_token_count": 560,
+                        "total_token_count": 18950,
+                        "time_seconds": 14.171007061988348
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 18882,
+                        "candidates_token_count": 557,
+                        "total_token_count": 20764,
+                        "time_seconds": 15.763583358988399
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 20474,
+                        "candidates_token_count": 562,
+                        "total_token_count": 22895,
+                        "time_seconds": 21.091821879002964
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 22071,
+                        "candidates_token_count": 562,
+                        "total_token_count": 23800,
+                        "time_seconds": 14.668241006002063
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 23668,
+                        "candidates_token_count": 562,
+                        "total_token_count": 25100,
+                        "time_seconds": 13.280944752012147
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 25265,
+                        "candidates_token_count": 562,
+                        "total_token_count": 26582,
+                        "time_seconds": 15.285334988002433
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 26635,
+                        "candidates_token_count": 591,
+                        "total_token_count": 28334,
+                        "time_seconds": 14.303259159991285
+                    },
+                    {
+                        "conversation_history": true,
+                        "prompt_token_count": 28025,
+                        "candidates_token_count": 511,
+                        "total_token_count": 29890,
+                        "time_seconds": 16.86187602300197
+                    }
+                ],
+                "result": {
+                    "item": "apiVersion: flux-framework.org/v1alpha2\nkind: MiniCluster\nmetadata:\n  name: amg-minicluster-aws-cpu\n  namespace: default\nspec:\n  cleanup: false\n  containers:\n  - command: amg -problem 2 -n 128 128 128 -P 8 6 1\n    environment:\n      OMPI_MCA_btl_vader_single_copy_mechanism: cma\n      OMP_NUM_THREADS: '1'\n    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023\n    launcher: false\n  flux:\n    arch: arm\n    container:\n      image: ghcr.io/converged-computing/flux-view-rocky:arm-9\n  logging:\n    quiet: true\n  pod:\n    nodeSelector:\n      node.kubernetes.io/instance-type: r7g.12xlarge\n  size: 1\n  tasks: 48\n",
+                    "total_seconds": 6702.41801866499,
+                    "type": "flux-minicluster-manifest"
+                }
+            }
+        }
+    ],
+    "manager": {
+        "name": "Build and Deploy AMG2023",
+        "description": "Build a Docker container and deploy it as a Kubernetes Job.",
+        "plan": [
+            {
+                "agent": "build",
+                "context": {
+                    "environment": "AWS CPU instance in Kubernetes",
+                    "application": "amg2023",
+                    "container": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                    "push": true,
+                    "platforms": "linux/amd64,linux/arm64",
+                    "max_attempts": 10,
+                    "details": "Clone the latest branch of amg2023. You MUST put amg on the PATH.\n"
+                }
+            },
+            {
+                "agent": "minicluster",
+                "context": {
+                    "environment": "AWS CPU instance in Kubernetes",
+                    "container": "ghcr.io/converged-computing/fractale-agent-experiments:amg2023",
+                    "max_attempts": 10,
+                    "max_runtime": 600,
+                    "optimize": "Maximize the amg2023 figure of merit. You MUST maximize memory per CPU core. More cores are better.\nThe trick to optimizing this is THREADING. You MUST force OpenMP and any math libraries to use only one thread per MPI rank. On example is setting OMP_NUM_THREADS to \"1\". You might also consider setting OMPI_MCA_btl_vader_single_copy_mechanism to \"cma\" as a conservative builder will set to none.\nYOU MUST SLOWLY increase the problem size, one dimension at a time, by an increment no more than double the current to increase the FOM. A timeout may not require a smaller problem size but rather a different instance.\nA previous run example that has worked well:\n  amg -problem 2 -n 128 128 128 -P 8 4 1 on m7g.16xlarge with FOM 8.039496e+08\nThe size of the MiniCluster MUST be 1. Tasks MUST be at least 4.\nTo reduce noise in logging, you can set logging.quiet to true.\n",
+                    "resources": "The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      \n  c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD\n  hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)\n  c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel\n  r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel\n  m6g.12xlarge, 48 CPU, 192 GiB Memory, ARM (Graviton2)\n  t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD\n  t3.2xlarge, 4 CPU, 32 GiB Memory, Intel\n  m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel\n  c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel\n  t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)\n  m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel\n  m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD\n  m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)\n  c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel\n  c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD\n  c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)\n  r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel\n  r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD\n  r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)\n  i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel\n  d3.4xlarge, 8 CPU, 128 GiB Memory, Intel \nIf you choose an ARM (Graviton) instance you MUST change the flux.container.image to be\nghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.\nIf you are using an ARM instance you MUST also set flux.arch: \"arm\".\n",
+                    "testing": "You MUST run AMG -problem 2. For testing choose a small problem size no greater than 4 in any dimension.    \nIf you see a nodeSelector and larger size in the manifest it is OK to keep that and try to debug the issue.\n",
+                    "details": "You MUST run on only one node. The size of the MiniCluster MUST be 1 and tasks MUST be at least 4.\nYou MUST NOT oversubscribe.\n"
+                }
+            }
+        ],
+        "goal": "Use provided agents to finish the plan"
+    },
+    "status": "Succeeded"
+}
