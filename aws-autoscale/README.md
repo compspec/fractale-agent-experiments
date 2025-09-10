@@ -32,6 +32,16 @@ for i in $(seq 1 10)
 done
 ```
 
+And with testing providing a function:
+
+```bash
+for i in $(seq 1 10)
+  do
+  fractale agent --plan ./plans/amg2023-function.yaml --results $outdir --incremental
+done
+```
+
+
 ## 3. Kripke
 
 ```bash

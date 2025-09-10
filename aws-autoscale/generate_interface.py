@@ -882,7 +882,7 @@ def generate_gemini_summary_plot(all_runs_data):
 def filter_apps(app_name):
     # This was the final run
     if "lammps" in app_name:
-        if app_name != "lammps-max-fom":
+        if app_name not in ["lammps-max-fom", "lammps-test"]:
             return
     return app_name
 
