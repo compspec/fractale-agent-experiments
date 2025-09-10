@@ -26,8 +26,6 @@
             --button-bg: #3e4451;
             --button-hover-bg: #4f5663;
             --active-bg: #4f5663;
-
-            /* NEW: Custom colors for the diff view */
             --diff-bg-add: rgba(46, 160, 67, 0.15);
             --diff-bg-remove: rgba(248, 81, 73, 0.15);
             --diff-border-add: #2ea043;
@@ -49,10 +47,16 @@
 
         #sidebar {
             width: 250px;
+            flex-shrink: 0;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        body.sidebar-collapsed #sidebar {
+            margin-left: -251px;
         }
 
         #sidebar h2 {
@@ -62,7 +66,36 @@
             color: var(--header-color);
             border-bottom: 1px solid var(--border-color);
             text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        #toggle-sidebar-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        #toggle-sidebar-btn:hover {
+            color: var(--header-color);
+        }
+        body.sidebar-collapsed #toggle-sidebar-btn {
+            position: fixed;
+            left: 10px;
+            top: 13px;
+            z-index: 100;
+            background-color: var(--button-bg);
+            border-radius: 4px;
+        }
+        #toggle-sidebar-btn .arrow-close { display: inline; }
+        #toggle-sidebar-btn .arrow-open { display: none; }
+        body.sidebar-collapsed #toggle-sidebar-btn .arrow-close { display: none; }
+        body.sidebar-collapsed #toggle-sidebar-btn .arrow-open { display: inline; }
+
 
         #attempt-list-container {
             flex-grow: 1;
@@ -139,52 +172,45 @@
             padding: 20px;
         }
         
-        /* --- NEW: CSS Overrides for Diff2Html Dark Theme --- */
         .d2h-file-header { display: none; }
         .d2h-wrapper { margin: 0; }
         .d2h-file-wrapper { border: none; }
         .d2h-diff-table { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; color: var(--text-color); }
         .d2h-file-side-diff { background-color: var(--content-bg) !important; }
-        
         .d2h-code-side-linenumber, .d2h-code-linenumber {
             background-color: var(--content-bg);
             color: var(--diff-linenum-color);
             border-color: var(--border-color);
         }
-        
         .d2h-del { background-color: var(--diff-bg-remove); border-color: var(--diff-border-remove); }
         .d2h-ins { background-color: var(--diff-bg-add); border-color: var(--diff-border-add); }
-        
         .d2h-del .d2h-code-side-linenumber, .d2h-del .d2h-code-linenumber { border-right-color: var(--diff-border-remove); }
         .d2h-ins .d2h-code-side-linenumber, .d2h-ins .d2h-code-linenumber { border-right-color: var(--diff-border-add); }
-        
-        /* Word-level highlights inside a line */
         .d2h-del .d2h-change { background-color: var(--diff-highlight-remove); }
         .d2h-ins .d2h-change { background-color: var(--diff-highlight-add); }
-        
         .d2h-info {
             background-color: var(--sidebar-bg);
             color: var(--diff-linenum-color);
             border-color: var(--border-color);
         }
-        /* --- End of Diff2Html Overrides --- */
 
     </style>
 </head>
 <body>
-
     <aside id="sidebar">
-        <h2>Build Attempts</h2>
-        <div id="attempt-list-container">
-            <!-- Populated by JavaScript -->
-        </div>
+        <h2>
+            <span>Build Attempts</span>
+            <button id="toggle-sidebar-btn" title="Toggle Sidebar">
+                <span class="arrow-close">«</span>
+                <span class="arrow-open">»</span>
+            </button>
+        </h2>
+        <div id="attempt-list-container"></div>
     </aside>
 
     <main id="content">
         <h2 id="view-title">Loading...</h2>
-        <div id="display-panel">
-            <!-- Content will be injected here -->
-        </div>
+        <div id="display-panel"></div>
     </main>
     
     <script>
@@ -209,11 +235,26 @@
             }
 
             function run(jsonData) {
+                const body = document.body;
+                const toggleBtn = document.getElementById('toggle-sidebar-btn');
                 const attempts = jsonData.assets.dockerfile;
                 const attemptListContainer = document.getElementById('attempt-list-container');
                 const viewTitle = document.getElementById('view-title');
                 const displayPanel = document.getElementById('display-panel');
                 let currentActiveItem = null;
+
+                function setSidebarState(isCollapsed) {
+                    body.classList.toggle('sidebar-collapsed', isCollapsed);
+                    localStorage.setItem('sidebarCollapsed', isCollapsed);
+                }
+
+                toggleBtn.addEventListener('click', () => {
+                    setSidebarState(!body.classList.contains('sidebar-collapsed'));
+                });
+                
+                const savedState = localStorage.getItem('sidebarCollapsed') === 'true';
+                setSidebarState(savedState);
+
 
                 function escapeHtml(unsafe) {
                     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -248,16 +289,24 @@
 
                     viewTitle.textContent = `Comparing Attempt ${oldId} vs. Attempt ${newId}`;
                     
-                    const diffString = Diff.createPatch(`Dockerfile`, oldAttempt.item, newAttempt.item);
+                    // THE FIX IS HERE: Add the 'context' option to show the entire file.
+                    const diffString = Diff.createPatch(
+                        `Dockerfile`, 
+                        oldAttempt.item, 
+                        newAttempt.item,
+                        '', '', 
+                        { context: 100000 } // A very large number ensures all lines are included
+                    );
+
                     const diffHtml = Diff2Html.html(diffString, {
                         drawFileList: false,
                         matching: 'lines',
                         outputFormat: 'side-by-side',
-                        wordByWord: true // Enable word-level diffs
+                        wordByWord: true
                     });
 
                     displayPanel.innerHTML = diffHtml;
-                    updateActiveItem(null); // No single item is active in diff view
+                    updateActiveItem(null);
                 }
                 
                 const listFragment = document.createDocumentFragment();
