@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dockerfile Build Attempt Viewer</title>
+
+    <!-- Library for Diffing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js"></script>
+
+    <!-- Library for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-docker.min.js"></script>
+
+    <style>
+        :root {
+            --sidebar-bg: #282c34;
+            --content-bg: #21252b;
+            --text-color: #abb2bf;
+            --header-color: #ffffff;
+            --border-color: #3b4048;
+            --button-bg: #3e4451;
+            --button-hover-bg: #4f5663;
+            --active-bg: #4f5663;
+
+            /* NEW: Custom colors for the diff view */
+            --diff-bg-add: rgba(46, 160, 67, 0.15);
+            --diff-bg-remove: rgba(248, 81, 73, 0.15);
+            --diff-border-add: #2ea043;
+            --diff-border-remove: #f85149;
+            --diff-highlight-add: rgba(46, 160, 67, 0.4);
+            --diff-highlight-remove: rgba(248, 81, 73, 0.4);
+            --diff-linenum-color: rgba(255, 255, 255, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--content-bg);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar h2 {
+            margin: 0;
+            padding: 20px;
+            font-size: 1.2em;
+            color: var(--header-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        #attempt-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .attempt-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+        }
+
+        .attempt-item:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        .attempt-item.active {
+            background-color: var(--active-bg);
+            font-weight: bold;
+        }
+        
+        .diff-btn {
+            padding: 4px 8px;
+            font-size: 0.8em;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .diff-btn:hover {
+            background-color: var(--button-hover-bg);
+        }
+        
+        .diff-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #view-title {
+            margin: 0;
+            padding: 20px;
+            font-size: 1.2em;
+            color: var(--header-color);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--sidebar-bg);
+        }
+        
+        #display-panel {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 0;
+        }
+        
+        pre[class*="language-"] {
+            margin: 0;
+            border-radius: 0;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        
+        /* --- NEW: CSS Overrides for Diff2Html Dark Theme --- */
+        .d2h-file-header { display: none; }
+        .d2h-wrapper { margin: 0; }
+        .d2h-file-wrapper { border: none; }
+        .d2h-diff-table { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; color: var(--text-color); }
+        .d2h-file-side-diff { background-color: var(--content-bg) !important; }
+        
+        .d2h-code-side-linenumber, .d2h-code-linenumber {
+            background-color: var(--content-bg);
+            color: var(--diff-linenum-color);
+            border-color: var(--border-color);
+        }
+        
+        .d2h-del { background-color: var(--diff-bg-remove); border-color: var(--diff-border-remove); }
+        .d2h-ins { background-color: var(--diff-bg-add); border-color: var(--diff-border-add); }
+        
+        .d2h-del .d2h-code-side-linenumber, .d2h-del .d2h-code-linenumber { border-right-color: var(--diff-border-remove); }
+        .d2h-ins .d2h-code-side-linenumber, .d2h-ins .d2h-code-linenumber { border-right-color: var(--diff-border-add); }
+        
+        /* Word-level highlights inside a line */
+        .d2h-del .d2h-change { background-color: var(--diff-highlight-remove); }
+        .d2h-ins .d2h-change { background-color: var(--diff-highlight-add); }
+        
+        .d2h-info {
+            background-color: var(--sidebar-bg);
+            color: var(--diff-linenum-color);
+            border-color: var(--border-color);
+        }
+        /* --- End of Diff2Html Overrides --- */
+
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <h2>Build Attempts</h2>
+        <div id="attempt-list-container">
+            <!-- Populated by JavaScript -->
+        </div>
+    </aside>
+
+    <main id="content">
+        <h2 id="view-title">Loading...</h2>
+        <div id="display-panel">
+            <!-- Content will be injected here -->
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            
+            async function initializeApp() {
+                try {
+                    const response = await fetch('data.json');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const jsonData = await response.json();
+                    run(jsonData);
+                } catch (error) {
+                    console.error('Error loading or parsing data.json:', error);
+                    document.getElementById('view-title').textContent = 'Error Loading Data';
+                    document.getElementById('display-panel').innerHTML = 
+                        `<pre style="color: #ff5555; padding: 20px;">Could not load build attempts from data.json.
+                        \n- Ensure the file is in the same directory as this HTML file.
+                        \n- Ensure the file contains valid JSON.
+                        \n- If opening from your local filesystem, you may need a simple web server due to browser security policies (CORS).
+                        \n\nError: ${error.message}</pre>`;
+                }
+            }
+
+            function run(jsonData) {
+                const attempts = jsonData.assets.dockerfile;
+                const attemptListContainer = document.getElementById('attempt-list-container');
+                const viewTitle = document.getElementById('view-title');
+                const displayPanel = document.getElementById('display-panel');
+                let currentActiveItem = null;
+
+                function escapeHtml(unsafe) {
+                    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                }
+                
+                function updateActiveItem(element) {
+                    if (currentActiveItem) {
+                        currentActiveItem.classList.remove('active');
+                    }
+                    if (element) {
+                        element.classList.add('active');
+                        currentActiveItem = element;
+                    } else {
+                        currentActiveItem = null;
+                    }
+                }
+
+                function displaySingleView(attemptId) {
+                    const attempt = attempts.find(a => a.attempt == attemptId);
+                    if (!attempt) return;
+
+                    viewTitle.textContent = `Dockerfile - Attempt ${attemptId}`;
+                    displayPanel.innerHTML = `<pre><code class="language-docker">${escapeHtml(attempt.item)}</code></pre>`;
+                    Prism.highlightAll();
+                    updateActiveItem(document.querySelector(`.attempt-item[data-attempt-id="${attemptId}"]`));
+                }
+
+                function displayDiffView(oldId, newId) {
+                    const oldAttempt = attempts.find(a => a.attempt == oldId);
+                    const newAttempt = attempts.find(a => a.attempt == newId);
+                    if (!oldAttempt || !newAttempt) return;
+
+                    viewTitle.textContent = `Comparing Attempt ${oldId} vs. Attempt ${newId}`;
+                    
+                    const diffString = Diff.createPatch(`Dockerfile`, oldAttempt.item, newAttempt.item);
+                    const diffHtml = Diff2Html.html(diffString, {
+                        drawFileList: false,
+                        matching: 'lines',
+                        outputFormat: 'side-by-side',
+                        wordByWord: true // Enable word-level diffs
+                    });
+
+                    displayPanel.innerHTML = diffHtml;
+                    updateActiveItem(null); // No single item is active in diff view
+                }
+                
+                const listFragment = document.createDocumentFragment();
+                attempts.forEach(attempt => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'attempt-item';
+                    itemDiv.dataset.attemptId = attempt.attempt;
+                    
+                    const isDisabled = attempt.attempt === 0;
+                    
+                    itemDiv.innerHTML = `
+                        <span>Attempt ${attempt.attempt}</span>
+                        <button class="diff-btn" data-attempt-id="${attempt.attempt}" ${isDisabled ? 'disabled' : ''}>
+                            Diff
+                        </button>
+                    `;
+                    listFragment.appendChild(itemDiv);
+                });
+                attemptListContainer.appendChild(listFragment);
+
+                attemptListContainer.addEventListener('click', (e) => {
+                    const target = e.target;
+                    const attemptItem = target.closest('.attempt-item');
+                    if (!attemptItem) return;
+
+                    const attemptId = parseInt(attemptItem.dataset.attemptId);
+
+                    if (target.classList.contains('diff-btn')) {
+                        if (attemptId > 0) {
+                            displayDiffView(attemptId - 1, attemptId);
+                        }
+                    } else {
+                        displaySingleView(attemptId);
+                    }
+                });
+                
+                if (attempts.length > 0) {
+                    displaySingleView(attempts[attempts.length - 1].attempt);
+                } else {
+                    viewTitle.textContent = "No build attempts found.";
+                }
+            }
+            
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
