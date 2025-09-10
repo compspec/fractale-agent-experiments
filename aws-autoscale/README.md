@@ -35,13 +35,16 @@ done
 ## 3. Kripke
 
 ```bash
-outdir=./results/kripke-2
+outdir=./results/kripke-1
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/kripke.yaml --results $outdir --incremental
 done
 ```
+
+which nodes are less likely to not have jobs - start subgraph or subtree and start traversing much lower based on likelihood of subtree having availability. You could parallelize the graph traversals.
+
 
 ## 4. LAMMPS
 

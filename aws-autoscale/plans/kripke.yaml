@@ -47,7 +47,7 @@ plan:
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
       If you are using an ARM instance you MUST also set flux.arch: "arm".
     testing:
-      Run kripke
+      Run kripke with no parameters
     details: |
       You MUST run on only one node. 
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.

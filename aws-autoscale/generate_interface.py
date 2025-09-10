@@ -107,7 +107,7 @@ INDEX_TEMPLATE = """
                 <span class="status status-failed">{{ data.summary.failed }} Failed</span>
             </p>
             {% if data.summary.best_fom is not none %}
-            <p><strong>Best Result:</strong> {{ "%.2f"|format(data.summary.best_fom) }} FOM</p>
+            <p><strong>Best Result:</strong> {{ data.summary.best_fom }} FOM</p>
             {% endif %}
             <div class="card-footer">
                 <a href="{{ app_name }}/index.html" role="button">View {{ data.runs|length }} Runs</a>
@@ -193,7 +193,7 @@ APP_TEMPLATE = """
             <tr>
                 <td><a href="{{ run.id }}.html">{{ run.id }}</a></td>
                 <td><span class="status status-{{ run.status|lower }}">{{ run.status }}</span></td>
-                <td>{{ "%.2f"|format(run.best_fom) if run.best_fom is not none else 'N/A' }}</td>
+                <td>{{ run.best_fom if run.best_fom is not none else 'N/A' }}</td>
                 <td>{{ run.timestamp }}</td>
             </tr>
             {% endfor %}
@@ -407,6 +407,9 @@ def gather_all_run_data(results_dir):
     """Gathers detailed data from all JSON files across all applications."""
     all_runs = []
     for app_name in os.listdir(results_dir):
+        app_name = filter_apps(app_name)
+        if not app_name:
+            continue
         app_path = os.path.join(results_dir, app_name)
         if not os.path.isdir(app_path):
             continue
@@ -630,7 +633,23 @@ def get_language_for_asset(asset_name):
     return "text"
 
 
-def process_run_data(json_path):
+def get_foms(foms_raw, app_name):
+    if app_name == "kripke":
+        foms_raw = [float(x) for x in foms_raw]
+    elif foms_raw and ":" in foms_raw[0]:
+        foms_raw = [parse_wall_time(x) for x in foms_raw]
+    foms = []
+    if foms_raw:
+        try:
+            foms = [float(fom) for fom in foms_raw if fom and str(fom) != "00"]
+        except (ValueError, TypeError) as e:
+            print(
+                f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}"
+            )
+    return foms
+
+
+def process_run_data(json_path, app_name):
     """
     Loads and processes a single JSON result file for template rendering.
     """
@@ -732,18 +751,10 @@ def process_run_data(json_path):
                 )
 
             foms_raw = optimize_meta.get("foms", [])
-            if foms_raw and ":" in foms_raw[0]:
-                foms_raw = [parse_wall_time(x) for x in foms_raw]
-            foms = []
-            if foms_raw:
-                try:
-                    foms = [float(fom) for fom in foms_raw if fom and str(fom) != "00"]
-                except (ValueError, TypeError) as e:
-                    print(
-                        f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}"
-                    )
-
-            optimization_data = {"foms": foms, "updates": processed_updates}
+            optimization_data = {
+                "foms": get_foms(foms_raw, app_name),
+                "updates": processed_updates,
+            }
             break
 
     return {
@@ -868,6 +879,14 @@ def generate_gemini_summary_plot(all_runs_data):
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
+def filter_apps(app_name):
+    # This was the final run
+    if "lammps" in app_name:
+        if app_name != "lammps-max-fom":
+            return
+    return app_name
+
+
 def scan_results(results_dir):
     """Scans the results directory to gather data for the index pages."""
     apps = defaultdict(
@@ -875,6 +894,9 @@ def scan_results(results_dir):
     )
 
     for app_name in os.listdir(results_dir):
+        app_name = filter_apps(app_name)
+        if not app_name:
+            continue
         app_path = os.path.join(results_dir, app_name)
         if not os.path.isdir(app_path):
             continue
@@ -904,10 +926,7 @@ def scan_results(results_dir):
                         )
                         if not opt_meta:
                             continue
-                        foms = opt_meta.get("foms", [])
-                        if foms and ":" in foms[0]:
-                            foms = [parse_wall_time(x) for x in foms]
-                        foms = [float(f) for f in foms if f and float(f) > 0]
+                        foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
                         if "lammps" in instruction:
@@ -1036,7 +1055,7 @@ def main():
             json_path = os.path.join(args.results_dir, app_name, f"{run['id']}.json")
 
             try:
-                processed_data = process_run_data(json_path)
+                processed_data = process_run_data(json_path, app_name)
                 template = env.get_template("run.html")
                 html_content = template.render(
                     title=run["id"],

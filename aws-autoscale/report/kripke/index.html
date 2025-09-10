@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kripke | Fractale Agent Results</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <style>
+        :root { --pico-font-size: 90%; }
+        body { padding: 2rem 3rem; }
+        nav { margin-bottom: 2rem; }
+        nav ol { margin-bottom: 0; }
+        .grid { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
+        .card { text-align: center; }
+        .card-header { font-weight: bold; font-size: 1.1em; }
+        .card-footer { font-size: 0.9em; }
+        .status { padding: 0.2rem 0.6rem; border-radius: var(--pico-border-radius); color: white; }
+        .status-succeeded { background-color: green; }
+        .status-failed { background-color: red; }
+        .tab-nav a { cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--pico-border-radius); transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; }
+        .tab-nav a.active { background-color: var(--pico-primary); color: var(--pico-primary-inverse); font-weight: bold; }
+        .tab-content { display: none; padding-top: 1rem; border-top: 1px solid var(--pico-muted-border-color); }
+        .tab-content.active { display: block; }
+        .asset-version-btn { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .asset-content { display: none; }
+        .asset-content.active { display: block; }
+        pre, code { white-space: pre-wrap; word-wrap: break-word; }
+        .decision-retry { color: green; }
+        .decision-stop { color: red; } 
+
+        .diff-toggle-btn { float: right; margin-bottom: 1rem; --pico-font-size: 0.8em; }
+        .diff-content { display: none; clear: both; }
+
+        .diff-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .diff-table th { background-color: var(--pico-card-background-color); padding: 0.5rem; text-align: center; font-weight: bold; }
+        .diff-table td { border: 1px solid var(--pico-muted-border-color); padding: 5px; font-family: monospace; vertical-align: top; }
+        .diff_add { background-color: #1c3c1c; color: #a8dba8; }
+        .diff_sub { background-color: #4d1f1f; color: #e0a3a3; }
+        .diff_chg { background-color: #4a4a22; color: #f1f1b0; }
+        
+        pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: #49483e }
+.highlight { background: #272822; color: #f8f8f2 }
+.highlight .c { color: #75715e } /* Comment */
+.highlight .err { color: #960050; background-color: #1e0010 } /* Error */
+.highlight .esc { color: #f8f8f2 } /* Escape */
+.highlight .g { color: #f8f8f2 } /* Generic */
+.highlight .k { color: #66d9ef } /* Keyword */
+.highlight .l { color: #ae81ff } /* Literal */
+.highlight .n { color: #f8f8f2 } /* Name */
+.highlight .o { color: #f92672 } /* Operator */
+.highlight .x { color: #f8f8f2 } /* Other */
+.highlight .p { color: #f8f8f2 } /* Punctuation */
+.highlight .ch { color: #75715e } /* Comment.Hashbang */
+.highlight .cm { color: #75715e } /* Comment.Multiline */
+.highlight .cp { color: #75715e } /* Comment.Preproc */
+.highlight .cpf { color: #75715e } /* Comment.PreprocFile */
+.highlight .c1 { color: #75715e } /* Comment.Single */
+.highlight .cs { color: #75715e } /* Comment.Special */
+.highlight .gd { color: #f92672 } /* Generic.Deleted */
+.highlight .ge { color: #f8f8f2; font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #f8f8f2 } /* Generic.Error */
+.highlight .gh { color: #f8f8f2 } /* Generic.Heading */
+.highlight .gi { color: #a6e22e } /* Generic.Inserted */
+.highlight .go { color: #66d9ef } /* Generic.Output */
+.highlight .gp { color: #f92672; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { color: #f8f8f2; font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #75715e } /* Generic.Subheading */
+.highlight .gt { color: #f8f8f2 } /* Generic.Traceback */
+.highlight .kc { color: #66d9ef } /* Keyword.Constant */
+.highlight .kd { color: #66d9ef } /* Keyword.Declaration */
+.highlight .kn { color: #f92672 } /* Keyword.Namespace */
+.highlight .kp { color: #66d9ef } /* Keyword.Pseudo */
+.highlight .kr { color: #66d9ef } /* Keyword.Reserved */
+.highlight .kt { color: #66d9ef } /* Keyword.Type */
+.highlight .ld { color: #e6db74 } /* Literal.Date */
+.highlight .m { color: #ae81ff } /* Literal.Number */
+.highlight .s { color: #e6db74 } /* Literal.String */
+.highlight .na { color: #a6e22e } /* Name.Attribute */
+.highlight .nb { color: #f8f8f2 } /* Name.Builtin */
+.highlight .nc { color: #a6e22e } /* Name.Class */
+.highlight .no { color: #66d9ef } /* Name.Constant */
+.highlight .nd { color: #a6e22e } /* Name.Decorator */
+.highlight .ni { color: #f8f8f2 } /* Name.Entity */
+.highlight .ne { color: #a6e22e } /* Name.Exception */
+.highlight .nf { color: #a6e22e } /* Name.Function */
+.highlight .nl { color: #f8f8f2 } /* Name.Label */
+.highlight .nn { color: #f8f8f2 } /* Name.Namespace */
+.highlight .nx { color: #a6e22e } /* Name.Other */
+.highlight .py { color: #f8f8f2 } /* Name.Property */
+.highlight .nt { color: #f92672 } /* Name.Tag */
+.highlight .nv { color: #f8f8f2 } /* Name.Variable */
+.highlight .ow { color: #f92672 } /* Operator.Word */
+.highlight .pm { color: #f8f8f2 } /* Punctuation.Marker */
+.highlight .w { color: #f8f8f2 } /* Text.Whitespace */
+.highlight .mb { color: #ae81ff } /* Literal.Number.Bin */
+.highlight .mf { color: #ae81ff } /* Literal.Number.Float */
+.highlight .mh { color: #ae81ff } /* Literal.Number.Hex */
+.highlight .mi { color: #ae81ff } /* Literal.Number.Integer */
+.highlight .mo { color: #ae81ff } /* Literal.Number.Oct */
+.highlight .sa { color: #e6db74 } /* Literal.String.Affix */
+.highlight .sb { color: #e6db74 } /* Literal.String.Backtick */
+.highlight .sc { color: #e6db74 } /* Literal.String.Char */
+.highlight .dl { color: #e6db74 } /* Literal.String.Delimiter */
+.highlight .sd { color: #e6db74 } /* Literal.String.Doc */
+.highlight .s2 { color: #e6db74 } /* Literal.String.Double */
+.highlight .se { color: #ae81ff } /* Literal.String.Escape */
+.highlight .sh { color: #e6db74 } /* Literal.String.Heredoc */
+.highlight .si { color: #e6db74 } /* Literal.String.Interpol */
+.highlight .sx { color: #e6db74 } /* Literal.String.Other */
+.highlight .sr { color: #e6db74 } /* Literal.String.Regex */
+.highlight .s1 { color: #e6db74 } /* Literal.String.Single */
+.highlight .ss { color: #e6db74 } /* Literal.String.Symbol */
+.highlight .bp { color: #f8f8f2 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #a6e22e } /* Name.Function.Magic */
+.highlight .vc { color: #f8f8f2 } /* Name.Variable.Class */
+.highlight .vg { color: #f8f8f2 } /* Name.Variable.Global */
+.highlight .vi { color: #f8f8f2 } /* Name.Variable.Instance */
+.highlight .vm { color: #f8f8f2 } /* Name.Variable.Magic */
+.highlight .il { color: #ae81ff } /* Literal.Number.Integer.Long */
+    </style>
+</head>
+<body>
+    <nav aria-label="breadcrumb">
+        <ul>
+            
+                <li><a href="../index.html">Home</a></li>
+            
+            
+            <li>kripke</li>
+        </ul>
+    </nav>
+    <main class="container">
+        
+    <h1>Runs for: kripke</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Run ID</th>
+                <th>Status</th>
+                <th>Best FOM</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td><a href="results-2025-09-09_23-36-21.html">results-2025-09-09_23-36-21</a></td>
+                <td><span class="status status-failed">Failed</span></td>
+                <td>N/A</td>
+                <td>2025-09-09 23-36-21</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_22-32-28.html">results-2025-09-09_22-32-28</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>8.83235e-08</td>
+                <td>2025-09-09 22-32-28</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_20-50-32.html">results-2025-09-09_20-50-32</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>8.777258e-08</td>
+                <td>2025-09-09 20-50-32</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_17-20-37.html">results-2025-09-09_17-20-37</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>8.917248e-08</td>
+                <td>2025-09-09 17-20-37</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_14-58-05.html">results-2025-09-09_14-58-05</a></td>
+                <td><span class="status status-failed">Failed</span></td>
+                <td>N/A</td>
+                <td>2025-09-09 14-58-05</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_14-31-19.html">results-2025-09-09_14-31-19</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>1.341828e-09</td>
+                <td>2025-09-09 14-31-19</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_13-54-35.html">results-2025-09-09_13-54-35</a></td>
+                <td><span class="status status-failed">Failed</span></td>
+                <td>N/A</td>
+                <td>2025-09-09 13-54-35</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_13-28-45.html">results-2025-09-09_13-28-45</a></td>
+                <td><span class="status status-failed">Failed</span></td>
+                <td>N/A</td>
+                <td>2025-09-09 13-28-45</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_08-46-11.html">results-2025-09-09_08-46-11</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>1.7904e-08</td>
+                <td>2025-09-09 08-46-11</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_07-50-41.html">results-2025-09-09_07-50-41</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>8.906264e-10</td>
+                <td>2025-09-09 07-50-41</td>
+            </tr>
+            
+            <tr>
+                <td><a href="results-2025-09-09_07-00-04.html">results-2025-09-09_07-00-04</a></td>
+                <td><span class="status status-succeeded">Succeeded</span></td>
+                <td>3.203138e-09</td>
+                <td>2025-09-09 07-00-04</td>
+            </tr>
+            
+        </tbody>
+    </table>
+
+    </main>
+
+     <footer class="container" style="margin-top: 4rem;">
+        <hr>
+        <p style="text-align: center; color: var(--pico-muted-color);">
+            Made with ❤️ by <a href="https://github.com/vsoch">@vsoch</a>
+        </p>
+    </footer>
+
+</body>
+</html>
