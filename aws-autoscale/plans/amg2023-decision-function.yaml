@@ -11,7 +11,7 @@ plan:
     max_attempts: 10
     details: |
       Clone the latest branch of amg2023. You MUST put amg on the PATH.
-      You MUST install libgomp1 for libgomp1.so and not run apt-get purge
+      You MUST install libgomp1 for libgomp1.so and you MUST NOT run apt-get purge
 
 - agent: minicluster
   context:
@@ -27,6 +27,7 @@ plan:
       You MUST choose initial parameters and use the provided function for guidance about what to change. 
       The size of the MiniCluster MUST be 1. Tasks MUST be at least 4.
       To reduce noise in logging, you can set logging.quiet to true.
+      If there is a build issue, you can use containers[0].commands.pre to do installation or additional setup
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      
         c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
