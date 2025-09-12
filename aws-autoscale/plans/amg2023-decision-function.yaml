@@ -1,0 +1,172 @@
+name: Build and Deploy AMG2023
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes"
+    application: amg2023
+    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    push: true
+    platforms: linux/amd64,linux/arm64
+    max_attempts: 10
+    details: |
+      Clone the latest branch of amg2023. You MUST put amg on the PATH.
+      You MUST install libgomp1 for libgomp1.so
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    max_attempts: 10
+    max_runtime: 600
+    allow_return_to_human: false
+    allow_return_to_manager: false
+    optimize: |
+      Maximize the amg2023 figure of merit. You MUST maximize memory per CPU core. More cores are better.
+      The trick to optimizing this is THREADING. You MUST force OpenMP and any math libraries to use only one thread per MPI rank. On example is setting OMP_NUM_THREADS to "1". You might also consider setting OMPI_MCA_btl_vader_single_copy_mechanism to "cma" as a conservative builder will set to none.
+      You MUST choose initial parameters and use the provided function for guidance about what to change. 
+      The size of the MiniCluster MUST be 1. Tasks MUST be at least 4.
+      To reduce noise in logging, you can set logging.quiet to true.
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      
+        c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
+        hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        m6g.12xlarge, 48 CPU, 192 GiB Memory, ARM (Graviton2)
+        t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
+        t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
+        m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)
+        m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD
+        m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
+        c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
+        c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
+        c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD
+        r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
+        i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        d3.4xlarge, 8 CPU, 128 GiB Memory, Intel 
+      If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
+    testing: |
+      You MUST run AMG -problem 2. For testing choose a small problem size no greater than 4 in any dimension.    
+      If you see a nodeSelector and larger size in the manifest it is OK to keep that and try to debug the issue.
+    details: | 
+      You MUST run on only one node. The size of the MiniCluster MUST be 1 and tasks MUST be at least 4.
+      You MUST NOT oversubscribe.
+    function: |
+        You MUST run the function "optimize_amg" on this and subsequent requests to reach a decision to RETRY or STOP.
+        You MAY follow the instructions of the function unless you have reached an impassible state where you would need to return to the manager.
+        In an impossible state, do NOT return to the manager, but STOP instead and provide your decision and reason.
+        YOU MUST start with something akin to amg -problem 2 -n 128 128 128 -P 8 4 1 with threading one thread per core.
+        A timeout may require different paramters or instance type.
+
+        import math
+        from typing import Dict, Any, Literal
+        import json
+
+        def evaluate_amg_run(
+            # Problem size
+            problem_size: Any,
+            total_ranks: int,
+            nodes_used: int,
+            # Hardware constraints
+            cores_per_node: int,
+            memory_gb_per_node: int,
+            threading_hint: int,
+            current_fom: float,
+            threshold: float = 0.90,
+            ideal_fom_per_core: float = 4.5e8,
+            efficiency_sweet_spot: float = 1.0e6,
+            dofs_per_gb: float = 1.2e7,
+            memory_safety_factor: float = 0.95
+        ) -> Dict[str, Any]:
+            """
+            Args:
+                problem_size (tuple): The 3D problem grid dimensions (e.g., Px, Py, Pz).
+                total_ranks (int): The total number of MPI tasks used for the run.
+                nodes_used (int): The number of compute nodes used for the run.
+                cores_per_node (int): The number of physical CPU cores on a single compute node.
+                memory_gb_per_node (int): The total system RAM in Gigabytes on a single compute node.
+                threading_hint (int): Specifies the SMT/Hyper-Threading level to assume (e.g., 1 for no SMT, 2 for SMT).
+                current_fom (float): The measured Figure of Merit (FOM) from the completed run.
+                threshold (float): The performance goal, as a fraction of the theoretical maximum FOM (default 0.90).
+                ideal_fom_per_core (float): A tuning constant for the max FOM of a single core (default 4.5e8).
+                efficiency_sweet_spot (float): A tuning constant modeling communication overhead (default 1.0e6).
+                dofs_per_gb (float): A tuning constant for the memory model (DOFs per GB of RAM, default 1.2e7).
+                memory_safety_factor (float): A safety margin for memory usage (default 0.95).
+
+            Returns:
+                (dict): A dictionary containing 'decision', 'reason', 'strategy_hint', and 'metrics'.
+            """   
+            total_dofs = problem_size[0] * problem_size[1] * problem_size[2]
+            if total_ranks == 0:
+                return {"decision": "RETRY", "reason": "The number of tasks cannot be zero. Suggest using at least one task."}
+
+            # --- 2. Calculate Theoretical Performance and Ratios ---
+            dofs_per_rank = total_dofs / total_ranks
+            max_cores_on_node = cores_per_node * threading_hint
+            cpu_per_rank = max_cores_on_node // total_ranks if nodes_used == 1 else cores_per_node
+        
+            scaling_efficiency = math.tanh(dofs_per_rank / efficiency_sweet_spot)
+            effective_fom_per_core = ideal_fom_per_core * scaling_efficiency
+            theoretical_max_fom = effective_fom_per_core * total_ranks * cpu_per_rank
+
+            performance_ratio = 0.0
+            if theoretical_max_fom > 1e-9:
+                performance_ratio = current_fom / theoretical_max_fom
+
+            estimated_memory_gb = total_dofs / dofs_per_gb
+            memory_utilization = estimated_memory_gb / (memory_gb_per_node * nodes_used)
+        
+            metrics = {
+                "performance_ratio": round(performance_ratio, 3),
+                "scaling_efficiency": round(scaling_efficiency, 3),
+                "memory_utilization": round(memory_utilization, 3),
+                "dofs_per_rank": int(dofs_per_rank),
+                "theoretical_max_fom": f"{theoretical_max_fom:.2e}"
+            }
+            # --- 3. Decision Logic based on prioritized bottlenecks ---        
+            # Primary STOP condition: Performance is good enough.
+            if performance_ratio >= threshold:
+                return {
+                    "decision": "STOP",
+                    "reason": f"Optimization goal reached. Current performance is at {performance_ratio:.1%} of the theoretical maximum, meeting the {threshold:.1%} threshold.",
+                    "metrics": metrics
+                }
+        
+            # Primary RETRY condition: Memory is the bottleneck.
+            if memory_utilization >= memory_safety_factor:
+                return {
+                    "decision": "RETRY",
+                    "reason": f"Memory utilization is critically high at {memory_utilization:.1%}. The problem size is too large for the allocated memory. Suggest significantly reducing the problem size.",
+                    "metrics": metrics
+                }
+
+            # Secondary RETRY condition: Scaling is the bottleneck.
+            if scaling_efficiency < 0.5: # Heuristic for "low" efficiency
+                 return {
+                    "decision": "RETRY",
+                    "reason": f"Scaling efficiency is low ({scaling_efficiency:.1%}), indicating the problem size per rank is too small. Suggest significantly increasing the problem size to provide more work per rank.",
+                    "metrics": metrics
+                }
+        
+            # Tertiary RETRY condition: Cores are underutilized on a single node.
+            if nodes_used == 1 and total_ranks < max_cores_on_node:
+                return {
+                    "decision": "RETRY",
+                    "reason": f"The node is under-subscribed ({total_ranks}/{max_cores_on_node} tasks used). Suggest increasing the number of tasks to better utilize the hardware.",
+                    "metrics": metrics
+                }
+
+            # Default RETRY condition: Performance is simply not good enough yet.
+            return {
+                "decision": "RETRY",
+                "reason": f"Performance is at {performance_ratio:.1%} of theoretical max, which is below the {threshold:.1%} threshold. Suggest moderately increasing the problem size to improve the work-per-rank and move closer to the optimal FOM.",
+                "metrics": metrics
+            }
