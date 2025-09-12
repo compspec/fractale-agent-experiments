@@ -1,0 +1,172 @@
+name: Build and Deploy LAMMPS
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes"
+    application: lammps-reax
+    platforms: linux/amd64,linux/arm64
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    push: true
+    max_attempts: 10
+    details: |
+      Ensure all globbed files from examples/reaxff/HNS from the root of the lammps codebase are in the WORKDIR. Clone the latest branch of LAMMPS. You MUST put lmp on the PATH. You MUST install libgomp1.
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    max_attempts: 10
+    max_runtime: 300
+    allow_return_to_human: false
+    allow_return_to_manager: false
+    optimize: |
+      You MUST maximize the LAMMPS FOM, k-atom or m-atom steps per second. 
+      You MUST execute in the pwd with lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite      
+      You MUST choose instance type and resources that will maximize the FOM.
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to one node.      
+        c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
+        hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        m6g.12xlarge, 48 CPU, 192 GiB Memory, ARM (Graviton2)
+        t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
+        t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
+        m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel
+        t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)
+        m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel
+        m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD
+        m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
+        c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
+        c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
+        c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
+        r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD
+        r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
+        i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
+        d3.4xlarge, 8 CPU, 128 GiB Memory, Intel 
+      If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
+    testing:
+      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite for testing only.    
+    details: |
+      You MUST run on only one node. 
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
+    function: |
+        You MUST run the function "evaluate_lammps_run" on this and subsequent requests to reach a decision to RETRY or STOP.
+        You MAY follow the instructions of the function unless you have reached an impassible state where you would need to return to the manager.
+        In an impossible state, do NOT return to the manager, but STOP instead and provide your decision and reason.
+
+        import math
+        from typing import Dict, Any, Literal
+        import json
+
+        def evaluate_lammps_run(
+            total_atoms: int,
+            total_ranks: int,
+            nodes_used: int,
+            cores_per_node: int,
+            memory_gb_per_node: int,
+            threading_hint: int,
+            current_performance: float,
+            threshold: float = 0.90,
+            ideal_perf_per_core: float = 150000.0,
+            efficiency_sweet_spot: float = 40000.0,
+            atoms_per_gb: float = 1.5e6,
+            memory_safety_factor: float = 0.90
+        ) -> Dict[str, Any]:
+            """
+            Evaluates a LAMMPS run and provides a high-level decision and strategic hint.
+
+            This function acts as a "diagnostician" by analyzing the performance of a
+            completed LAMMPS run against a theoretical model. It identifies the most
+            likely bottleneck (memory, poor scaling, or hardware underutilization) and
+            returns a machine-readable strategic hint for what to try next.
+
+            Args:
+                total_atoms (int): The total number of atoms in the simulation.
+                total_ranks (int): The total number of MPI tasks used for the run.
+                nodes_used (int): The number of compute nodes used for the run.
+                cores_per_node (int): The number of physical CPU cores on a single compute node.
+                memory_gb_per_node (int): The total system RAM in Gigabytes on a single compute node.
+                threading_hint (int): Specifies the SMT/Hyper-Threading level to assume (e.g., 1 for no SMT, 2 for SMT).
+                current_performance (float): The measured performance from the run, typically in timesteps/second.
+                threshold (float): The performance goal, as a fraction of the theoretical maximum (default 0.90).
+                ideal_perf_per_core (float): A tuning constant for the max performance of a single core (default 150,000 timesteps/sec).
+                efficiency_sweet_spot (float): A tuning constant for atoms/rank needed for ~76% efficiency (default 40,000).
+                atoms_per_gb (float): A tuning constant for the memory model (atoms per GB of RAM, default 1.5e6).
+                memory_safety_factor (float): A safety margin for memory usage (default 0.90).
+
+            Returns:
+                (dict): A dictionary containing 'decision', 'reason', 'strategy_hint', and 'metrics'.
+            """
+            if total_ranks == 0:
+                return {"decision": "RETRY", "reason": "The number of tasks cannot be zero.", "strategy_hint": "INCREASE_TASKS"}
+
+            # --- Calculate Theoretical Performance and Ratios ---
+            atoms_per_rank = total_atoms / total_ranks
+            max_cores_on_node = cores_per_node * threading_hint
+            cores_per_rank = max_cores_on_node // total_ranks if nodes_used == 1 else cores_per_node
+            total_cores_used = total_ranks * cores_per_rank
+            
+            scaling_efficiency = math.tanh(atoms_per_rank / efficiency_sweet_spot)
+            effective_perf_per_core = ideal_perf_per_core * scaling_efficiency
+            theoretical_max_perf = effective_perf_per_core * total_cores_used
+
+            performance_ratio = 0.0
+            if theoretical_max_perf > 1e-9:
+                performance_ratio = current_performance / theoretical_max_perf
+
+            estimated_memory_gb = total_atoms / atoms_per_gb
+            memory_utilization = estimated_memory_gb / (memory_gb_per_node * nodes_used) if nodes_used > 0 else 0
+            
+            metrics = {
+                "performance_ratio": round(performance_ratio, 3),
+                "scaling_efficiency": round(scaling_efficiency, 3),
+                "memory_utilization": round(memory_utilization, 3),
+                "atoms_per_rank": int(atoms_per_rank),
+                "theoretical_max_perf_timesteps_sec": f"{theoretical_max_perf:.2e}"
+            }
+
+            # --- Decision Logic based on prioritized bottlenecks ---
+            
+            if performance_ratio >= threshold:
+                return {
+                    "decision": "STOP",
+                    "reason": f"Optimization goal reached. Current performance is at {performance_ratio:.1%} of the theoretical maximum, meeting the {threshold:.1%} threshold.",
+                    "metrics": metrics
+                }
+            
+            if memory_utilization >= memory_safety_factor:
+                return {
+                    "decision": "RETRY",
+                    "reason": f"Memory utilization is critically high at {memory_utilization:.1%}. The number of atoms is too large for the allocated memory.",
+                    "strategy_hint": "DECREASE_ATOMS",
+                    "metrics": metrics
+                }
+
+            if scaling_efficiency < 0.5: # Heuristic for "low" efficiency
+                 return {
+                    "decision": "RETRY",
+                    "reason": f"Scaling efficiency is low ({scaling_efficiency:.1%}), indicating the number of atoms per rank is too small (communication-bound).",
+                    "strategy_hint": "INCREASE_ATOMS",
+                    "metrics": metrics
+                }
+            
+            if nodes_used == 1 and total_ranks < max_cores_on_node:
+                return {
+                    "decision": "RETRY",
+                    "reason": f"The node is under-subscribed ({total_ranks}/{max_cores_on_node} tasks used). Hardware is not fully utilized.",
+                    "strategy_hint": "INCREASE_TASKS",
+                    "metrics": metrics
+                }
+
+            return {
+                "decision": "RETRY",
+                "reason": f"Performance is at {performance_ratio:.1%} of theoretical max, which is below the {threshold:.1%} threshold. Current configuration is reasonable but can be improved.",
+                "strategy_hint": "INCREASE_ATOMS",
+                "metrics": metrics
+            }
