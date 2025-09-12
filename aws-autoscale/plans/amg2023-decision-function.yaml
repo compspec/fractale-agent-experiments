@@ -11,7 +11,7 @@ plan:
     max_attempts: 10
     details: |
       Clone the latest branch of amg2023. You MUST put amg on the PATH.
-      You MUST install libgomp1 for libgomp1.so
+      You MUST install libgomp1 for libgomp1.so and not run apt-get purge
 
 - agent: minicluster
   context:
