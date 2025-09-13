@@ -10,7 +10,11 @@ plan:
     push: true
     max_attempts: 20
     details: |
-      You MUST build the parallel version of Laghos. You MUST use MFEM_USE_MPI=yes. You MUST ensure that mfem is built with parallel MPI-enabled mode. You MUST ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR. Clone the latest branch.
+      Build laghos, building hyre, metis, and mfem from source first. 
+      You MUST install hypre 2.28.0 and disable fortran and add the --enable-bigint flag.
+      You MUST install metis 4.0.3 and add OPTFLAGS=-Wno-error=implicit-function-declaration.
+      You MUST install mfem 4.7 and make parallel.
+      You MUST ensure all globbed files from ./data from the root of the laghos codebase are in the WORKDIR.
 
 - agent: minicluster
   context:
