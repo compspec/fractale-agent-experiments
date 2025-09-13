@@ -882,7 +882,7 @@ def generate_gemini_summary_plot(all_runs_data):
 def filter_apps(app_name):
     # This was the final run
     if "lammps" in app_name:
-        if app_name not in ["lammps-max-fom", "lammps-test"]:
+        if app_name not in ["lammps-max-fom", "lammps-test", "lammps-decision-function"]:
             return
     return app_name
 
@@ -929,7 +929,9 @@ def scan_results(results_dir):
                         foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
-                        if "lammps" in instruction:
+                        if "lammps-decision" in instruction:
+                            best_fom = max(foms)
+                        elif "lammps" in instruction:
                             best_fom = min(foms)
                         else:
                             best_fom = max(foms)
