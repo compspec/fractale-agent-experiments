@@ -880,12 +880,10 @@ def generate_gemini_summary_plot(all_runs_data):
 
 
 def filter_apps(app_name):
-    # This was the final run
-    if "lammps" in app_name:
-        if app_name not in ["lammps-max-fom", "lammps-test", "lammps-decision-function"]:
-            return
+    # This was asking to minimize time
+    if "lammps-test" in app_name:
+        return
     return app_name
-
 
 def scan_results(results_dir):
     """Scans the results directory to gather data for the index pages."""
@@ -901,6 +899,7 @@ def scan_results(results_dir):
         if not os.path.isdir(app_path):
             continue
 
+        # We need to save max foms ACROSS runs
         for filename in os.listdir(app_path):
             if filename.endswith(".json"):
                 file_path = os.path.join(app_path, filename)
@@ -929,19 +928,14 @@ def scan_results(results_dir):
                         foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
-                        if "lammps-decision" in instruction:
-                            best_fom = max(foms)
-                        elif "lammps" in instruction:
-                            best_fom = min(foms)
-                        else:
-                            best_fom = max(foms)
+                        best_fom = max(foms)
                         break
 
                     if status == "Succeeded":
                         apps[app_name]["summary"]["succeeded"] += 1
                         current_best = apps[app_name]["summary"]["best_fom"]
                         if best_fom and (
-                            current_best is None or best_fom < current_best
+                            current_best is None or best_fom > current_best
                         ):
                             apps[app_name]["summary"]["best_fom"] = best_fom
                     else:
