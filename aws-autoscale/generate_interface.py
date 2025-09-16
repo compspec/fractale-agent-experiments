@@ -684,8 +684,10 @@ def process_run_data(json_path, app_name):
         assets = step.get("metadata", {}).get("assets", {})
         if not assets:
             continue
+        if agent_name not in assets_data:
+            assets_data[agent_name] = {}
 
-        agent_assets = {}
+        # This goes into dockerfile, minicluster log, etc.
         for asset_name, versions in assets.items():
             # This loop now ONLY handles regular assets. 'optimize' is not an asset.
             processed_versions = []
@@ -695,14 +697,14 @@ def process_run_data(json_path, app_name):
             if not isinstance(versions, list):
                 continue
 
+            if asset_name not in assets_data[agent_name]:
+                assets_data[agent_name][asset_name] = []
             for i, version_data in enumerate(versions):
-                # Robustly handle items that are either dictionaries or plain strings
+                item = ""
                 if isinstance(version_data, dict):
                     item = version_data.get("item", "")
                 elif isinstance(version_data, str):
                     item = version_data
-                else:
-                    item = ""  # Defensive fallback
 
                 prev_item = ""
                 if i > 0:
@@ -713,15 +715,9 @@ def process_run_data(json_path, app_name):
                         prev_item = prev_version_data
 
                 diff_html = generate_diff_html(prev_item, item)
-                processed_versions.append(
+                assets_data[agent_name][asset_name].append(
                     {"highlighted_code": highlight_code(item, lang), "diff": diff_html}
                 )
-            agent_assets[asset_name] = processed_versions
-
-        if agent_assets:
-            if agent_name not in assets_data:
-                assets_data[agent_name] = {}
-            assets_data[agent_name].update(agent_assets)
 
     # 2. Separately, find and process the unique 'optimize' block from metadata
     optimization_data = None
@@ -884,6 +880,7 @@ def filter_apps(app_name):
     if "lammps-test" in app_name:
         return
     return app_name
+
 
 def scan_results(results_dir):
     """Scans the results directory to gather data for the index pages."""
