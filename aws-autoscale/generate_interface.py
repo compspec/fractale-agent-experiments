@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import pandas
 from collections import defaultdict
 from datetime import datetime
 
@@ -19,6 +20,11 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 
+
+# Being lazy - let's create a global data frame of key/value pairs we can set for different metrics to plot.
+# Each app has a different set of runs - "vanilla" and then with a function.
+df = pandas.DataFrame(columns=['app', 'path', 'experiment', 'metric_name', 'direction', 'metric', 'value'])
+df_idx = 0
 
 BASE_TEMPLATE = """
 <!DOCTYPE html>
@@ -926,6 +932,39 @@ def scan_results(results_dir):
                         if not foms:
                             continue
                         best_fom = max(foms)
+                        
+                        # Save FOM to data frame based on app, experiment, etc.
+                        # These are the "raw" runs where we let the LLM decide
+                        if experiment in ['kripke', 'amg2023', 'laghos', 'lammps-max-fom']:
+                            experiment_type = "llm-decision"
+                        # These are controlled user decision - we provide a function that explicitly
+                        # instructs for next resources and setup
+                        elif experiment in ['lammps-decision-function']:
+                            experiment_type = 'user-provided-function'
+                        # This is a user guided decision - give the agent information about scaling 
+                        # and still allow it to decide resources, etc.
+                        elif experiment in ['laghos-decision-function', 'lammps-decision-fom', 'amg2023-function']:
+                            experiment_type = 'user-guided-function'
+                        experiment = os.path.basename(app_path)
+                        for fom in foms:
+                            df.loc[df_idx, :] = [app_name, file_path, experiment
+                            df_idx += 1
+                        import IPython
+                        IPython.embed()
+
+amg2023/
+amg2023-function/
+kripke/
+laghos/
+laghos-decision-function/
+lammps-decision-fom/
+lammps-decision-function/
+lammps-fom/
+lammps-max-fom/
+lammps-test/
+lammps-wall-time/
+
+
                         break
 
                     if status == "Succeeded":

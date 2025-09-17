@@ -54,8 +54,8 @@ plan:
       You MUST run on only one node. 
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
     function: |
-        You MUST run the function "optimize_lammps" on this and subsequent requests to reach a decision to RETRY or STOP.
-        You MAY follow the instructions of the function unless you have reached an impassible state where you would need to return to the manager.
+        You MUST run the function "evaluate_kripke_run" on this and subsequent requests to reach a decision to RETRY or STOP.
+        You MAY use the strategy hint provided by the function unless you have reached an impassible state where you would need to return to the manager.
         In an impossible state, do NOT return to the manager, but STOP instead and provide your decision and reason.
 
         import math
