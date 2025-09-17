@@ -23,7 +23,7 @@ from pygments.lexers import get_lexer_by_name
 
 # Being lazy - let's create a global data frame of key/value pairs we can set for different metrics to plot.
 # Each app has a different set of runs - "vanilla" and then with a function.
-df = pandas.DataFrame(columns=['app', 'path', 'experiment', 'metric_name', 'direction', 'metric', 'value'])
+df = pandas.DataFrame(columns=['app', 'path', 'experiment', 'experiment_type', 'metric_name', 'direction', 'metric', 'value', 'unit'])
 df_idx = 0
 
 BASE_TEMPLATE = """
@@ -889,7 +889,11 @@ def filter_apps(app_name):
 
 
 def scan_results(results_dir):
-    """Scans the results directory to gather data for the index pages."""
+    """
+    Parse results directory to gather data for the index pages.
+    """
+    global df
+    global df_idx
     apps = defaultdict(
         lambda: {"summary": {"succeeded": 0, "failed": 0, "best_fom": None}, "runs": []}
     )
@@ -931,8 +935,27 @@ def scan_results(results_dir):
                         foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
+
                         best_fom = max(foms)
-                        
+                        experiment = os.path.basename(app_path)
+                        direction = "maximize"
+                        if "lammps-wall-time" in experiment:
+                            direction = "minimize"
+                            metric_name = "wall_time_seconds"
+                            unit = "(seconds)"
+                        elif "lammps" in experiment:
+                            metric_name = "katom_steps"
+                            unit = "(atom-steps/second)"
+                        elif "kripke" in experiment:
+                            metric_name = "grind_time"
+                            unit = "(iterations/second)"
+                        elif "amg" in experiment:
+                            metric_name = "figure_of_merit"
+                            unit = "(nnz/s)"
+                        elif "laghos" in experiment:
+                            metric_name = "major_kernels_total_rate"
+                            unit = "(megadofs x time steps / second)"
+
                         # Save FOM to data frame based on app, experiment, etc.
                         # These are the "raw" runs where we let the LLM decide
                         if experiment in ['kripke', 'amg2023', 'laghos', 'lammps-max-fom']:
@@ -943,28 +966,23 @@ def scan_results(results_dir):
                             experiment_type = 'user-provided-function'
                         # This is a user guided decision - give the agent information about scaling 
                         # and still allow it to decide resources, etc.
-                        elif experiment in ['laghos-decision-function', 'lammps-decision-fom', 'amg2023-function']:
+                        elif experiment in ['laghos-decision-function', 'lammps-decision-fom', 'amg2023-function', 'kripke-decision-function']:
                             experiment_type = 'user-guided-function'
-                        experiment = os.path.basename(app_path)
+                        else:
+                            experiment_type = "test"
+
+                        # Application
+                        if "lammps" in app_name:
+                            application = "lammps"
+                        elif "kripke" in app_name:
+                            application = "kripke"
+                        elif "laghos" in app_name:
+                            application = "laghos"
+                        elif "amg" in app_name:
+                            application = "amg2023"
                         for fom in foms:
-                            df.loc[df_idx, :] = [app_name, file_path, experiment
+                            df.loc[df_idx, :] = [application, file_path, experiment, experiment_type, metric_name, direction, "fom", fom, unit]
                             df_idx += 1
-                        import IPython
-                        IPython.embed()
-
-amg2023/
-amg2023-function/
-kripke/
-laghos/
-laghos-decision-function/
-lammps-decision-fom/
-lammps-decision-function/
-lammps-fom/
-lammps-max-fom/
-lammps-test/
-lammps-wall-time/
-
-
                         break
 
                     if status == "Succeeded":
@@ -1112,6 +1130,51 @@ def main():
         f"\n✅ Report generation complete! View the results at:\nfile://{os.path.abspath(args.output_dir)}/index.html"
     )
 
+    # Finish up with plots for the data!
+    global df
+    global df_idx
+    df.to_csv(os.path.join("data", "foms-results.csv"))
+    img_outdir = os.path.join("data", "img")
+    if not os.path.exists(img_outdir):
+        os.makedirs(img_outdir)
+
+    # Filter out test data
+    df = df[df.experiment_type != "test"]
+    for app in df.app.unique():
+        subset = df[df.app == app]
+        fig = plt.figure(figsize=(6, 3.3))
+        gs = plt.GridSpec(1, 1, width_ratios=[2])
+        axes = []
+        cpu_ax = fig.add_subplot(gs[0, 0])
+        axes.append(cpu_ax)
+        # axes.append(fig.add_subplot(gs[0, 1], sharey=cpu_ax))
+        # axes.append(fig.add_subplot(gs[0, 2]))
+        unit = subset.unit.unique()[0]
+
+        # fig, axes = plt.subplots(1, 2, sharey=True, figsize=(18, 3.3))
+        sns.set_style("whitegrid")
+        sns.barplot(
+            subset,
+            ax=axes[0],
+            x="experiment_type",
+            y="value",
+            hue="experiment_type",
+            err_kws={"color": "darkred"},
+            # palette=cloud_colors,
+        )
+        metric_name = " ".join([x.capitalize() for x in subset.metric_name.unique()[0].split('_')])
+        title = app.upper() + " " + metric_name
+        axes[0].set_title(title, fontsize=14)
+        axes[0].set_ylabel(unit, fontsize=14)
+        axes[0].set_xlabel("", fontsize=14)
+        # handles, labels = axes[1].get_legend_handles_labels()
+        # axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45, horizontalalignment='right')
+        labels = axes[0].get_xticklabels() 
+        labels = ["\n".join(x._text.split("-")) for x in labels]
+        axes[0].set_xticklabels(labels)
+        plt.tight_layout()
+        plt.savefig(os.path.join(img_outdir, f"{app}.svg"))
+        plt.clf()
 
 if __name__ == "__main__":
     main()
