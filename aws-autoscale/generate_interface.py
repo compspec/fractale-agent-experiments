@@ -41,6 +41,11 @@ df = pandas.DataFrame(
 df_idx = 0
 commands = {}
 
+# Gemini df
+gemini_df = pandas.DataFrame(
+    columns=["Application", "Experiment", "Agent", "Attempt", "Prompt Tokens", "Candidate Tokens", "Total Tokens"]
+)
+
 # Don't include non experiment runs
 experiment_runs = [
     "kripke",
@@ -673,62 +678,6 @@ def generate_status_countplot(all_runs_data):
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
-def generate_gemini_plot(steps_data):
-    """
-    Generate a scatterplot for Gemini token usage.
-    """
-    df_data = []
-    for step in steps_data:
-        agent_name = step.get("agent", "unknown_agent").title()
-        gemini_calls = step.get("metadata", {}).get("ask_gemini", [])
-        for i, call in enumerate(gemini_calls):
-            df_data.append(
-                {
-                    "Agent": agent_name,
-                    "Attempt": i + 1,
-                    "Prompt Tokens": call.get("prompt_token_count", 0),
-                    "Candidate Tokens": call.get("candidates_token_count", 0),
-                    "Total Tokens": call.get("total_token_count", 0),
-                }
-            )
-
-    if not df_data:
-        return None
-
-    df = pd.DataFrame(df_data)
-    plt.figure(figsize=(10, 7))
-    sns.set_theme(style="whitegrid")
-
-    # Create a colorful scatterplot
-    plot = sns.scatterplot(
-        data=df,
-        x="Prompt Tokens",
-        y="Candidate Tokens",
-        hue="Agent",
-        size="Total Tokens",
-        sizes=(50, 500),
-        palette="deep",
-        alpha=0.7,
-    )
-
-    plot.set_title("Gemini API Token Usage per Call", fontsize=16)
-    plot.set_xlabel("Prompt Token Count (Input)")
-    plot.set_ylabel("Candidate Token Count (Output)")
-
-    # Only modify the legend if it actually exists.
-    legend = plot.get_legend()
-    if legend:
-        legend.set_title("")
-
-    plt.tight_layout()
-
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format="png")
-    plt.close()
-    buffer.seek(0)
-    return base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-
 def generate_timing_plot(times_data, title):
     """
     Generates a Seaborn boxplot and returns it as a base64 encoded string.
@@ -866,7 +815,9 @@ def process_run_data(json_path, app_name):
             if plot_b64:
                 plots.append({"title": title, "data": plot_b64})
 
-    gemini_plot_data = generate_gemini_plot(data.get("steps", []))
+    gemini_plot_data = generate_gemini_plot(
+        data.get("steps", []), application, experiment
+    )
 
     # 1. Process all regular assets first with robust type checking
     assets_data = {}
@@ -1022,10 +973,11 @@ def process_run_data(json_path, app_name):
     }
 
 
-def generate_gemini_plot(steps_data):
+def generate_gemini_plot(steps_data, app, experiment):
     """
     Generate scatterplot for Gemini token usage.
     """
+    global gemini_df
     df_data = []
     for step in steps_data:
         agent_name = step.get("agent", "unknown_agent").title()
@@ -1033,6 +985,8 @@ def generate_gemini_plot(steps_data):
         for i, call in enumerate(gemini_calls):
             df_data.append(
                 {
+                    "Application": app,
+                    "Experiment": experiment,  # experiment_type
                     "Agent": agent_name,
                     "Attempt": i + 1,
                     "Prompt Tokens": call.get("prompt_token_count", 0),
@@ -1044,7 +998,8 @@ def generate_gemini_plot(steps_data):
     if not df_data:
         return None
 
-    df = pd.DataFrame(df_data)
+    gdf = pd.DataFrame(df_data)
+    gemini_df = pandas.concat([gemini_df, gdf])
     plt.figure(figsize=(10, 7))
     sns.set_theme(style="whitegrid")
 
@@ -1052,7 +1007,7 @@ def generate_gemini_plot(steps_data):
     # Hue distinguishes agents by color
     # Size represents the total token cost of the call
     plot = sns.scatterplot(
-        data=df,
+        data=gdf,
         x="Prompt Tokens",
         y="Candidate Tokens",
         hue="Agent",
@@ -1210,7 +1165,8 @@ def get_direction_unit(experiment):
         metric_name = "major_kernels_total_rate"
         unit = "(megadofs x time steps / second)"
     else:
-        import IPython 
+        import IPython
+
         IPython.embed()
     return direction, metric_name, unit
 
@@ -1290,7 +1246,7 @@ def scan_results(results_dir):
 
                         # The first fom is from the deployment agent, and we explicitly ask for a small problem size
                         for fom in foms:
-                        # for fom in foms[1:]:
+                            # for fom in foms[1:]:
                             df.loc[df_idx, :] = [
                                 application,
                                 file_path,
@@ -1548,26 +1504,26 @@ def main():
     plt.savefig(os.path.join("data", "img", "application-status.svg"))
     plt.close()
 
-    with open(os.path.join('data', 'commands.json'), 'w') as fd:
+    with open(os.path.join("data", "commands.json"), "w") as fd:
         fd.write(json.dumps(commands, indent=4))
 
-    filtered = df[df.value != 't3.medium']
+    filtered = df[df.value != "t3.medium"]
 
     # TODO: memory per core?
-    for value in ['platform', 'memory', 'cores', 'instance-type']:
+    for value in ["platform", "memory", "cores", "instance-type"]:
         subset = filtered[filtered.metric == value]
         # Don't count test instance
         plt.figure(figsize=(10, 7))
         sns.set_theme(style="whitegrid")
         plot = sns.histplot(
-          data=subset,
-          x="app",
-          multiple="dodge",
-          hue="value",
-          palette="muted",
-          shrink=0.8,
-      )
-        title = " ".join([x.capitalize() for x in value.split('-')])
+            data=subset,
+            x="app",
+            multiple="dodge",
+            hue="value",
+            palette="muted",
+            shrink=0.8,
+        )
+        title = " ".join([x.capitalize() for x in value.split("-")])
         plot.set_title(f"{title} Selection", fontsize=16)
         plot.set_xlabel("")
         plot.set_ylabel(title)
@@ -1575,13 +1531,51 @@ def main():
         plt.savefig(os.path.join("data", "img", f"{value}.svg"))
         plt.close()
 
+    gemini_df.to_csv(os.path.join("data", "gemini-results.csv"))
+    # TODO plot with app name
     import IPython
+
     IPython.embed()
+
+    plt.figure(figsize=(10, 7))
+    sns.set_theme(style="whitegrid")
+
+    # Create a colorful scatterplot
+    # Hue distinguishes agents by color
+    # Size represents the total token cost of the call
+    plot = sns.scatterplot(
+        data=gdf,
+        x="Prompt Tokens",
+        y="Candidate Tokens",
+        hue="Agent",
+        size="Total Tokens",
+        sizes=(50, 500),  # Range of bubble sizes
+        palette="deep",
+        alpha=0.7,
+    )
+
+    plot.set_title("Gemini API Token Usage per Call", fontsize=16)
+    plot.set_xlabel("Prompt Token Count (Input)")
+    plot.set_ylabel("Candidate Token Count (Output)")
+    plt.legend(title="Agent")
+    plt.tight_layout()
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.savefig(os.path.join("data", "img", "gemini-queries.svg"))
+    plt.close()
+    buffer.seek(0)
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    import IPython
+
+    IPython.embed()
+
 
 if __name__ == "__main__":
     main()
-    
+
 # constrain instance types
 # build for multiple nodes on AWS.
-# size 4 is the max. 
-# lammps amg osu laghos 
+# size 4 is the max.
+# lammps amg osu laghos
