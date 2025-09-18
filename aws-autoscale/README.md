@@ -83,3 +83,23 @@ When you are done:
 ```bash
 eksctl delete cluster --config-file ./eks-config.yaml  --wait
 ```
+
+## Cluster Experiments
+
+Let's allow for creation up to 4 nodes.
+
+```bash
+eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
+```
+
+## 1. AMG2023
+
+```bash
+outdir=./results/amg2023-4-nodes
+mkdir -p $outdir
+for i in $(seq 1 10)
+  do
+  fractale agent --plan ./plans/amg2023-4-nodes.yaml --results $outdir --incremental
+done
+```
+

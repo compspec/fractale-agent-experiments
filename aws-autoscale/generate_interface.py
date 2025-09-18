@@ -5,6 +5,7 @@ import base64
 import difflib
 import io
 import json
+import yaml
 import os
 import re
 import shutil
@@ -23,8 +24,172 @@ from pygments.lexers import get_lexer_by_name
 
 # Being lazy - let's create a global data frame of key/value pairs we can set for different metrics to plot.
 # Each app has a different set of runs - "vanilla" and then with a function.
-df = pandas.DataFrame(columns=['app', 'path', 'experiment', 'experiment_type', 'metric_name', 'direction', 'metric', 'value', 'unit'])
+df = pandas.DataFrame(
+    columns=[
+        "app",
+        "path",
+        "experiment",
+        "experiment_type",
+        "metric_name",
+        "direction",
+        "metric",
+        "value",
+        "unit",
+        "agent",
+    ]
+)
 df_idx = 0
+commands = {}
+
+# Don't include non experiment runs
+experiment_runs = [
+    "kripke",
+    "amg2023",
+    "laghos",
+    "lammps-max-fom",
+    "lammps-decision-function",
+    "laghos-decision-function",
+    "lammps-decision-fom",
+    "amg2023-function",
+    "amg2023-decision-function",
+    "kripke-decision-function",
+]
+
+# Instance metadata to help us summarize choices
+instances = {
+    "t3.medium": {
+        "memory": 4,
+        "cores": 2,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "c7a.12xlarge": {
+        "memory": 96,
+        "cores": 48,
+        "platform": "AMD",
+        "architecture": "amd64",
+    },
+    "hpc7g.16xlarge": {
+        "memory": 128,
+        "cores": 64,
+        "platform": "ARM (Graviton3)",
+        "architecture": "arm64",
+    },
+    "c6in.12xlarge": {
+        "memory": 96,
+        "cores": 24,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "r7iz.8xlarge": {
+        "memory": 256,
+        "cores": 16,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "m6g.12xlarge": {
+        "memory": 192,
+        "cores": 48,
+        "platform": "ARM (Graviton2)",
+        "architecture": "arm64",
+    },
+    "t3a.2xlarge": {
+        "memory": 32,
+        "cores": 4,
+        "platform": "AMD",
+        "architecture": "amd64",
+    },
+    "t3.2xlarge": {
+        "memory": 32,
+        "cores": 4,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "m6id.12xlarge": {
+        "memory": 192,
+        "cores": 24,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "c6id.12xlarge": {
+        "memory": 96,
+        "cores": 24,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "t4g.2xlarge": {
+        "memory": 32,
+        "cores": 8,
+        "platform": "ARM (Graviton2)",
+        "architecture": "arm64",
+    },
+    "m6i.12xlarge": {
+        "memory": 192,
+        "cores": 24,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "m6a.12xlarge": {
+        "memory": 192,
+        "cores": 24,
+        "platform": "AMD",
+        "architecture": "amd64",
+    },
+    "m7g.16xlarge": {
+        "memory": 256,
+        "cores": 64,
+        "platform": "ARM (Graviton3)",
+        "architecture": "arm64",
+    },
+    "c6i.16xlarge": {
+        "memory": 128,
+        "cores": 32,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "c6a.16xlarge": {
+        "memory": 128,
+        "cores": 32,
+        "platform": "AMD",
+        "architecture": "amd64",
+    },
+    "c7g.16xlarge": {
+        "memory": 128,
+        "cores": 64,
+        "platform": "ARM (Graviton3)",
+        "architecture": "arm64",
+    },
+    "r6i.8xlarge": {
+        "memory": 256,
+        "cores": 16,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "r6a.12xlarge": {
+        "memory": 384,
+        "cores": 24,
+        "platform": "AMD",
+        "architecture": "amd64",
+    },
+    "r7g.12xlarge": {
+        "memory": 384,
+        "cores": 48,
+        "platform": "ARM (Graviton3)",
+        "architecture": "arm64",
+    },
+    "i4i.8xlarge": {
+        "memory": 256,
+        "cores": 16,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+    "d3.4xlarge": {
+        "memory": 128,
+        "cores": 8,
+        "platform": "Intel",
+        "architecture": "amd64",
+    },
+}
 
 BASE_TEMPLATE = """
 <!DOCTYPE html>
@@ -410,7 +575,9 @@ def generate_diff_html(text1, text2, from_label="Previous", to_label="Current"):
 
 
 def gather_all_run_data(results_dir):
-    """Gathers detailed data from all JSON files across all applications."""
+    """
+    Gather detailed data from all JSON files across all applications.
+    """
     all_runs = []
     for app_name in os.listdir(results_dir):
         app_name = filter_apps(app_name)
@@ -433,7 +600,9 @@ def gather_all_run_data(results_dir):
 
 
 def generate_attempts_boxplot(all_runs_data):
-    """Generates a boxplot of agent attempts per application."""
+    """
+    Generates a boxplot of agent attempts per application.
+    """
     df_data = []
     for run in all_runs_data:
         app_name = run.get("app_name", "Unknown")
@@ -468,7 +637,9 @@ def generate_attempts_boxplot(all_runs_data):
 
 
 def generate_status_countplot(all_runs_data):
-    """Generates a stacked bar chart of run statuses per application."""
+    """
+    Generate a stacked bar chart of run statuses per application.
+    """
     df_data = [
         {
             "Application": run.get("app_name", "Unknown"),
@@ -503,7 +674,9 @@ def generate_status_countplot(all_runs_data):
 
 
 def generate_gemini_plot(steps_data):
-    """Generates a Seaborn scatterplot for Gemini token usage."""
+    """
+    Generate a scatterplot for Gemini token usage.
+    """
     df_data = []
     for step in steps_data:
         agent_name = step.get("agent", "unknown_agent").title()
@@ -629,7 +802,9 @@ def parse_wall_time(time_string: str) -> float:
 
 
 def get_language_for_asset(asset_name):
-    """Guesses the language for syntax highlighting based on asset name."""
+    """
+    Guess the language for syntax highlighting based on asset name.
+    """
     if "dockerfile" in asset_name.lower():
         return "docker"
     if "manifest" in asset_name.lower() or "minicluster" in asset_name.lower():
@@ -640,7 +815,10 @@ def get_language_for_asset(asset_name):
 
 
 def get_foms(foms_raw, app_name):
-    if app_name == "kripke":
+    """
+    Process foms - we often have strings that need parsing!
+    """
+    if "kripke" in app_name:
         foms_raw = [float(x) for x in foms_raw]
     elif foms_raw and ":" in foms_raw[0]:
         foms_raw = [parse_wall_time(x) for x in foms_raw]
@@ -659,8 +837,15 @@ def process_run_data(json_path, app_name):
     """
     Loads and processes a single JSON result file for template rendering.
     """
+    global df
+    global df_idx
+    global commands
     with open(json_path, "r") as f:
         data = json.load(f)
+    application = get_application_name(app_name)
+    experiment = app_name
+    direction, metric_name, unit = get_direction_unit(experiment)
+    experiment_type = get_experiment_type(experiment)
 
     # Pre-format the manager plan's context dictionaries into JSON strings
     if "manager" in data and "plan" in data["manager"]:
@@ -693,6 +878,9 @@ def process_run_data(json_path, app_name):
         if agent_name not in assets_data:
             assets_data[agent_name] = {}
 
+        attempts = step.get("attempts")
+        agent = step.get("agent")
+
         # This goes into dockerfile, minicluster log, etc.
         for asset_name, versions in assets.items():
             # This loop now ONLY handles regular assets. 'optimize' is not an asset.
@@ -711,6 +899,72 @@ def process_run_data(json_path, app_name):
                     item = version_data.get("item", "")
                 elif isinstance(version_data, str):
                     item = version_data
+
+                # If we have a minicluster, parse attributes. We want to know:
+                # instance type
+                # architecture (arm or x86)
+                # cpu
+                # memory
+                # Question: do we include the first attempt?
+                if "minicluster" in asset_name:
+                    try:
+                        mc = yaml.load(item, Loader=yaml.SafeLoader)
+                    except:
+                        break
+
+                    try:
+                        command = mc["spec"]["containers"][0]["command"]
+
+                        # Testing instance is t3.medium
+                        instance_type = (
+                            mc["spec"]
+                            .get("pod", {})
+                            .get("nodeSelector", {})
+                            .get("node.kubernetes.io/instance-type")
+                        )
+                    except:
+                        print(f"Issue with loaded yaml:\n{mc}")
+                        continue
+
+                    # Testing
+                    if instance_type is None:
+                        continue
+
+                    # Save final command
+                    if application not in commands:
+                        commands[application] = {}
+                    if experiment_type not in commands[application]:
+                        commands[application][experiment_type] = []
+                    commands[application][experiment_type].append(command)
+
+                    # This was an accident
+                    if instance_type == "c7a.32xlarge":
+                        print(mc)
+                        continue
+                    arch = instances[instance_type]["architecture"]
+                    platform = instances[instance_type]["platform"]
+                    cores = instances[instance_type]["cores"]
+                    memory = instances[instance_type]["memory"]
+                    for pair in [
+                        [instance_type, "instance-type"],
+                        [arch, "arch"],
+                        [platform, "platform"],
+                        [cores, "cores"],
+                        [memory, "memory"],
+                    ]:
+                        df.loc[df_idx, :] = [
+                            application,
+                            json_path,
+                            experiment,
+                            experiment_type,
+                            metric_name,
+                            direction,
+                            pair[1],
+                            pair[0],
+                            unit,
+                            agent,
+                        ]
+                        df_idx += 1
 
                 prev_item = ""
                 if i > 0:
@@ -769,7 +1023,9 @@ def process_run_data(json_path, app_name):
 
 
 def generate_gemini_plot(steps_data):
-    """Generates a Seaborn scatterplot for Gemini token usage."""
+    """
+    Generate scatterplot for Gemini token usage.
+    """
     df_data = []
     for step in steps_data:
         agent_name = step.get("agent", "unknown_agent").title()
@@ -814,13 +1070,16 @@ def generate_gemini_plot(steps_data):
 
     buffer = io.BytesIO()
     plt.savefig(buffer, format="png")
+    plt.savefig(os.path.join("data", "img", "gemini-queries.svg"))
     plt.close()
     buffer.seek(0)
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
 def generate_gemini_summary_plot(all_runs_data):
-    """Generates a scatterplot of Gemini token counts vs. time across all runs."""
+    """
+    Generate a scatterplot of Gemini token counts vs. time across all runs.
+    """
     df_data = []
     for run in all_runs_data:
         for step in run.get("steps", []):
@@ -854,7 +1113,6 @@ def generate_gemini_summary_plot(all_runs_data):
         return None
 
     df = pd.DataFrame(df_data).dropna()
-
     plt.figure(figsize=(12, 7))
     sns.set_theme(style="whitegrid")
 
@@ -871,11 +1129,16 @@ def generate_gemini_summary_plot(all_runs_data):
     plot.set_title("Gemini Token Counts vs. Total Time", fontsize=16)
     plot.set_xlabel("Token Count")
     plot.set_ylabel("Seconds")
+
+    handles, labels = plot.get_legend_handles_labels()
+    labels = [" ".join(x.split("_")) for x in labels]
+    plot.legend(handles, labels)
     plt.tight_layout()
 
     # Convert plot to base64 for embedding in HTML
     buffer = io.BytesIO()
     plt.savefig(buffer, format="png")
+    plt.savefig(os.path.join("data", "img", "gemini-summary-plot.svg"))
     plt.close()
     buffer.seek(0)
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
@@ -886,6 +1149,70 @@ def filter_apps(app_name):
     if "lammps-test" in app_name:
         return
     return app_name
+
+
+def get_application_name(app_name):
+    if "lammps" in app_name:
+        application = "lammps"
+    elif "kripke" in app_name:
+        application = "kripke"
+    elif "laghos" in app_name:
+        application = "laghos"
+    elif "amg" in app_name:
+        application = "amg2023"
+    return application
+
+
+def get_experiment_type(experiment):
+    # Save FOM to data frame based on app, experiment, etc.
+    # These are the "raw" runs where we let the LLM decide
+    if experiment in [
+        "kripke",
+        "amg2023",
+        "laghos",
+        "lammps-max-fom",
+    ]:
+        experiment_type = "llm-decision"
+    # These are controlled user decision - we provide a function that explicitly
+    # instructs for next resources and setup
+    elif experiment in ["lammps-decision-function", "amg2023-decision-function"]:
+        experiment_type = "user-provided-function"
+    # This is a user guided decision - give the agent information about scaling
+    # and still allow it to decide resources, etc.
+    elif experiment in [
+        "laghos-decision-function",
+        "lammps-decision-fom",
+        "amg2023-function",
+        "kripke-decision-function",
+    ]:
+        experiment_type = "user-guided-function"
+    else:
+        experiment_type = "test"
+    return experiment_type
+
+
+def get_direction_unit(experiment):
+    direction = "maximize"
+    if "lammps-wall-time" in experiment:
+        direction = "minimize"
+        metric_name = "wall_time_seconds"
+        unit = "(seconds)"
+    elif "lammps" in experiment:
+        metric_name = "katom_steps"
+        unit = "(atom-steps/second)"
+    elif "kripke" in experiment:
+        metric_name = "grind_time"
+        unit = "(iterations/second)"
+    elif "amg" in experiment:
+        metric_name = "figure_of_merit"
+        unit = "(nnz/s)"
+    elif "laghos" in experiment:
+        metric_name = "major_kernels_total_rate"
+        unit = "(megadofs x time steps / second)"
+    else:
+        import IPython 
+        IPython.embed()
+    return direction, metric_name, unit
 
 
 def scan_results(results_dir):
@@ -900,7 +1227,7 @@ def scan_results(results_dir):
 
     for app_name in os.listdir(results_dir):
         app_name = filter_apps(app_name)
-        if not app_name:
+        if not app_name or app_name not in experiment_runs:
             continue
         app_path = os.path.join(results_dir, app_name)
         if not os.path.isdir(app_path):
@@ -916,7 +1243,6 @@ def scan_results(results_dir):
 
                     status = data.get("status", "Failed")
                     run_id = os.path.splitext(filename)[0]
-
                     match = re.search(
                         r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", filename
                     )
@@ -930,58 +1256,53 @@ def scan_results(results_dir):
                             .get("assets", {})
                             .get("optimize", {})
                         )
+
+                        # Application
+                        application = get_application_name(app_name)
+
+                        # Add attempts (this is on the level of a step)
+                        experiment = os.path.basename(app_path)
+                        attempts = step.get("attempts")
+                        direction, metric_name, unit = get_direction_unit(experiment)
+                        agent = step.get("agent")
+                        experiment_type = get_experiment_type(experiment)
+                        if attempts is not None:
+                            df.loc[df_idx, :] = [
+                                application,
+                                file_path,
+                                experiment,
+                                experiment_type,
+                                "attempts",
+                                None,
+                                "attempts",
+                                attempts,
+                                "count",
+                                agent,
+                            ]
+                            df_idx += 1
+
                         if not opt_meta:
                             continue
                         foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
-
                         best_fom = max(foms)
-                        experiment = os.path.basename(app_path)
-                        direction = "maximize"
-                        if "lammps-wall-time" in experiment:
-                            direction = "minimize"
-                            metric_name = "wall_time_seconds"
-                            unit = "(seconds)"
-                        elif "lammps" in experiment:
-                            metric_name = "katom_steps"
-                            unit = "(atom-steps/second)"
-                        elif "kripke" in experiment:
-                            metric_name = "grind_time"
-                            unit = "(iterations/second)"
-                        elif "amg" in experiment:
-                            metric_name = "figure_of_merit"
-                            unit = "(nnz/s)"
-                        elif "laghos" in experiment:
-                            metric_name = "major_kernels_total_rate"
-                            unit = "(megadofs x time steps / second)"
 
-                        # Save FOM to data frame based on app, experiment, etc.
-                        # These are the "raw" runs where we let the LLM decide
-                        if experiment in ['kripke', 'amg2023', 'laghos', 'lammps-max-fom']:
-                            experiment_type = "llm-decision"
-                        # These are controlled user decision - we provide a function that explicitly
-                        # instructs for next resources and setup
-                        elif experiment in ['lammps-decision-function']:
-                            experiment_type = 'user-provided-function'
-                        # This is a user guided decision - give the agent information about scaling 
-                        # and still allow it to decide resources, etc.
-                        elif experiment in ['laghos-decision-function', 'lammps-decision-fom', 'amg2023-function', 'kripke-decision-function']:
-                            experiment_type = 'user-guided-function'
-                        else:
-                            experiment_type = "test"
-
-                        # Application
-                        if "lammps" in app_name:
-                            application = "lammps"
-                        elif "kripke" in app_name:
-                            application = "kripke"
-                        elif "laghos" in app_name:
-                            application = "laghos"
-                        elif "amg" in app_name:
-                            application = "amg2023"
+                        # The first fom is from the deployment agent, and we explicitly ask for a small problem size
                         for fom in foms:
-                            df.loc[df_idx, :] = [application, file_path, experiment, experiment_type, metric_name, direction, "fom", fom, unit]
+                        # for fom in foms[1:]:
+                            df.loc[df_idx, :] = [
+                                application,
+                                file_path,
+                                experiment,
+                                experiment_type,
+                                metric_name,
+                                direction,
+                                "fom",
+                                fom,
+                                unit,
+                                agent,
+                            ]
                             df_idx += 1
                         break
 
@@ -994,6 +1315,21 @@ def scan_results(results_dir):
                             apps[app_name]["summary"]["best_fom"] = best_fom
                     else:
                         apps[app_name]["summary"]["failed"] += 1
+
+                    # add the status (this is across agents)
+                    df.loc[df_idx, :] = [
+                        application,
+                        file_path,
+                        experiment,
+                        experiment_type,
+                        "status",
+                        None,
+                        "status",
+                        status.lower(),
+                        "status",
+                        None,
+                    ]
+                    df_idx += 1
 
                     apps[app_name]["runs"].append(
                         {
@@ -1133,15 +1469,17 @@ def main():
     # Finish up with plots for the data!
     global df
     global df_idx
+
     df.to_csv(os.path.join("data", "foms-results.csv"))
     img_outdir = os.path.join("data", "img")
     if not os.path.exists(img_outdir):
         os.makedirs(img_outdir)
 
     # Filter out test data
-    df = df[df.experiment_type != "test"]
-    for app in df.app.unique():
-        subset = df[df.app == app]
+    fom_df = df[df.experiment_type != "test"]
+    fom_df = fom_df[fom_df.metric == "fom"]
+    for app in fom_df.app.unique():
+        subset = fom_df[fom_df.app == app]
         fig = plt.figure(figsize=(6, 3.3))
         gs = plt.GridSpec(1, 1, width_ratios=[2])
         axes = []
@@ -1162,19 +1500,88 @@ def main():
             err_kws={"color": "darkred"},
             # palette=cloud_colors,
         )
-        metric_name = " ".join([x.capitalize() for x in subset.metric_name.unique()[0].split('_')])
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
         title = app.upper() + " " + metric_name
         axes[0].set_title(title, fontsize=14)
         axes[0].set_ylabel(unit, fontsize=14)
         axes[0].set_xlabel("", fontsize=14)
         # handles, labels = axes[1].get_legend_handles_labels()
         # axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45, horizontalalignment='right')
-        labels = axes[0].get_xticklabels() 
+        labels = axes[0].get_xticklabels()
         labels = ["\n".join(x._text.split("-")) for x in labels]
         axes[0].set_xticklabels(labels)
         plt.tight_layout()
         plt.savefig(os.path.join(img_outdir, f"{app}.svg"))
         plt.clf()
 
+    # Attempts plot
+    subset = df[df.metric == "attempts"]
+    plt.figure(figsize=(10, 7))
+    sns.set_theme(style="whitegrid")
+    plot = sns.boxplot(subset, x="app", y="value", hue="agent", palette="muted")
+    plot.set_title("Agent Attempts per Application", fontsize=16)
+    plot.set_xlabel("Application")
+    plot.set_ylabel("Number of Attempts")
+    plot.legend().set_title(None)
+    plt.tight_layout()
+    plt.savefig(os.path.join("data", "img", "application-attempts.svg"))
+    plt.close()
+
+    subset = df[df.metric == "status"]
+    plt.figure(figsize=(10, 7))
+    sns.set_theme(style="whitegrid")
+    plot = sns.histplot(
+        data=subset,
+        x="app",
+        hue="value",
+        multiple="stack",
+        shrink=0.8,
+        palette={"succeeded": "seagreen", "failed": "indianred"},
+    )
+    plot.set_title("Run Status Counts per Application", fontsize=16)
+    plot.set_xlabel("Application")
+    plot.set_ylabel("Total Runs")
+    # plot.legend().set_title("Status")
+    plt.tight_layout()
+    plt.savefig(os.path.join("data", "img", "application-status.svg"))
+    plt.close()
+
+    with open(os.path.join('data', 'commands.json'), 'w') as fd:
+        fd.write(json.dumps(commands, indent=4))
+
+    filtered = df[df.value != 't3.medium']
+
+    # TODO: memory per core?
+    for value in ['platform', 'memory', 'cores', 'instance-type']:
+        subset = filtered[filtered.metric == value]
+        # Don't count test instance
+        plt.figure(figsize=(10, 7))
+        sns.set_theme(style="whitegrid")
+        plot = sns.histplot(
+          data=subset,
+          x="app",
+          multiple="dodge",
+          hue="value",
+          palette="muted",
+          shrink=0.8,
+      )
+        title = " ".join([x.capitalize() for x in value.split('-')])
+        plot.set_title(f"{title} Selection", fontsize=16)
+        plot.set_xlabel("")
+        plot.set_ylabel(title)
+        plt.tight_layout()
+        plt.savefig(os.path.join("data", "img", f"{value}.svg"))
+        plt.close()
+
+    import IPython
+    IPython.embed()
+
 if __name__ == "__main__":
     main()
+    
+# constrain instance types
+# build for multiple nodes on AWS.
+# size 4 is the max. 
+# lammps amg osu laghos 
