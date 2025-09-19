@@ -36,17 +36,10 @@ plan:
       To reduce noise in logging, you can set logging.quiet to true.
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. For your optimization you can choose from the following instance types, and you will need to add the correct nodeSelector with the node.kubernetes.io/instance-type label indicating your choice. You are still limited to up to 4 nodes.  
-        c7a.12xlarge, 48 CPU, 96 GiB Memory, AMD
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
-        c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
-        r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel
         m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
-        c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
-        c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
         c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
-        r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
         r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
-        i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
       If you are using an ARM instance you MUST also set flux.arch: "arm".

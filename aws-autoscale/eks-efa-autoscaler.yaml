@@ -165,7 +165,6 @@ spec:
             - --expander=least-waste
             - --scale-down-unneeded-time=2m0s
             - --scale-down-delay-after-add=2m0s
-            # This is the critical change to match the new cluster name
             - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/efa-agent-cluster
           volumeMounts:
             - name: ssl-certs

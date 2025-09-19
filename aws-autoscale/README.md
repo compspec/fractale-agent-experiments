@@ -86,12 +86,16 @@ eksctl delete cluster --config-file ./eks-config.yaml  --wait
 
 ## Cluster Experiments
 
-Let's allow for creation up to 4 nodes.
+Let's allow for creation up to 4 nodes. Command to get efa instances:
+
+```
+aws ec2 describe-instance-types --region us-east-1 --filters Name=network-info.efa-supported,Values=true --query "InstanceTypes[*].[InstanceType]" --output text  | sort
+```
 
 ```bash
 eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
 
-aws eks update-kubeconfig --region us-east-1 --name efa-agent-cluster
+aws eks update-kubeconfig --region us-east-1 --name efa-cluster
 sleep 5
 kubectl apply -f eks-efa-autoscaler.yaml
 sleep 5
