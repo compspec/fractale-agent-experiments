@@ -666,8 +666,8 @@ def generate_status_countplot(all_runs_data):
         shrink=0.8,
         palette={"Succeeded": "seagreen", "Failed": "indianred"},
     )
-    plot.set_title("Run Status Counts per Application", fontsize=16)
-    plot.set_xlabel("Application")
+    plot.set_title("Run Status by Application", fontsize=16)
+    plot.set_xlabel("")
     plot.set_ylabel("Total Runs")
     plt.tight_layout()
 
@@ -1560,7 +1560,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# constrain instance types
-# build for multiple nodes on AWS.
-# size 4 is the max.
 # lammps amg osu laghos

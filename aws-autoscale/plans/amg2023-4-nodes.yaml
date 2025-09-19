@@ -22,6 +22,9 @@ plan:
     container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
     max_attempts: 10
     max_runtime: 600
+    # This makes the loop tighter
+    allow_return_to_human: false
+    allow_return_to_manager: false
     optimize: |
       Maximize the amg2023 figure of merit. You MUST maximize memory per CPU core. More cores are better.
       You MUST run amg across UP TO 4 nodes. You MUST start with 1, then 2 nodes. 
