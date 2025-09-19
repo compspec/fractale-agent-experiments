@@ -90,6 +90,13 @@ Let's allow for creation up to 4 nodes.
 
 ```bash
 eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
+
+aws eks update-kubeconfig --region us-east-1 --name efa-agent-cluster
+sleep 5
+kubectl apply -f eks-efa-autoscaler.yaml
+sleep 5
+kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator.yaml
+
 ```
 
 ## 1. AMG2023
@@ -101,5 +108,11 @@ for i in $(seq 1 10)
   do
   fractale agent --plan ./plans/amg2023-4-nodes.yaml --results $outdir --incremental
 done
+```
+
+When you are done:
+
+```bash
+eksctl delete cluster --config-file ./eks-config-4-nodes.yaml  --wait
 ```
 

@@ -40,23 +40,13 @@ plan:
         hpc7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         c6in.12xlarge, 24 CPU, 96 GiB Memory, Intel
         r7iz.8xlarge, 16 CPU, 256 GiB Memory, Intel
-        m6g.12xlarge, 48 CPU, 192 GiB Memory, ARM (Graviton2)
-        t3a.2xlarge, 4 CPU, 32 GiB Memory, AMD
-        t3.2xlarge, 4 CPU, 32 GiB Memory, Intel
-        m6id.12xlarge, 24 CPU, 192 GiB Memory, Intel
-        c6id.12xlarge, 24 CPU, 96 GiB Memory, Intel
-        t4g.2xlarge, 8 CPU, 32 GiB Memory, ARM (Graviton2)
-        m6i.12xlarge, 24 CPU, 192 GiB Memory, Intel
-        m6a.12xlarge, 24 CPU, 192 GiB Memory, AMD
         m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
         c6i.16xlarge, 32 CPU, 128 GiB Memory, Intel
         c6a.16xlarge, 32 CPU, 128 GiB Memory, AMD
         c7g.16xlarge, 64 CPU, 128 GiB Memory, ARM (Graviton3)
         r6i.8xlarge, 16 CPU, 256 GiB Memory, Intel
-        r6a.12xlarge, 24 CPU, 384 GiB Memory, AMD
         r7g.12xlarge, 48 CPU, 384 GiB Memory, ARM (Graviton3)
         i4i.8xlarge, 16 CPU, 256 GiB Memory, Intel
-        d3.4xlarge, 8 CPU, 128 GiB Memory, Intel 
       If you choose an ARM (Graviton) instance you MUST change the flux.container.image to be
       ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
       If you are using an ARM instance you MUST also set flux.arch: "arm".
@@ -65,5 +55,6 @@ plan:
       If you see a nodeSelector and larger size in the manifest it is OK to keep that and try to debug the issue.
     details: | 
       You MUST run on up to 4 nodes and you MUST use only 1 node to first test. 
+      You MUST set resource requests and limits to use 1 amazon efa device.
       Tasks MUST be at least 4.
       You MUST NOT oversubscribe.
