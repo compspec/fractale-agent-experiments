@@ -27,7 +27,7 @@ plan:
     allow_return_to_manager: false
     optimize: |
       Maximize the amg2023 figure of merit. You MUST maximize memory per CPU core. More cores are better.
-      You MUST run amg across UP TO 4 nodes. You MUST start with 1, then 2 nodes. 
+      You MUST run amg across UP TO 4 nodes. You MUST start with 1, then 2 nodes. You MUST set environment variables for MPI to use EFA with libfabric.
       The trick to optimizing this is THREADING. You MUST force OpenMP and any math libraries to use only one thread per MPI rank. On example is setting OMP_NUM_THREADS to "1". You might also consider setting OMPI_MCA_btl_vader_single_copy_mechanism to "cma" as a conservative builder will set to none.
       YOU MUST SLOWLY increase the problem size, one dimension at a time, by an increment no more than double the current to increase the FOM. A timeout may not require a smaller problem size but rather a different instance.
       A previous run example that has worked well:
