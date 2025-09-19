@@ -13,7 +13,9 @@ plan:
       Clone the latest branch of amg2023. You MUST put amg on the PATH.
       You MUST install libgomp1 for libgomp1.so and you MUST NOT run apt-get purge.
       This will be run with a workload manager that can bootstrap MPI. You MUST install MPI but you do not need ssh.
-      You MUST install MPI with libfabric and the AWS efa installer ./efa_installer.sh -y -d --skip-kmod --skip-limit-conf --no-verify
+      You MUST install MPI with libfabric and the AWS efa installer.
+      You MUST download https://s3-us-west-2.amazonaws.com/aws-efa-installer/aws-efa-installer-latest.tar.gz 
+      You MUST install with the command ./efa_installer.sh -y -d --skip-kmod --skip-limit-conf --no-verify
       You MUST build the container for a multi-node MPI environment
 
 - agent: minicluster
