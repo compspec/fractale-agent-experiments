@@ -1532,44 +1532,29 @@ def main():
         plt.close()
 
     gemini_df.to_csv(os.path.join("data", "gemini-results.csv"))
-    # TODO plot with app name
-    import IPython
 
-    IPython.embed()
-
-    plt.figure(figsize=(10, 7))
-    sns.set_theme(style="whitegrid")
-
-    # Create a colorful scatterplot
-    # Hue distinguishes agents by color
-    # Size represents the total token cost of the call
-    plot = sns.scatterplot(
-        data=gdf,
-        x="Prompt Tokens",
-        y="Candidate Tokens",
-        hue="Agent",
-        size="Total Tokens",
-        sizes=(50, 500),  # Range of bubble sizes
-        palette="deep",
-        alpha=0.7,
-    )
-
-    plot.set_title("Gemini API Token Usage per Call", fontsize=16)
-    plot.set_xlabel("Prompt Token Count (Input)")
-    plot.set_ylabel("Candidate Token Count (Output)")
-    plt.legend(title="Agent")
-    plt.tight_layout()
-
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format="png")
-    plt.savefig(os.path.join("data", "img", "gemini-queries.svg"))
-    plt.close()
-    buffer.seek(0)
-    return base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-    import IPython
-
-    IPython.embed()
+    for agent in gemini_df.Agent.unique():
+        subset = gemini_df[gemini_df.Agent == agent]
+        plt.figure(figsize=(10, 7))
+        sns.set_theme(style="whitegrid")
+        plot = sns.scatterplot(
+          data=subset,
+          x="Prompt Tokens",
+          y="Candidate Tokens",
+          hue="Application",
+          size="Total Tokens",
+          sizes=(50, 500),  # Range of bubble sizes
+          palette="deep",
+          alpha=0.7,
+        )
+        plot.set_title(f"Gemini API Token Usage per Call ({agent} Agent)", fontsize=16)
+        plot.set_xlabel("Prompt Token Count (Input)")
+        plot.set_ylabel("Candidate Token Count (Output)")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(os.path.join("data", "img", f"gemini-queries-{agent}.svg"))
+        plt.close()
+   
 
 
 if __name__ == "__main__":
