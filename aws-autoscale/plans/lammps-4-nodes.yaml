@@ -1,0 +1,39 @@
+name: Build and Deploy LAMMPS
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes to run across nodes"
+    application: lammps-reax
+    platforms: linux/amd64,linux/arm64
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    push: true
+    max_attempts: 10
+    details: |
+      Ensure all globbed files from examples/reaxff/HNS from the root of the lammps codebase are in the WORKDIR. Clone the latest branch of LAMMPS. You MUST put lmp on the PATH. You MUST install libgomp1.
+      This will be run with a workload manager that can bootstrap MPI. You MUST install MPI but you do not need ssh.
+      You MUST install OpenMPI 4.1.2 with libfabric --with-efa for AWS.
+      You MUST build the container for a multi-node MPI environment
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    max_attempts: 10
+    max_runtime: 300
+    optimize: |
+      You MUST maximize the LAMMPS FOM, k-atom or m-atom steps per second. 
+      You MUST run choose the problem size to maximize FOM. You MUST start with 1, then 2 nodes. You MUST set environment variables for MPI to use EFA with libfabric.
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. You must add the nodeSelector to use:  
+        m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
+      You are still limited to up to 4 nodes.
+    testing:
+      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite for testing only.    
+    details: |
+      You MUST run on up to 4 nodes and you MUST use only 1 node to first test. 
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
+      You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
+      Since this is an ARM instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
