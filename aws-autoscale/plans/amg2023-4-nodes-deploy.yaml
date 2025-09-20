@@ -27,7 +27,7 @@ plan:
       You MUST run AMG -problem 2. For testing choose a small problem size no greater than 4 in any dimension.    
     details: | 
       You MUST run on up to 4 nodes and you MUST use only 1 node to first test. 
-      You MUST set resource requests and limits to use 1 amazon efa device.
+      You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
       Tasks MUST be at least 4.
       You MUST NOT oversubscribe.
       Since this is an ARM instance you MUST change the flux.container.image to be
