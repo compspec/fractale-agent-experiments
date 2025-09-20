@@ -1,0 +1,17 @@
+name: Build and AMG2023
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes to run across nodes"
+    application: amg2023
+    container: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    push: true
+    platforms: linux/amd64,linux/arm64
+    max_attempts: 20
+    details: |
+      Clone the latest branch of amg2023. You MUST put amg on the PATH.
+      You MUST install libgomp1 for libgomp1.so and you MUST NOT run apt-get purge.
+      This will be run with a workload manager that can bootstrap MPI. You MUST install MPI but you do not need ssh.
+      You MUST install OpenMPI 4.1.2 with libfabric --with-efa for AWS.
+      You MUST build the container for a multi-node MPI environment

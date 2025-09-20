@@ -165,7 +165,7 @@ spec:
             - --expander=least-waste
             - --scale-down-unneeded-time=2m0s
             - --scale-down-delay-after-add=2m0s
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/efa-agent-cluster
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/efa-cluster
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt # /etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes

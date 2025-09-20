@@ -92,6 +92,8 @@ Let's allow for creation up to 4 nodes. Command to get efa instances:
 aws ec2 describe-instance-types --region us-east-1 --filters Name=network-info.efa-supported,Values=true --query "InstanceTypes[*].[InstanceType]" --output text  | sort
 ```
 
+This time we need to install the EFA device plugin. I didn't see eksctl did it.
+
 ```bash
 eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
 
@@ -101,6 +103,8 @@ kubectl apply -f eks-efa-autoscaler.yaml
 sleep 5
 kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator.yaml
 
+helm repo add eks https://aws.github.io/eks-charts
+helm install efa eks/aws-efa-k8s-device-plugin -n kube-system
 ```
 
 ## 1. AMG2023
@@ -119,4 +123,3 @@ When you are done:
 ```bash
 eksctl delete cluster --config-file ./eks-config-4-nodes.yaml  --wait
 ```
-

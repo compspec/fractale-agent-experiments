@@ -31,52 +31,6 @@ iam:
 
 availabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"]
 managedNodeGroups:
-
-  - name: ng-hpc7g-16xlarge
-    availabilityZones: ["us-east-1a"]
-    instanceType: hpc7g.16xlarge
-    efaEnabled: true
-    placement:
-      groupName: performance-study
-    volumeSize: 20
-    volumeType: gp2
-    desiredCapacity: 0
-    minSize: 0
-    maxSize: 4
-    iam:
-      withAddonPolicies:
-        autoScaler: true
-    tags:
-      nodegroup: ng-hpc7g-16xlarge
-      kubernetes.io/cluster/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/enabled: "true"
-      k8s.io/cluster-autoscaler/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-hpc7g-16xlarge
-      Name: 'efa-cluster'
-    propagateASGTags: true
-
-  # This will be a node to install to - "sticky node"
-  # Placement group is intentionally omitted for this general-purpose node.
-  - name: ng-t3-medium
-    instanceType: t3.2xlarge
-    volumeSize: 20
-    volumeType: gp2
-    desiredCapacity: 1
-    minSize: 1
-    maxSize: 1
-    iam:
-      withAddonPolicies:
-        autoScaler: true
-    tags:
-      nodegroup: ng-t3-medium
-      kubernetes.io/cluster/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/enabled: "true"
-      k8s.io/cluster-autoscaler/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-t3-medium
-      Name: 'efa-cluster'
-    propagateASGTags: true
-
-   # ARM instance
   - name: ng-m7g-large
     instanceType: m7g.16xlarge
     efaEnabled: true
@@ -85,7 +39,9 @@ managedNodeGroups:
     volumeSize: 30
     volumeType: gp2
     desiredCapacity: 0
-    minSize: 0
+    labels:
+      vpc.amazonaws.com/efa: "true"
+    minSize: 1
     maxSize: 4
     iam:
       withAddonPolicies:
@@ -96,50 +52,6 @@ managedNodeGroups:
       k8s.io/cluster-autoscaler/enabled: "true"
       k8s.io/cluster-autoscaler/efa-cluster: "owned"
       k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-m7g-large
-      Name: 'efa-cluster'
-    propagateASGTags: true
-
-   # ARM instance
-  - name: ng-c7g-large
-    instanceType: c7g.16xlarge
-    efaEnabled: true
-    placement:
-      groupName: performance-study
-    volumeSize: 30
-    volumeType: gp2
-    desiredCapacity: 0
-    minSize: 0
-    maxSize: 4
-    iam:
-      withAddonPolicies:
-        autoScaler: true
-    tags:
-      nodegroup: ng-c7g-large
-      kubernetes.io/cluster/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/enabled: "true"
-      k8s.io/cluster-autoscaler/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-c7g-large
-      Name: 'efa-cluster'
-    propagateASGTags: true
-
-  - name: ng-r7g-large
-    instanceType: r7g.16xlarge
-    efaEnabled: true
-    placement:
-      groupName: performance-study
-    volumeSize: 30
-    volumeType: gp2
-    desiredCapacity: 0
-    minSize: 0
-    maxSize: 4
-    iam:
-      withAddonPolicies:
-        autoScaler: true
-    tags:
-      nodegroup: ng-r7g-large
-      kubernetes.io/cluster/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/enabled: "true"
-      k8s.io/cluster-autoscaler/efa-cluster: "owned"
-      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-r7g-large
+      k8s.io/cluster-autoscaler/node-template/label/vpc.amazonaws.com/efa: "true"
       Name: 'efa-cluster'
     propagateASGTags: true
