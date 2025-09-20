@@ -10,10 +10,9 @@ plan:
     push: true
     max_attempts: 10
     details: |
+      You MUST use ghcr.io/converged-computing/fractale-agent-experiments:base-aws-efa as a base image. It includes OpenMPI 4.1.2 build with libfabric and --with-efa for AWS.
       Ensure all globbed files from examples/reaxff/HNS from the root of the lammps codebase are in the WORKDIR. Clone the latest branch of LAMMPS. You MUST put lmp on the PATH. You MUST install libgomp1.
-      This will be run with a workload manager that can bootstrap MPI. You MUST install MPI but you do not need ssh.
-      You MUST install OpenMPI 4.1.2 with libfabric --with-efa for AWS.
-      You MUST build the container for a multi-node MPI environment
+      You MUST build LAMMPS for a multi-node MPI environment
 
 - agent: minicluster
   context:
