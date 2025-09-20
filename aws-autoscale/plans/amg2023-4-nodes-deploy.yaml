@@ -22,9 +22,7 @@ plan:
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. You must add the nodeSelector to use:  
         m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
-      You are still limited to up to 4 nodes. Since this is an ARM instance you MUST change the flux.container.image to be
-      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
-      If you are using an ARM instance you MUST also set flux.arch: "arm".
+      You are still limited to up to 4 nodes.
     testing: |
       You MUST run AMG -problem 2. For testing choose a small problem size no greater than 4 in any dimension.    
     details: | 
@@ -32,3 +30,6 @@ plan:
       You MUST set resource requests and limits to use 1 amazon efa device.
       Tasks MUST be at least 4.
       You MUST NOT oversubscribe.
+      Since this is an ARM instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".

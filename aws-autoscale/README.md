@@ -92,7 +92,7 @@ Let's allow for creation up to 4 nodes. Command to get efa instances:
 aws ec2 describe-instance-types --region us-east-1 --filters Name=network-info.efa-supported,Values=true --query "InstanceTypes[*].[InstanceType]" --output text  | sort
 ```
 
-This time we need to install the EFA device plugin. I didn't see eksctl did it.
+I chose the top performing instance. The reason is because the autoscaler uses them as templates, so we need one to exist. This time we need to install the EFA device plugin. I didn't see eksctl did it.
 
 ```bash
 eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
@@ -101,7 +101,7 @@ aws eks update-kubeconfig --region us-east-1 --name efa-cluster
 sleep 5
 kubectl apply -f eks-efa-autoscaler.yaml
 sleep 5
-kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator-arm.yaml
 
 helm repo add eks https://aws.github.io/eks-charts
 helm install efa eks/aws-efa-k8s-device-plugin -n kube-system
@@ -114,7 +114,8 @@ outdir=./results/amg2023-4-nodes
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
-  fractale agent --plan ./plans/amg2023-4-nodes.yaml --results $outdir --incremental
+  fractale agent --plan ./plans/amg2023-4-nodes-build.yaml --results $outdir-build --incremental
+  fractale agent --plan ./plans/amg2023-4-nodes-deploy.yaml --results $outdir-deploy --incremental
 done
 ```
 

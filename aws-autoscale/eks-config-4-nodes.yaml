@@ -38,7 +38,7 @@ managedNodeGroups:
       groupName: performance-study
     volumeSize: 30
     volumeType: gp2
-    desiredCapacity: 0
+    desiredCapacity: 1
     labels:
       vpc.amazonaws.com/efa: "true"
     minSize: 1
