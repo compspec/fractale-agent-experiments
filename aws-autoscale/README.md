@@ -110,15 +110,28 @@ helm install efa eks/aws-efa-k8s-device-plugin -n kube-system
 ## 1. AMG2023
 
 ```bash
-outdir=./results/amg2023-4-nodes-deploy
-outdir=./results/amg2023-4-nodes-build
-mkdir -p $outdir
+outdir=./results/amg2023-4-nodes
+mkdir -p $outdir-build
+mkdir -p $outdir-deploy
 for i in $(seq 1 3)
   do
   fractale agent --plan ./plans/amg2023-4-nodes-build.yaml --results $outdir-build --incremental
   fractale agent --plan ./plans/amg2023-4-nodes-deploy.yaml --results $outdir-deploy --incremental
 done
 ```
+
+## 2. LAMMPS
+
+```bash
+outdir=./results/lammps-4-nodes
+mkdir -p $outdir
+for i in $(seq 1 4)
+  do
+  fractale agent --plan ./plans/lammps-4-nodes.yaml --results $outdir-build --incremental
+incremental
+done
+```
+
 
 When you are done:
 

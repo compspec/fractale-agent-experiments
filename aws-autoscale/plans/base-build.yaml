@@ -1,0 +1,17 @@
+name: Build Base container with OpenMPI and libfabric intended for EFA.
+description: Build Docker containers with a common base
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes to run across nodes"
+    application: HPC
+    container: ghcr.io/converged-computing/fractale-agent-experiments:base-aws-efa
+    push: true
+    platforms: linux/amd64,linux/arm64
+    max_attempts: 20
+    details: |
+      You MUST prepare a base image that can be used for different application builds.
+      You MUST install libgomp1 for libgomp1.so and you MUST NOT run apt-get purge.
+      This will be run with a workload manager that can bootstrap MPI. You MUST install MPI but you do not need ssh.
+      You MUST install OpenMPI 4.1.2 with libfabric --with-efa for AWS.
+      You MUST build the container for a multi-node MPI environment
