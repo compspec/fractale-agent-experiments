@@ -31,6 +31,7 @@ plan:
       Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite for testing only.    
     details: |
       You MUST run on up to 4 nodes and you MUST use only 1 node to first test. 
+      You MUST set the containers imagePullPolicy to Always.
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
       You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
       Since this is an ARM instance you MUST change the flux.container.image to be
