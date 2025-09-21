@@ -33,7 +33,7 @@ plan:
       Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite for testing only on one node.
     details: |
       You MUST run on up to 4 nodes.
-      You MUST NOT set OMPI_MCA_btl or OMPI_MCA_pml under any circumstances
+      If you set either OMPI_MCA_mtl or OMPI_MCA_pml they MUST be set to ofi
       You MUST set the containers imagePullPolicy to Always.
       The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
       You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
