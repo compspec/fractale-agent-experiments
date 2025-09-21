@@ -20,6 +20,8 @@ plan:
     container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
     max_attempts: 10
     max_runtime: 300
+    allow_return_to_human: false
+    allow_return_to_manager: false
     optimize: |
       You MUST maximize the LAMMPS FOM, k-atom or m-atom steps per second. 
       You MUST run choose the problem size to maximize FOM. You MUST start with 1, then 2 nodes. You MUST set environment variables for MPI to use EFA with libfabric.
