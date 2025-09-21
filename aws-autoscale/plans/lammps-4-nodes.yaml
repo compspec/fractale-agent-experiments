@@ -24,7 +24,7 @@ plan:
     allow_return_to_human: false
     allow_return_to_manager: false
     optimize: |
-      You MUST maximize the LAMMPS FOM, k-atom steps per second. 
+      You MUST maximize the LAMMPS FOM, *atom steps per second.  It could be Matom or katom.
       You MUST choose the largest problem size to maximize FOM. You MAY go up to 4 nodes. 
       You MUST set environment variables for MPI to use EFA with libfabric.
     resources: |
