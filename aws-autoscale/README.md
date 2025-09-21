@@ -98,13 +98,18 @@ I chose the top performing instance. The reason is because the autoscaler uses t
 eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
 
 aws eks update-kubeconfig --region us-east-1 --name efa-cluster
-sleep 5
-kubectl apply -f eks-efa-autoscaler.yaml
-sleep 5
-kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator-arm.yaml
 
 helm repo add eks https://aws.github.io/eks-charts
 helm install efa eks/aws-efa-k8s-device-plugin -n kube-system
+
+kubectl apply -f eks-efa-autoscaler.yaml
+kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator-arm.yaml
+```
+
+Build the base image:
+
+```
+fractale agent --plan ./plans/base-build.yaml --results ./results/base-build --incremental
 ```
 
 ## 1. AMG2023
