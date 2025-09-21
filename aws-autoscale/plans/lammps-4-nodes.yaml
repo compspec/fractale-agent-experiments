@@ -26,7 +26,7 @@ plan:
     optimize: |
       You MUST maximize the LAMMPS FOM, *atom steps per second.  It could be Matom or katom.
       You MUST choose the largest problem size to maximize FOM. You MAY go up to 4 nodes. 
-      You MUST set environment variables for MPI to use EFA with libfabric.
+      You MUST make an effort to increase problem size as much as you can.
     resources: |
       The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. You must add the nodeSelector to use node.kubernetes.io/instance-type m7g.16xlarge with 64 CPU, 256 GiB Memory, ARM (Graviton3). You are limited to up to 4 nodes.
     testing:
