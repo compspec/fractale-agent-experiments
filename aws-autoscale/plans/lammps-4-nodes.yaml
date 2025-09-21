@@ -25,6 +25,7 @@ plan:
     allow_return_to_manager: false
     optimize: |
       You MUST maximize the LAMMPS FOM, *atom steps per second.  It could be Matom or katom.
+      You MUST parse a result to include the units for katom or Matom.
       You MUST choose the largest problem size to maximize FOM. You MAY go up to 4 nodes. 
       You MUST make an effort to increase problem size as much as you can.
     resources: |
