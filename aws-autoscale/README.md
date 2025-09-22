@@ -141,6 +141,24 @@ incremental
 done
 ```
 
+## 4. OSU
+
+```bash
+outdir=./results/osu-allreduce
+mkdir -p $outdir
+for i in $(seq 1 4)
+  do
+  fractale agent --plan ./plans/multi-node/osu-allreduce.yaml --results $outdir --incremental
+done
+
+outdir=./results/osu-latency
+mkdir -p $outdir
+for i in $(seq 1 4)
+  do
+  fractale agent --plan ./plans/multi-node/osu-latency.yaml --results $outdir --incremental
+done
+```
+
 
 When you are done:
 

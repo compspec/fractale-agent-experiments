@@ -55,6 +55,9 @@ experiment_runs = [
     "lammps-decision-function",
     "laghos-decision-function",
     "lammps-decision-fom",
+    "amg2023-4-nodes",
+    "lammps-4-nodes",
+    "kripke-4-nodes",
     "amg2023-function",
     "amg2023-decision-function",
     "kripke-decision-function",
@@ -776,9 +779,18 @@ def get_foms(foms_raw, app_name):
         try:
             foms = [float(fom) for fom in foms_raw if fom and str(fom) != "00"]
         except (ValueError, TypeError) as e:
-            print(
-                f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}"
-            )
+            foms = []
+            for fom in foms_raw:
+                if "katom" in fom:
+                    # k atom == kilo == 1000
+                    fom = float(fom.split(' ')[0]) * 1000
+                    foms.append(fom)
+                elif "Matom" in fom:
+                    # M == mega == million
+                    fom = float(fom.split(' ')[0]) * 1000000                
+                    foms.append(fom)
+                else: 
+                    print(f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}")
     return foms
 
 
@@ -1141,6 +1153,12 @@ def get_experiment_type(experiment):
         "kripke-decision-function",
     ]:
         experiment_type = "user-guided-function"
+    elif experiment in [
+        "amg2023-4-nodes",
+        "lammps-4-nodes",
+        "kripke-4-nodes",
+    ]:
+        experiment_type = "multi-node"
     else:
         experiment_type = "test"
     return experiment_type
@@ -1218,6 +1236,8 @@ def scan_results(results_dir):
 
                         # Add attempts (this is on the level of a step)
                         experiment = os.path.basename(app_path)
+                        if experiment.startswith("amg2023-4-nodes"):
+                            experiment = "amg2023-4-nodes"
                         attempts = step.get("attempts")
                         direction, metric_name, unit = get_direction_unit(experiment)
                         agent = step.get("agent")
