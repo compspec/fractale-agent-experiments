@@ -28,19 +28,11 @@ outdir=./results/amg2023-2
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
-  fractale agent --plan ./plans/amg2023.yaml --results $outdir --incremental
+  fractale agent --plan ./plans/single-node/amg2023.yaml --results $outdir --incremental
 done
 ```
 
-And with testing providing a function:
-
-```bash
-for i in $(seq 1 10)
-  do
-  fractale agent --plan ./plans/amg2023-function.yaml --results $outdir --incremental
-done
-```
-
+Note that the user function script was turned into the user guided function script, and the original plan for that is saved with results.
 
 ## 3. Kripke
 
@@ -49,7 +41,7 @@ outdir=./results/kripke-1
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
-  fractale agent --plan ./plans/kripke.yaml --results $outdir --incremental
+  fractale agent --plan ./plans/single-node/kripke.yaml --results $outdir --incremental
 done
 ```
 
@@ -63,7 +55,7 @@ outdir=./results/lammps-2
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
-  fractale agent --plan ./plans/lammps.yaml --results $outdir --incremental
+  fractale agent --plan ./plans/single-node/lammps.yaml --results $outdir --incremental
 done
 ```
 
@@ -74,7 +66,7 @@ outdir=./results/laghos-2
 mkdir -p $outdir
 for i in $(seq 1 10)
   do
-  fractale agent --plan ./plans/laghos.yaml --results $outdir --incremental
+  fractale agent --plan ./plans/single-node/laghos.yaml --results $outdir --incremental
 done
 ```
 
@@ -120,8 +112,8 @@ mkdir -p $outdir-build
 mkdir -p $outdir-deploy
 for i in $(seq 1 3)
   do
-  fractale agent --plan ./plans/amg2023-4-nodes-build.yaml --results $outdir-build --incremental
-  fractale agent --plan ./plans/amg2023-4-nodes-deploy.yaml --results $outdir-deploy --incremental
+  fractale agent --plan ./plans/multi-node/amg2023-4-nodes-build.yaml --results $outdir-build --incremental
+  fractale agent --plan ./plans/multi-node/amg2023-4-nodes-deploy.yaml --results $outdir-deploy --incremental
 done
 ```
 
@@ -132,7 +124,19 @@ outdir=./results/lammps-4-nodes
 mkdir -p $outdir
 for i in $(seq 1 4)
   do
-  fractale agent --plan ./plans/lammps-4-nodes.yaml --results $outdir-build --incremental
+  fractale agent --plan ./plans/multi-node/lammps-4-nodes.yaml --results $outdir-build --incremental
+incremental
+done
+```
+
+## 3. Kripke
+
+```bash
+outdir=./results/kripke-4-nodes
+mkdir -p $outdir
+for i in $(seq 1 4)
+  do
+  fractale agent --plan ./plans/multi-node/kripke-4-nodes.yaml --results $outdir-build --incremental
 incremental
 done
 ```

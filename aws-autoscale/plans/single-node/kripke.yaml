@@ -1,11 +1,11 @@
-name: Build and Deploy LAMMPS
+name: Build and Deploy Kripke
 description: Build a Docker container and deploy it as a Kubernetes Job.
 plan:
 - agent: build
   context:
     environment: "AWS CPU instance in Kubernetes"
     application: kripke
-    platforms: linux/amd64,linux/arm64
+    platforms: linux/arm64
     container: ghcr.io/converged-computing/fractale-agent-experiments:kripke
     push: true
     max_attempts: 10
