@@ -124,7 +124,7 @@ outdir=./results/lammps-4-nodes
 mkdir -p $outdir
 for i in $(seq 1 4)
   do
-  fractale agent --plan ./plans/multi-node/lammps-4-nodes.yaml --results $outdir-build --incremental
+  fractale agent --plan ./plans/multi-node/lammps-4-nodes.yaml --results $outdir --incremental
 incremental
 done
 ```
@@ -136,7 +136,7 @@ outdir=./results/kripke-4-nodes
 mkdir -p $outdir
 for i in $(seq 1 4)
   do
-  fractale agent --plan ./plans/multi-node/kripke-4-nodes.yaml --results $outdir-build --incremental
+  fractale agent --plan ./plans/multi-node/kripke.yaml --results $outdir --incremental
 incremental
 done
 ```
