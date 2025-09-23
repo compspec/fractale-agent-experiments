@@ -3,6 +3,27 @@
         "user-provided-function": [
             "amg -problem 2 -n 4 4 4"
         ],
+        "test": [
+            "amg -problem 2 -n 32 32 32 -P 4 4 4",
+            "amg -problem 2 -n 128 128 128 -P 8 8 1",
+            "amg -problem 2 -n 64 64 64 -P 8 8 1",
+            "amg -problem 2 -n 64 64 64 -P 8 8 1",
+            "amg -problem 2 -n 256 128 128 -P 16 16 1",
+            "amg -problem 2 -n 128 128 128 -P 16 16 1",
+            "amg -problem 2 -n 128 128 64 -P 16 16 1",
+            "amg -problem 2 -n 128 128 128 -P 8 8 4",
+            "amg -problem 2 -n 128 128 64 -P 8 8 1",
+            "amg2023 -problem 2 -n 4 4 4",
+            "amg2023 -problem 2 -n 4 4 4",
+            "amg -problem 2 -n 4 4 4",
+            "/bin/sh -c 'amg -problem 2 -n 4 4 4'",
+            "amg -problem 2 -n 4 4 4",
+            "amg -problem 2 -n 4 4 4",
+            "amg -problem 2 -n 4 4 4",
+            "flux run -n 4 amg -problem 2 -n 4 4 4",
+            "amg -problem 2 -n 4 4 4",
+            "amg -problem 2 -n 4 4 4"
+        ],
         "llm-decision": [
             "amg -problem 2 -n 32 32 32 -P 8 4 2",
             "amg -problem 2 -n 128 128 128 -P 4 4 4",
@@ -178,6 +199,64 @@
             "kripke --procs 8,4,4 --zones 32,32,32"
         ]
     },
+    "lammps": {
+        "test": [
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite"
+        ],
+        "multi-node": [
+            "lmp -v x 8 -v y 8 -v z 4 -in ./in.reaxff.hns -nocite"
+        ],
+        "user-provided-function": [
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite"
+        ],
+        "user-guided-function": [
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 160 -v y 160 -v z 160 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 80 -v y 80 -v z 80 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 40 -v y 40 -v z 40 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 24 -v y 24 -v z 24 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 4 -v y 4 -v z 3 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 4 -v y 4 -v z 8 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite"
+        ],
+        "llm-decision": [
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite"
+        ]
+    },
     "laghos": {
         "user-guided-function": [
             "laghos -p 1 -m data/cube_311_hex.mesh -o 3 -pa",
@@ -227,57 +306,6 @@
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -ok 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -o 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -ok 3"
-        ]
-    },
-    "lammps": {
-        "multi-node": [
-            "lmp -v x 8 -v y 8 -v z 4 -in ./in.reaxff.hns -nocite"
-        ],
-        "user-provided-function": [
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite"
-        ],
-        "user-guided-function": [
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 160 -v y 160 -v z 160 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 80 -v y 80 -v z 80 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 40 -v y 40 -v z 40 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 24 -v y 24 -v z 24 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 3 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 8 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite"
-        ],
-        "llm-decision": [
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite"
         ]
     }
 }

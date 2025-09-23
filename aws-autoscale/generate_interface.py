@@ -57,6 +57,9 @@ experiment_runs = [
     "lammps-decision-fom",
     "amg2023-4-nodes",
     "lammps-4-nodes",
+    "amg2023-4-nodes-deploy",
+    "amg2023-4-nodes-build",
+    "lammps-4-nodes-affinity",
     "kripke-4-nodes",
     "amg2023-function",
     "amg2023-decision-function",
@@ -600,7 +603,7 @@ def gather_all_run_data(results_dir):
                 try:
                     with open(file_path, "r") as f:
                         data = json.load(f)
-                    data["app_name"] = app_name  # Inject app name for grouping
+                    data["app_name"] = app_name
                     all_runs.append(data)
                 except Exception as e:
                     print(f"Warning: Could not load {file_path}. Error: {e}")
@@ -1238,6 +1241,8 @@ def scan_results(results_dir):
                         experiment = os.path.basename(app_path)
                         if experiment.startswith("amg2023-4-nodes"):
                             experiment = "amg2023-4-nodes"
+                        if experiment == "lammps-4-nodes-affinity":
+                            experiment = "lammps-4-nodes"
                         attempts = step.get("attempts")
                         direction, metric_name, unit = get_direction_unit(experiment)
                         agent = step.get("agent")
@@ -1263,6 +1268,8 @@ def scan_results(results_dir):
                         if not foms:
                             continue
                         best_fom = max(foms)
+                        print(app_name)
+                        print(foms)
 
                         # The first fom is from the deployment agent, and we explicitly ask for a small problem size
                         for fom in foms:
