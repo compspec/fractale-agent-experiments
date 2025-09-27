@@ -165,3 +165,36 @@ When you are done:
 ```bash
 eksctl delete cluster --config-file ./eks-config-4-nodes.yaml  --wait
 ```
+
+
+## Scaling Experiments
+
+We are going to choose the most cost effective type, hpc7g.
+
+```bash
+eksctl create cluster --config-file ./eks-config-5-nodes.yaml 
+aws eks update-kubeconfig --region us-east-1 --name efa-cluster
+
+helm repo add eks https://aws.github.io/eks-charts
+helm install efa eks/aws-efa-k8s-device-plugin -n kube-system
+
+kubectl apply -f eks-efa-autoscaler.yaml
+kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator-arm.yaml
+```
+
+### LAMMPS
+
+```bash
+outdir=./results/lammps-scaling-5-nodes-hpc7g
+mkdir -p $outdir
+fractale agent --plan ./plans/scaling-study/scale-lammps.yaml --results $outdir --incremental
+```
+
+### AMG2023
+
+```bash
+outdir=./results/amg-scaling-5-nodes-hpc7g
+mkdir -p $outdir
+fractale agent --plan ./plans/scaling-study/scale-amg2023.yaml --results $outdir --incremental
+```
+
