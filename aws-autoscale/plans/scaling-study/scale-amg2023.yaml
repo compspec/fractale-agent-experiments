@@ -27,7 +27,7 @@ plan:
       For your FIRST NODE TEST starting point: a previous run example that has worked well:
         amg -problem 2 -n 128 128 128 -P 8 4 1 with FOM 8.039496e+08
       You MUST adhere to ONE node (64 tasks) for the initial optimization.
-    resources: Your nodes include the hpc7g.16xlarge with 64 CPU, 128 GiB Memory, ARM (Graviton3).
+    resources: Your nodes include the m7g.16xlarge, 64 CPU, 256 GiB Memory, ARM (Graviton3)
     testing: |
       You MUST run AMG -problem 2 and you MUST test on 1 node (size 1) to start. For testing You MUST choose a small problem size -P no greater than 4 in any dimension.
     details: | 
