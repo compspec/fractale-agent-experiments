@@ -1,0 +1,36 @@
+name: Scaling Study for Kripke
+description: Scale Kripke up to 5 nodes.
+plan:
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes to run across nodes"
+    container: ghcr.io/converged-computing/fractale-agent-experiments:kripke
+    max_attempts: 10
+    max_runtime: 600
+    allow_return_to_human: false
+    allow_return_to_manager: false
+    sizes: [1,2,3,4,5]
+    scale: |
+      Strong scale kripke to maximize FOM.
+      You MUST choose a kripke configuration at the smallest size (1) that you use for subsequent sizes.
+      Stop when you determine the application is no longer weak scaling.
+    optimize: |
+      Maximize the kripke figure of merit for Grind time. 
+      You MUST choose a problem size running 'kripke' with (-n) at size (1) that you MUST use at all larger sizes. You can change other kripke parameters as you change size.
+      You MUST NOT change the primary problem size after the first scaling size (1).
+      You MUST make an effort to increase problem size at the first scaling size (1) until the job times out.
+      You MUST decrease problem size if the pod is OOMKilled and try to optimize around that point.
+      You MUST increase the problem size ONLY at the first scaling size until it stops improving in performance.
+      You MUST set flux.optionFlags to "-o cpu-affinity=per-task"
+      At large sizes, you MUST adhere to the same resource limits, requests, and node selectors.
+      You MUST set environment variables for MPI to use EFA with libfabric.
+      You MUST adhere to ONE node (64 tasks) for the initial optimization.
+    resources: Your nodes include the 64 CPU, 128 GiB Memory, ARM (Graviton3).
+    testing:
+      Run kripke with no parameters
+    details: | 
+      You MUST run on only one node. 
+      You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
+      Since this is an ARM instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-rocky:arm-9. Otherwise, do not change or set it.
+      If you are using an ARM instance you MUST also set flux.arch: "arm".
