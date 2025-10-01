@@ -198,3 +198,11 @@ mkdir -p $outdir
 fractale agent --plan ./plans/scaling-study/scale-amg2023.yaml --results $outdir --incremental
 ```
 
+### Kripke
+
+```bash
+outdir=./results/kripke-scaling-5-nodes-hpc7g
+mkdir -p $outdir
+fractale agent --plan ./plans/scaling-study/scale-kripke.yaml --results $outdir --incremental
+```
+
