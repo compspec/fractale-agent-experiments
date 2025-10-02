@@ -1,0 +1,35 @@
+name: Scaling Study for LAMMPS
+description: Scale lammps up tp 4 nodes.
+plan:
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    max_attempts: 10
+    max_runtime: 300
+    allow_return_to_human: false
+    allow_return_to_manager: false
+    sizes: [1, 2, 3, 4]
+    scale: |
+      Strong scale lammps to maximize the FOM and minimize running time at each size.
+      You MUST choose a problem size at the smallest size (1) that you keep constant.
+      STOP when you determine the application is no longer strong scaling.
+    optimize: |
+      You MUST maximize the LAMMPS FOM, *atom steps per second.  It could be Matom or katom.
+      You MUST NOT change parameters after the first scaling size.
+      You MUST increase the problem size ONLY at the first scaling size until it stops improving in performance. If a deploy does not run, you must STOP to end the study.
+      You MUST set flux.optionFlags to "-o cpu-affinity=per-task"
+      At large sizes, you MUST adhere to the same resource limits, requests, and node selectors.
+      You MUST parse a result to include the units for katom or Matom as a single string.
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. You must add the nodeSelector to use node.kubernetes.io/instance-type m7g.16xlarge with 64 CPU, 256 GiB Memory, ARM (Graviton3).
+    testing:
+      Run in.reaxff.hns in the pwd with lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite for testing only on all processes of one node.
+    details: |
+      You MUST set flux.container.disable to true.
+      You MUST set the containers imagePullPolicy to Always.
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
+      You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
+      Since this is an ARM instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-ubuntu:arm-jammy and set flux.arch: "arm".

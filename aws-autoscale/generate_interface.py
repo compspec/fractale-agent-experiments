@@ -21,6 +21,7 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 
+pandas.set_option('display.precision', 10)
 
 # Being lazy - let's create a global data frame of key/value pairs we can set for different metrics to plot.
 # Each app has a different set of runs - "vanilla" and then with a function.
@@ -55,6 +56,12 @@ experiment_runs = [
     "lammps-decision-function",
     "laghos-decision-function",
     "lammps-decision-fom",
+    "amg2023-4-nodes",
+    "lammps-4-nodes",
+    "amg2023-4-nodes-deploy",
+    "amg2023-4-nodes-build",
+    "lammps-4-nodes-affinity",
+    "kripke-4-nodes",
     "amg2023-function",
     "amg2023-decision-function",
     "kripke-decision-function",
@@ -597,7 +604,7 @@ def gather_all_run_data(results_dir):
                 try:
                     with open(file_path, "r") as f:
                         data = json.load(f)
-                    data["app_name"] = app_name  # Inject app name for grouping
+                    data["app_name"] = app_name
                     all_runs.append(data)
                 except Exception as e:
                     print(f"Warning: Could not load {file_path}. Error: {e}")
@@ -776,9 +783,18 @@ def get_foms(foms_raw, app_name):
         try:
             foms = [float(fom) for fom in foms_raw if fom and str(fom) != "00"]
         except (ValueError, TypeError) as e:
-            print(
-                f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}"
-            )
+            foms = []
+            for fom in foms_raw:
+                if "katom" in fom:
+                    # k atom == kilo == 1000
+                    fom = float(fom.split(' ')[0]) * 1000
+                    foms.append(fom)
+                elif "Matom" in fom:
+                    # M == mega == million
+                    fom = float(fom.split(' ')[0]) * 1000000                
+                    foms.append(fom)
+                else: 
+                    print(f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}")
     return foms
 
 
@@ -1141,6 +1157,12 @@ def get_experiment_type(experiment):
         "kripke-decision-function",
     ]:
         experiment_type = "user-guided-function"
+    elif experiment in [
+        "amg2023-4-nodes",
+        "lammps-4-nodes",
+        "kripke-4-nodes",
+    ]:
+        experiment_type = "multi-node"
     else:
         experiment_type = "test"
     return experiment_type
@@ -1218,6 +1240,10 @@ def scan_results(results_dir):
 
                         # Add attempts (this is on the level of a step)
                         experiment = os.path.basename(app_path)
+                        if experiment.startswith("amg2023-4-nodes"):
+                            experiment = "amg2023-4-nodes"
+                        if experiment == "lammps-4-nodes-affinity":
+                            experiment = "lammps-4-nodes"
                         attempts = step.get("attempts")
                         direction, metric_name, unit = get_direction_unit(experiment)
                         agent = step.get("agent")
@@ -1242,7 +1268,13 @@ def scan_results(results_dir):
                         foms = get_foms(opt_meta.get("foms", []), app_name)
                         if not foms:
                             continue
-                        best_fom = max(foms)
+                        # Lower grind time is better
+                        if app_name == "kripke":
+                            best_fom = min(foms)
+                        else:
+                            best_fom = max(foms)
+                        print(app_name + " " + experiment_type)
+                        print(foms)
 
                         # The first fom is from the deployment agent, and we explicitly ask for a small problem size
                         for fom in foms:
@@ -1265,9 +1297,7 @@ def scan_results(results_dir):
                     if status == "Succeeded":
                         apps[app_name]["summary"]["succeeded"] += 1
                         current_best = apps[app_name]["summary"]["best_fom"]
-                        if best_fom and (
-                            current_best is None or best_fom > current_best
-                        ):
+                        if best_fom and current_best is None or (app_name != kripke and best_fom > current_best) or (app_name == "kripke" and best_fom < current_best):
                             apps[app_name]["summary"]["best_fom"] = best_fom
                     else:
                         apps[app_name]["summary"]["failed"] += 1
@@ -1426,8 +1456,68 @@ def main():
     global df
     global df_idx
 
-    df.to_csv(os.path.join("data", "foms-results.csv"))
+    # Break down percentage of instance type chosen for each
+    instance_types = pandas.DataFrame(df[df.metric=='instance-type'].groupby(['app', 'value']).value.count())
+    instance_types['application'] = [x[0] for x in instance_types.index]
+    instance_types['instance'] = [x[1] for x in instance_types.index]
+    instance_types['percentage'] = instance_types['value'] / instance_types.groupby('application')['value'].transform('sum') * 100
     img_outdir = os.path.join("data", "img")
+
+    plt.figure(figsize=(14, 8))
+    plot = sns.barplot(data=instance_types, x='application', y='percentage', hue='instance')
+    plt.title('Agent Selection of Instance Types by Application', fontsize=16)
+    plt.xlabel('', fontsize=12)
+    plt.ylabel('Percentage of Deploys', fontsize=12)
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, 'instance-selection.svg'), dpi=300)
+    plt.close()
+
+    # Also look at instance selection per experiment (single nodes). We just need the max fom per app and experiment
+    metrics = pandas.DataFrame(columns=['app', 'experiment_type', 'best_fom'])
+    metrics_idx = 0
+    for app in df.app.unique():
+        for experiment_type in df.experiment_type.unique():
+            subset = df[(df.app == app) & (df.experiment_type == experiment_type)]
+            if subset.shape[0] == 0:
+                continue
+            if experiment_type == "test":
+                continue
+            if app in ['laghos', 'lammps', 'amg']:
+                best_fom = subset[subset.metric == 'fom'].value.max()
+            else:
+                best_fom = subset[subset.metric == 'fom'].value.min()            
+            metrics.loc[metrics_idx, :] = [app, experiment_type, best_fom]
+            metrics_idx += 1
+
+    # Note that I will need to look up instance type for each best fom
+    print(metrics.sort_values(by=['app', 'best_fom']))
+            
+    # Break down percentage of instance type chosen for each
+    it_df = pandas.DataFrame(df[df.metric.isin(['instance-type', 'fom'])].groupby(['app', 'value', 'experiment_type']).value.count())
+    instance_types['application'] = [x[0] for x in instance_types.index]
+    instance_types['instance'] = [x[1] for x in instance_types.index]
+    instance_types['percentage'] = instance_types['value'] / instance_types.groupby('application')['value'].transform('sum') * 100
+    img_outdir = os.path.join("data", "img")
+
+    plt.figure(figsize=(14, 8))
+    plot = sns.barplot(data=instance_types, x='application', y='percentage', hue='instance')
+    plt.title('Agent Selection of Instance Types by Application', fontsize=16)
+    plt.xlabel('', fontsize=12)
+    plt.ylabel('Percentage of Deploys', fontsize=12)
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, 'instance-selection.svg'), dpi=300)
+    plt.close()
+
+    # Get max and min FOMs
+    print(df[df.metric=='fom'].groupby(['app']).value.max())    
+    print(df[df.metric=='fom'].groupby(['app']).value.min())    
+    
+    # Also organize by the type
+    print(df[df.metric=='fom'].groupby(['app', 'experiment_type']).value.max())    
+    print(df[df.metric=='fom'].groupby(['app', 'experiment_type']).value.min())    
+
+    instance_types.to_csv(os.path.join("data", "instance-types.csv"))
+    df.to_csv(os.path.join("data", "foms-results.csv"))
     if not os.path.exists(img_outdir):
         os.makedirs(img_outdir)
 
@@ -1467,11 +1557,14 @@ def main():
         # axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45, horizontalalignment='right')
         labels = axes[0].get_xticklabels()
         labels = ["\n".join(x._text.split("-")) for x in labels]
+        if app == "lammps":
+            axes[0].set_yscale("log")
         axes[0].set_xticklabels(labels)
         plt.tight_layout()
         plt.savefig(os.path.join(img_outdir, f"{app}.svg"))
         plt.clf()
 
+    # TODO: make platfor, cores, etc, percentages and add min times for all
     # Attempts plot
     subset = df[df.metric == "attempts"]
     plt.figure(figsize=(10, 7))

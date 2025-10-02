@@ -1,10 +1,9 @@
 {
     "amg2023": {
-        "user-provided-function": [
-            "amg -problem 2 -n 4 4 4"
+        "test": [
+            "amg -problem 2 -n 32 32 32 -P 4 4 4"
         ],
         "llm-decision": [
-            "amg -problem 2 -n 32 32 32 -P 8 4 2",
             "amg -problem 2 -n 128 128 128 -P 4 4 4",
             "amg -problem 2 -n 64 64 64 -P 4 4 4",
             "amg -problem 2 -n 64 64 64 -P 4 4 4",
@@ -16,44 +15,10 @@
             "amg -problem 2 -n 128 64 64 -P 8 4 2",
             "amg -problem 2 -n 128 64 64 -P 8 4 2",
             "amg -problem 2 -n 128 64 64 -P 8 4 2",
-            "amg -problem 2 -n 60 60 60 -P 4 4 3",
-            "amg -problem 2 -n 128 128 128 -P 8 6 1",
-            "amg -problem 2 -n 128 128 128 -P 8 6 1",
-            "amg -problem 2 -n 4 8 4 -P 4 3 2",
-            "amg -problem 2 -n 6 4 4 -P 4 3 2",
-            "amg -problem 2 -n 8 8 8 -P 4 2 2",
-            "amg -problem 2 -n 8 4 4 -P 6 2 2",
             "amg -problem 2 -n 4 4 4 -P 2 2 1",
             "amg -problem 2 -n 8 8 8 -P 4 4 3"
         ],
         "user-guided-function": [
-            "amg -problem 2 -n 4 4 4",
-            "amg -problem 2 -P 192 192 192 -n 6 4 1",
-            "amg -problem 2 -n 192 192 192 -P 6 4 1",
-            "amg -problem 2 -P 288 288 288 -n 4 3 2",
-            "amg -problem 2 -P 288 288 288 -n 6 4 1",
-            "amg -problem 2 -n 288 288 288 -P 6 4 1",
-            "amg -problem 2 -n 192 192 192 -P 6 4 1",
-            "amg -problem 2 -P 432 432 432 -n 6 4 1",
-            "amg -problem 2 -n 432 432 432 -P 6 4 1",
-            "amg -problem 2 -n 360 360 360 -P 6 4 1",
-            "amg -problem 2 -n 288 288 288 -P 6 4 1",
-            "amg -problem 2 -n 192 192 192 -P 6 4 1",
-            "amg -problem 2 -n 128 128 128 -P 8 4 1",
-            "amg -problem 2 -P 4 4 3 -n 1800 1800 1800",
-            "amg -problem 2 -P 4 4 3 -n 1600 1600 1600",
-            "amg -problem 2 -P 4 4 3 -n 1500 1500 1500",
-            "amg -problem 2 -P 4 4 3 -n 1298 1298 1298",
-            "amg -problem 2 -P 4 4 3 -n 1200 1200 1200",
-            "amg -problem 2 -P 4 4 3 -n 950 950 950",
-            "amg -problem 2 -P 4 4 3 -n 850 850 850",
-            "amg -problem 2 -P 4 4 3 -n 700 700 700",
-            "amg -problem 2 -P 4 4 3 -n 288 288 288",
-            "amg -problem 2 -P 4 4 3 -n 240 240 240",
-            "amg -problem 2 -P 4 4 3 -n 220 220 220",
-            "amg -problem 2 -P 4 4 3 -n 200 200 200",
-            "amg -problem 2 -P 4 4 3 -n 175 175 175",
-            "amg -problem 2 -n 128 128 128 -P 4 3 2",
             "amg -problem 2 -n 4 4 4 -P 4 3 2",
             "amg -problem 2 -n 4 3 2 -P 4 3 2",
             "amg -problem 2 -n 128 128 128 -P 4 3 2",
@@ -74,22 +39,6 @@
             "amg -problem 2 -n 128 128 128 -P 4 4 1",
             "amg -problem 2 -P 128 128 128 -n 4 4 1",
             "amg -problem 2 -n 128 128 128 -P 4 4 1",
-            "amg -problem 2 -n 4 4 4 -P 4 3 2",
-            "amg -problem 2 -n 192 192 192 -P 6 4 1",
-            "amg -problem 2 -n 6 4 1 -P 192 192 192",
-            "amg -problem 2 -n 6 4 1 -P 160 160 160",
-            "amg -problem 2 -n 6 4 1 -P 160 160 160",
-            "amg -problem 2 -n 6 4 1 -P 30 30 30",
-            "amg -problem 2 -n 6 4 1 -P 30 30 30",
-            "amg -problem 2 -n 6 4 1 -P 4 4 4",
-            "amg -problem 2 -n 6 4 1 -P 12 4 4",
-            "amg -problem 2 -P 6 4 1 -n 4 4 4",
-            "amg -problem 2 -P 4 3 2 -n 4 4 4",
-            "amg -problem 2 -P 4 3 2 -n 4 4 4",
-            "amg -problem 2 -P 4 4 4 -n 4 3 2",
-            "amg -problem 2 -P 4 4 4 -n 4 3 2",
-            "amg -problem 2 -P 4 4 4 -n 4 3 2",
-            "amg -problem 2 -P 4 4 4 -n 4 3 2",
             "amg -problem 2 -P 4 4 4 -n 8 4 1",
             "amg -problem 2 -P 4 4 2 -n 8 4 1",
             "amg -problem 2 -P 4 4 2 -n 6 4 1",
@@ -145,63 +94,40 @@
             "kripke --niter 10 --zones 32,32,32 --groups 32 --dset 8 --gset 4",
             "kripke --niter 10 --zones 24,24,24 --procs 4,3,2 --groups 32 --dset 8 --gset 8 --layout GZD",
             "kripke --niter 10 --zones 24,24,24 --procs 4,3,2 --groups 32 --dset 8 --gset 8 --nest GZD",
-            "kripke",
-            "kripke --procs 4,4,3 --zones 40,40,39",
-            "kripke",
-            "kripke --procs 4,4,3 --niter 10 --zones 64,64,64 --groups 32 --dset 16",
-            "kripke",
-            "kripke --procs 4,4,3 --niter 10 --zones 64,64,64 --groups 32 --dset 16",
-            "kripke --procs 4,4,3 --niter 10 --zones 96,96,96 --groups 32 --dset 16",
-            "kripke --procs 2,2,4 --niter 10 --zones 48,48,48 --groups 32 --dset 16",
-            "kripke --procs 4,4,4",
-            "kripke --procs 4,4,2",
-            "kripke.exe --procs 4,4,4",
-            "kripke.exe --procs 4,4,3",
-            "kripke.exe --procs 3,4,4",
-            "kripke.exe --procs 3,4,4 --zones 24,24,24",
-            "kripke.exe --procs 2,2,1",
-            "kripke --procs 4,4,4 --niter 10",
-            "kripke --procs 4,4,4",
-            "kripke --procs 4,4,3 --zones 16,16,15"
+            "kripke"
         ],
         "user-guided-function": [
             "kripke --procs 4 4 4",
             "kripke --procs 4 4 4",
             "kripke --procs 6 4 2",
-            "kripke --procs 8 8 1",
-            "kripke --procs 4,4,3 --zones 140,140,130"
+            "kripke --procs 8 8 1"
+        ],
+        "multi-node": [
+            "kripke --procs 8 8 4 --zones 108,108,108 --niter 10 --dset 8"
+        ]
+    },
+    "lammps": {
+        "test": [
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite"
+        ],
+        "user-provided-function": [
+            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
+            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite"
         ]
     },
     "laghos": {
-        "user-guided-function": [
-            "laghos -p 1 -m data/cube_311_hex.mesh -o 3 -pa",
-            "laghos -p 1 -m data/cube_311_hex.mesh -ok 3 -pa -f",
-            "laghos -p 1 -m cube_311_hex.mesh -ok 3 -pa -f",
-            "laghos -p 1 -m cube_311_hex.mesh -ok 3 -f",
-            "laghos -p 1 -m cube_311_hex.mesh -ok 3 -f -fa",
-            "laghos -m cube_311_hex.mesh",
-            "laghos -m cube_311_hex.mesh"
-        ],
         "llm-decision": [
-            "laghos -p 1 -m cube_311_hex.mesh -rs 2 -ok 3",
-            "laghos -p 1 -m cube_311_hex.mesh -rs 2 -ok 3",
-            "laghos -p 1 -m cube_311_hex.mesh -rs 2 -o 3",
-            "laghos -p 1 -m cube_311_hex.mesh -rs 2 -ok 3",
-            "laghos -pa -m cube_311_hex.mesh",
-            "laghos -pa -m cube_311_hex.mesh",
-            "laghos -p 3 -pa -m cube_311_hex.mesh",
             "laghos -p 1 -m cube_311_hex.mesh",
             "laghos -p 1 -m data/cube_311_hex.mesh -rp 1 -o 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -rp 1 -ok 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -rp 1 -ok 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -rp 1 -ok 2",
             "laghos -p 1 -m data/cube_311_hex.mesh -rp 1 -ok 2",
-            "laghos -p 1 -m cube_311_hex.mesh -pa",
-            "laghos -pa -m cube_311_hex.mesh",
-            "laghos -p 1 -m cube_311_hex.mesh -rs 3 -tf 0.75",
-            "laghos -p 1 -m data/cube_311_hex.mesh -pa",
-            "laghos -p 1 -m data/cube_311_hex.mesh -pa",
-            "laghos -p 1 -m data/cube_311_hex.mesh -pa",
             "laghos -p 1 -m cube_311_hex.mesh -pa",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -ok 3",
@@ -221,54 +147,6 @@
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -ok 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -o 3",
             "laghos -p 1 -m data/cube_311_hex.mesh -pa -ok 3"
-        ]
-    },
-    "lammps": {
-        "user-provided-function": [
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 28 -v y 28 -v z 28 -in ./in.reaxff.hns -nocite"
-        ],
-        "user-guided-function": [
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 160 -v y 160 -v z 160 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 144 -v y 144 -v z 144 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 80 -v y 80 -v z 80 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 40 -v y 40 -v z 40 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 32 -v y 32 -v z 32 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 24 -v y 24 -v z 24 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 3 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 8 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxff.hns -nocite"
-        ],
-        "llm-decision": [
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite",
-            "lmp -v x 2 -v y 2 -v z 2 -in ./in.reaxff.hns -nocite"
         ]
     }
 }

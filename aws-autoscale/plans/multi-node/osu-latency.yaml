@@ -1,0 +1,35 @@
+name: Build and Deploy OSU Latency
+description: Build a Docker container and deploy it as a Kubernetes Job.
+plan:
+- agent: build
+  context:
+    environment: "AWS CPU instance in Kubernetes to run across nodes"
+    application: osu-benchmarks
+    platforms: linux/arm64
+    container: ghcr.io/converged-computing/fractale-agent-experiments:osu-latency
+    push: true
+    max_attempts: 10
+    details: |
+      You MUST use ghcr.io/converged-computing/flux-openmpi:ubuntu2204-efa-arm as a base image. It includes OpenMPI and libfabric provided from the efa installer for AWS and the entire Flux Framework stack.
+      You MUST compile setting the cxx compiler to mpicxx and the c compiler to mpicc.
+      Build the OSU benchmarks. You MUST have MPI support enabled. You MUST ensure osu_latency is on the path.
+      You MUST build for a multi-node MPI environment
+
+- agent: minicluster
+  context:
+    environment: "AWS CPU instance in Kubernetes" 
+    container: ghcr.io/converged-computing/fractale-agent-experiments:osu-latency
+    max_attempts: 10
+    max_runtime: 300
+    allow_return_to_human: false
+    allow_return_to_manager: false
+    resources: |
+      The resource spec you got earlier is for an autoscaling cluster, so the nodes possible are not there. You must add the nodeSelector to use node.kubernetes.io/instance-type m7g.16xlarge with 64 CPU, 256 GiB Memory, ARM (Graviton3).
+    details: |
+      Run The OSU Latency benchmark across 2 nodes.
+      You MUST run on 2 nodes and you MUST set flux.container.disable to true.
+      You MUST set the containers imagePullPolicy to Always.
+      The Flux Operator uses flux run in the pwd with the tasks determined by the spec.tasks.
+      You MUST set resource requests and limits to use vpc.amazonaws.com/efa: 1
+      Since this is an ARM instance you MUST change the flux.container.image to be
+      ghcr.io/converged-computing/flux-view-ubuntu:arm-jammy and set flux.arch: "arm".
