@@ -1,0 +1,41 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: amg-test-cpu-multinode-final
+  namespace: default
+spec:
+  cleanup: false
+  containers:
+  - command: amg -problem 2 -n 256 256 128 -P 16 16 1
+    env:
+    - name: OMP_NUM_THREADS
+      value: '1'
+    - name: MKL_NUM_THREADS
+      value: '1'
+    - name: OPENBLAS_NUM_THREADS
+      value: '1'
+    - name: OMPI_MCA_btl_vader_single_copy_mechanism
+      value: cma
+    - name: FI_PROVIDER
+      value: efa
+    - name: FI_EFA_USE_DEVICE_RDMA
+      value: '1'
+    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    launcher: false
+    resources:
+      limits:
+        vpc.amazonaws.com/efa: '1'
+      requests:
+        vpc.amazonaws.com/efa: '1'
+  flux:
+    arch: arm
+    container:
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+  pod:
+    nodeSelector:
+      node.kubernetes.io/instance-type: m7g.16xlarge
+  logging:
+    quiet: true
+  size: 4
+  tasks: 256
+

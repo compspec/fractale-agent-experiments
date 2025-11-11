@@ -1,0 +1,23 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: kripke-aws-cpu
+  namespace: default
+spec:
+  cleanup: false
+  containers:
+  - command: kripke --procs 4,4,4
+    image: ghcr.io/converged-computing/fractale-agent-experiments:kripke
+    launcher: false
+  flux:
+    arch: arm
+    container:
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+  logging:
+    strict: true
+  pod:
+    nodeSelector:
+      node.kubernetes.io/instance-type: c7g.16xlarge
+  size: 1
+  tasks: 64
+

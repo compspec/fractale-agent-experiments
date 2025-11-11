@@ -1,0 +1,147 @@
+Defaulted container "lammps-reax-test" out of: lammps-reax-test, flux-view (init)
+/flux_operator/wait-0.sh: line 38: curl: command not found
+/flux_operator/wait-0.sh: line 38: wget: command not found
+chmod: cannot access './wait-fs': No such file or directory
+mv: cannot stat './wait-fs': No such file or directory
+
+Flux install root: /mnt/flux/view
+
+/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found
+Python version: /mnt/flux/view/bin/python3.11
+Python root: /mnt/flux/view/lib/python3.11
+PYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages
+PATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin
+/mnt/flux/view/lib/libpython3.11.so
+/mnt/flux/view/lib/libpython3.11.so.1.0
+/mnt/flux/view/lib/libpython3.so
+lrwxrwxrwx. 1 root root 117 Sep  8 20:41 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "lammps-reax-test-0"
+curve
+    public-key = "dM3CrVdY@njov?J-I3G>+NAx4[3S/T7[:M^zF<?/"
+    secret-key = "jyY$nH19afhk%6Xi:gI9&qc:t6a@}t=K&X$Hb}ju"
+?? Hello, I'm lammps-reax-test-0
+The main host is lammps-reax-test-0
+The working directory is /app, contents include:
+README.txt	ffield.reax.hns  log.30Nov23.reaxff.hns.g++.1
+data.hns-equil	in.reaxff.hns	 log.30Nov23.reaxff.hns.g++.4
+??️ Flux Option Flags defined
+Command provided is: lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite
+Flags for flux are -N 1 -n64  
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite
+Flags for flux are -N 1 -n64  
+broker.info[0]: start: none->join 0.42106ms
+broker.info[0]: parent-none: join->init 0.016604ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s
+broker.info[0]: rc1-success: init->quorum 0.619368s
+broker.info[0]: online: lammps-reax-test-0 (ranks 0)
+broker.info[0]: quorum-full: quorum->run 0.100318s
+job-manager.err[0]: jobtap: job.new: callback returned error
+LAMMPS (22 Jul 2025 - Development - 1db2e93)
+job-manager.err[0]: jobtap: job.inactive-add: callback returned error
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread.
+  using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+  triclinic box = (0 0 0) to (22.326 11.1412 13.778966) with tilt (0 -5.02603 0)
+  4 by 4 by 4 MPI processor grid
+  reading atoms ...
+  304 atoms
+  reading velocities ...
+  304 velocities
+  read_data CPU = 0.004 seconds
+Replication is creating a 16x16x16 = 4096 times larger system...
+  triclinic box = (0 0 0) to (357.216 178.2592 220.46346) with tilt (0 -80.41648 0)
+  4 by 4 by 4 MPI processor grid
+  bounding box image = (0 -1 -1) to (0 1 1)
+  bounding box extra memory = 0.03 MB
+  average # of replicas added to proc = 161.33 out of 4096 (3.94%)
+  1245184 atoms
+  replicate CPU = 0.004 seconds
+Neighbor list info ...
+  update: every = 20 steps, delay = 0 steps, check = no
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 11
+  ghost atom cutoff = 11
+  binsize = 5.5, bins = 80 33 41
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/ghost/newtoff
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reax, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 0
+  Time step     : 0.1
+Per MPI rank memory allocation (min/avg/max) = 876.6 | 876.6 | 876.6 Mbytes
+   Step          Temp          PotEng         Press          E_vdwl         E_coul         Volume    
+         0   300           -113.27833      439.01743     -111.57687     -1.7014647      14038460     
+        10   300.69932     -113.28024      925.31052     -111.5788      -1.7014387      14038460     
+        20   302.27327     -113.28479      1783.5266     -111.58346     -1.7013314      14038460     
+        30   302.38908     -113.28501      4334.8305     -111.58391     -1.7011064      14038460     
+        40   300.49196     -113.27928      6440.4712     -111.57849     -1.7007824      14038460     
+        50   297.42286     -113.27008      6520.6457     -111.56967     -1.7004181      14038460     
+        60   294.86428     -113.26242      6195.5449     -111.56237     -1.7000481      14038460     
+        70   294.82561     -113.26226      6855.064      -111.56259     -1.6996694      14038460     
+        80   297.87638     -113.27134      8290.7798     -111.57205     -1.699287       14038460     
+        90   301.63631     -113.28255      9442.8065     -111.5836      -1.6989452      14038460     
+       100   302.41675     -113.28481      10411.325     -111.58612     -1.6986984      14038460     
+Loop time of 171.93 on 64 procs for 100 steps with 1245184 atoms
+
+Performance: 0.005 ns/day, 4775.839 hours/ns, 0.582 timesteps/s, 724.238 katom-step/s
+99.7% CPU use with 64 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 95.229     | 102.84     | 109.23     |  30.3 | 59.81
+Neigh   | 1.2087     | 1.2142     | 1.2246     |   0.3 |  0.71
+Comm    | 1.366      | 7.7524     | 15.361     | 110.4 |  4.51
+Output  | 0.0022573  | 0.002606   | 0.0032572  |   0.5 |  0.00
+Modify  | 60.091     | 60.106     | 60.114     |   0.1 | 34.96
+Other   |            | 0.01536    |            |       |  0.01
+
+Nlocal:          19456 ave       19468 max       19440 min
+Histogram: 2 1 2 12 11 11 5 9 6 5
+Nghost:        31567.8 ave       31601 max       31543 min
+Histogram: 2 5 10 10 17 8 6 3 2 1
+Neighs:    5.74696e+06 ave 5.75075e+06 max 5.74219e+06 min
+Histogram: 1 3 2 7 17 7 7 10 7 3
+
+Total # of neighbors = 3.678054e+08
+Ave neighs/atom = 295.38237
+Neighbor list builds = 5
+Dangerous builds not checked
+Total wall time: 0:02:56
+broker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch lmp -v x 16 -v y 16 -v z 16 -in ./in.reaxff.hns -nocite Exited (rc=0) 178.5s
+broker.info[0]: rc2-success: run->cleanup 2.9747m
+broker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.301065s
+broker.info[0]: children-none: shutdown->finalize 0.031359ms
+broker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.134456s
+broker.info[0]: goodbye: goodbye->exit 0.020637ms
+

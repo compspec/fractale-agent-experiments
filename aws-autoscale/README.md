@@ -73,7 +73,7 @@ done
 When you are done:
 
 ```bash
-eksctl delete cluster --config-file ./eks-config.yaml  --wait
+eksctl delete cluster --config-file ./eksctl/eks-config.yaml  --wait
 ```
 
 ## Cluster Experiments
@@ -87,7 +87,7 @@ aws ec2 describe-instance-types --region us-east-1 --filters Name=network-info.e
 I chose the top performing instance. The reason is because the autoscaler uses them as templates, so we need one to exist. This time we need to install the EFA device plugin. I didn't see eksctl did it.
 
 ```bash
-eksctl create cluster --config-file ./eks-config-4-nodes.yaml 
+eksctl create cluster --config-file ./eksctl/eks-config-4-nodes.yaml 
 
 aws eks update-kubeconfig --region us-east-1 --name efa-cluster
 
@@ -172,7 +172,7 @@ eksctl delete cluster --config-file ./eks-config-4-nodes.yaml  --wait
 We are going to choose the most cost effective type, hpc7g.
 
 ```bash
-eksctl create cluster --config-file ./eks-config-5-nodes.yaml 
+eksctl create cluster --config-file ./eksctl/eks-config-5-nodes.yaml 
 aws eks update-kubeconfig --region us-east-1 --name efa-cluster
 
 helm repo add eks https://aws.github.io/eks-charts

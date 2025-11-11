@@ -1,0 +1,32 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: amg-test-13
+  namespace: default
+spec:
+  cleanup: false
+  containers:
+  - command: amg -problem 2 -P 8 8 4 -n 90 90 90
+    environment:
+      FI_EFA_USE_DEVICE_RDMA: '1'
+      FI_PROVIDER: efa
+      OMPI_MCA_btl: ^openib
+      OMPI_MCA_btl_vader_single_copy_mechanism: cma
+      OMPI_MCA_pml: cm
+      OMP_NUM_THREADS: '1'
+    image: ghcr.io/converged-computing/fractale-agent-experiments:amg2023
+    launcher: false
+    resources:
+      limits:
+        vpc.amazonaws.com/efa: '1'
+      requests:
+        vpc.amazonaws.com/efa: '1'
+  flux:
+    arch: arm
+    container:
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+    optionFlags: -o cpu-affinity=per-task
+  logging:
+    strict: true
+  size: 4
+  tasks: 256

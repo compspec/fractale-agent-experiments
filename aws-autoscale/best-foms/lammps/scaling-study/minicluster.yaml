@@ -1,0 +1,27 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: lammps-reax-minicluster-15
+  namespace: default
+spec:
+  cleanup: false
+  containers:
+  - command: lmp -v x 18 -v y 18 -v z 18 -in ./in.reaxff.hns -nocite
+    image: ghcr.io/converged-computing/fractale-agent-experiments:lammps-reax
+    imagePullPolicy: Always
+    launcher: false
+    resources:
+      limits:
+        vpc.amazonaws.com/efa: '1'
+      requests:
+        vpc.amazonaws.com/efa: '1'
+  flux:
+    arch: arm
+    container:
+      disable: true
+      image: ghcr.io/converged-computing/flux-view-ubuntu:arm-jammy
+    optionFlags: -o cpu-affinity=per-task
+  logging:
+    strict: true
+  size: 5
+  tasks: 320

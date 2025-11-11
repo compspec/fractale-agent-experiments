@@ -1,0 +1,37 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: kripke-minicluster-27
+  namespace: default
+spec:
+  backoffLimit: 1
+  cleanup: false
+  containers:
+  - command: kripke --zones 120,120,120 --procs 8,5,8
+    env:
+    - name: FI_PROVIDER
+      value: efa
+    - name: FI_EFA_USE_DEVICE_RDMA
+      value: '1'
+    - name: OMPI_MCA_pml
+      value: cm
+    - name: OMPI_MCA_mtl
+      value: ofi
+    image: ghcr.io/converged-computing/fractale-agent-experiments:kripke
+    launcher: false
+    resources:
+      limits:
+        vpc.amazonaws.com/efa: '1'
+      requests:
+        vpc.amazonaws.com/efa: '1'
+  flux:
+    arch: arm
+    container:
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+    optionFlags: -o cpu-affinity=per-task
+  logging:
+    strict: true
+  pod:
+    restartPolicy: Never
+  size: 5
+  tasks: 320

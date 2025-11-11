@@ -1,0 +1,182 @@
+
+Running Experiment with 1 nodes and 8 tasks
+Executing: flux run -N 1 --exclusive --env GPUS_PER_TASK=1 --env JOB_SHAPE_FILE=/g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml -o cpu-affinity=off -o gpu-affinity=off -n 8 --cores-per-task 2 /usr/bin/bash /g/g0/sochat1/fluxbind/fluxbind/scripts/run_mapping.sh /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 0 --node-id 0 --local-rank 0 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 1 --node-id 0 --local-rank 1 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 2 --node-id 0 --local-rank 2 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 3 --node-id 0 --local-rank 3 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 4 --node-id 0 --local-rank 4 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 5 --node-id 0 --local-rank 5 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 6 --node-id 0 --local-rank 6 --gpus-per-task 1
+fluxbind shape --file /g/g0/sochat1/fluxbind/examples/shape/corona/shape-core-gpu-local.yaml --rank 7 --node-id 0 --local-rank 7 --gpus-per-task 1
+
+
+
+
+
+
+
+
+[1;33mrank 2[0m: Binding Source:         [0;35mcore:2[0m
+[1;33mrank 2[0m: PID for this rank:      [0;32m586709 [0m
+[1;33mrank 2[0m: Effective Cpuset Mask:  [0;36m0x00040000,0x00000004[0m
+[0;32mfluxbind[0m: Rank 2 is bound to core:2 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 2[0m: Logical CPUs (PUs):     [0;34m4,5[0m
+[1;33mrank 2[0m: Physical Cores:         [0;33m2[0m
+[1;33mrank 2[0m: ROCR Devices:           [1;33m2[0m
+
+[1;33mrank 5[0m: Binding Source:         [0;35mcore:29[0m
+[1;33mrank 5[0m: PID for this rank:      [0;32m586720 [0m
+[1;33mrank 5[0m: Effective Cpuset Mask:  [0;36m0x00002000,,0x20000000[0m
+[1;33mrank 5[0m: Logical CPUs (PUs):     [0;34m58,59[0m
+[1;33mrank 5[0m: Physical Cores:         [0;33m29[0m
+[1;33mrank 5[0m: ROCR Devices:           [1;33m5[0m
+
+[0;32mfluxbind[0m: Rank 5 is bound to core:29 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 0[0m: Binding Source:         [0;35mcore:0[0m
+[1;33mrank 0[0m: PID for this rank:      [0;32m586705 [0m
+[1;33mrank 0[0m: Effective Cpuset Mask:  [0;36m0x00010000,0x00000001[0m
+[1;33mrank 0[0m: Logical CPUs (PUs):     [0;34m0,1[0m
+[1;33mrank 0[0m: Physical Cores:         [0;33m0[0m
+[1;33mrank 0[0m: ROCR Devices:           [1;33m0[0m
+
+[0;32mfluxbind[0m: Rank 0 is bound to core:0 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 1[0m: Binding Source:         [0;35mcore:1[0m
+[1;33mrank 1[0m: PID for this rank:      [0;32m586706 [0m
+[1;33mrank 3[0m: Binding Source:         [0;35mcore:3[0m
+[1;33mrank 1[0m: Effective Cpuset Mask:  [0;36m0x00020000,0x00000002[0m
+[1;33mrank 3[0m: PID for this rank:      [0;32m586712 [0m
+[1;33mrank 1[0m: Logical CPUs (PUs):     [0;34m2,3[0m
+[1;33mrank 3[0m: Effective Cpuset Mask:  [0;36m0x00080000,0x00000008[0m
+[1;33mrank 1[0m: Physical Cores:         [0;33m1[0m
+[1;33mrank 3[0m: Logical CPUs (PUs):     [0;34m6,7[0m
+[0;32mfluxbind[0m: Rank 1 is bound to core:1 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 1[0m: ROCR Devices:           [1;33m1[0m
+[0;32mfluxbind[0m: Rank 3 is bound to core:3 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 3[0m: Physical Cores:         [0;33m3[0m
+
+[1;33mrank 3[0m: ROCR Devices:           [1;33m3[0m
+
+[1;33mrank 4[0m: Binding Source:         [0;35mcore:28[0m
+[1;33mrank 4[0m: PID for this rank:      [0;32m586715 [0m
+[1;33mrank 4[0m: Effective Cpuset Mask:  [0;36m0x00001000,,0x10000000[0m
+[1;33mrank 4[0m: Logical CPUs (PUs):     [0;34m56,57[0m
+[1;33mrank 4[0m: Physical Cores:         [0;33m28[0m
+[1;33mrank 4[0m: ROCR Devices:           [1;33m4[0m
+
+[0;32mfluxbind[0m: Rank 4 is bound to core:28 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 7[0m: Binding Source:         [0;35mcore:31[0m
+[1;33mrank 7[0m: PID for this rank:      [0;32m586729 [0m
+[1;33mrank 7[0m: Effective Cpuset Mask:  [0;36m0x00008000,,0x80000000[0m
+[1;33mrank 7[0m: Logical CPUs (PUs):     [0;34m62,63[0m
+[1;33mrank 7[0m: Physical Cores:         [0;33m31[0m
+[1;33mrank 7[0m: ROCR Devices:           [1;33m7[0m
+
+[0;32mfluxbind[0m: Rank 7 is bound to core:31 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+[1;33mrank 6[0m: Binding Source:         [0;35mcore:30[0m
+[1;33mrank 6[0m: PID for this rank:      [0;32m586725 [0m
+[1;33mrank 6[0m: Effective Cpuset Mask:  [0;36m0x00004000,,0x40000000[0m
+[1;33mrank 6[0m: Logical CPUs (PUs):     [0;34m60,61[0m
+[1;33mrank 6[0m: Physical Cores:         [0;33m30[0m
+[1;33mrank 6[0m: ROCR Devices:           [1;33m6[0m
+
+[0;32mfluxbind[0m: Rank 6 is bound to core:30 to execute: /p/vast1/fractale/descriptive-thrust/caliper/lammps/build/lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.reaxff.hns -v x 16 -v y 16 -v z 16
+LAMMPS (10 Sep 2025 - Development - cb43dec)
+KOKKOS mode with Kokkos version 4.6.2 is enabled
+using double precision
+using view layout = legacy
+will use up to 1 GPU(s) per node
+WARNING: When using a single thread, the Kokkos Serial backend (i.e. Makefile.kokkos_mpi_only) gives better performance than the OpenMP backend (src/KOKKOS/kokkos.cpp:250)
+WARNING: MVAPICH2 'MV2_USE_CUDA' environment variable is not set. Disabling GPU-aware MPI (src/KOKKOS/kokkos.cpp:379)
+using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+triclinic box = (0 0 0) to (22.326 11.1412 13.778966) with tilt (0 -5.02603 0)
+2 by 2 by 2 MPI processor grid
+reading atoms ...
+304 atoms
+reading velocities ...
+304 velocities
+read_data CPU = 0.035 seconds
+Replication is creating a 16x16x16 = 4096 times larger system...
+triclinic box = (0 0 0) to (357.216 178.2592 220.46346) with tilt (0 -80.41648 0)
+2 by 2 by 2 MPI processor grid
+bounding box image = (0 -1 -1) to (0 1 1)
+bounding box extra memory = 0.03 MB
+average # of replicas added to proc = 892.50 out of 4096 (21.79%)
+1245184 atoms
+replicate CPU = 0.030 seconds
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+- pair reaxff command: doi:10.1016/j.parco.2011.08.005
+- fix qeq/reaxff command: doi:10.1016/j.parco.2011.08.005
+The log file lists these citations in BibTeX format.
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Neighbor list info ...
+update: every = 20 steps, delay = 0 steps, check = no
+max neighbors/atom: 2000, page size: 100000
+master list distance cutoff = 11
+ghost atom cutoff = 11
+binsize = 11, bins = 40 17 21
+2 neighbor lists, perpetual/occasional/extra = 2 0 0
+(1) pair reaxff/kk, perpetual
+attributes: half, newton off, ghost, kokkos_device
+pair build: half/bin/newtoff/ghost/kk/device
+stencil: full/ghost/bin/3d
+bin: kk/device
+(2) fix qeq/reax/kk, perpetual
+attributes: full, newton off, kokkos_device
+pair build: full/bin/kk/device
+stencil: full/bin/3d
+bin: kk/device
+Setting up Verlet run ...
+Unit style    : real
+Current step  : 0
+Time step     : 0.1
+Per MPI rank memory allocation (min/avg/max) = 1866 | 1866 | 1866 Mbytes
+Step          Temp          PotEng         Press          E_vdwl         E_coul         Volume
+0   300           -113.27833      439.01734     -111.57687     -1.7014647      14038460
+10   300.73081     -113.28034      760.94336     -111.5789      -1.7014371      14038460
+20   302.40503     -113.28519      1608.9274     -111.58386     -1.701329       14038460
+30   302.60743     -113.28566      4236.8314     -111.58456     -1.7011048      14038460
+40   300.76868     -113.28011      6369.2958     -111.57933     -1.7007825      14038460
+50   297.70718     -113.27094      6473.2271     -111.57052     -1.7004206      14038460
+60   295.02414     -113.26289      6227.8037     -111.56283     -1.700056       14038460
+70   294.78879     -113.26214      6852.2248     -111.56245     -1.6996882      14038460
+80   297.69904     -113.27081      8267.1906     -111.57148     -1.6993209      14038460
+90   301.55671     -113.28231      9429.3043     -111.58331     -1.6989945      14038460
+100   302.58175     -113.28531      10386.696     -111.58655     -1.6987601      14038460
+Loop time of 17.3992 on 8 procs for 100 steps with 1245184 atoms
+
+Performance: 0.050 ns/day, 483.312 hours/ns, 5.747 timesteps/s, 7.157 Matom-step/s
+104.4% CPU use with 8 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 6.9117     | 6.9283     | 6.9578     |   0.5 | 39.82
+Neigh   | 0.27676    | 0.30971    | 0.33594    |   3.9 |  1.78
+Comm    | 1.5248     | 1.5406     | 1.559      |   1.0 |  8.85
+Output  | 0.0027703  | 0.0037343  | 0.0046204  |   1.0 |  0.02
+Modify  | 8.5541     | 8.5964     | 8.6428     |   0.9 | 49.41
+Other   |            | 0.02053    |            |       |  0.12
+
+Nlocal:         155648 ave      155682 max      155618 min
+Histogram: 4 0 0 0 0 0 0 1 2 1
+Nghost:         106812 ave      106865 max      106746 min
+Histogram: 1 1 0 1 0 1 1 0 1 2
+Neighs:    4.22128e+07 ave 4.22216e+07 max 4.22045e+07 min
+Histogram: 3 1 0 0 0 0 0 1 1 2
+FullNghs:  7.63734e+07 ave 7.63907e+07 max 7.63578e+07 min
+Histogram: 3 1 0 0 0 0 0 1 1 2
+
+Total # of neighbors = 6.1098749e+08
+Ave neighs/atom = 490.68049
+Neighbor list builds = 5
+Dangerous builds not checked
+Total wall time: 0:00:19
+fluxtime returncode: 0
+fluxtime duration: 30.06795699405484 seconds

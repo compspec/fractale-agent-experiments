@@ -1,0 +1,64 @@
+# Base image: Ubuntu 22.04 LTS (Jammy Jellyfish)
+FROM ubuntu:22.04
+
+# Set non-interactive frontend for package installations to prevent prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Perform a single, multi-step RUN command to minimize layer count.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core build tools
+    build-essential \
+    gfortran \
+    make \
+    # Source code retrieval
+    git \
+    wget \
+    # Autotools dependencies for building OpenMPI
+    autoconf \
+    automake \
+    libtool \
+    flex \
+    hwloc \
+    # Networking and security
+    ca-certificates \
+    # AWS EFA support for OpenMPI
+    libfabric-dev \
+    # OpenMP runtime library, as required
+    libgomp1 && \
+    \
+    # --- Build and Install OpenMPI 4.1.2 ---
+    cd /tmp && \
+    OMPI_VERSION="4.1.2" && \
+    wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-${OMPI_VERSION}.tar.gz && \
+    tar -xvf openmpi-${OMPI_VERSION}.tar.gz && \
+    cd openmpi-${OMPI_VERSION} && \
+    # Configure OpenMPI for a system-wide install, with AWS EFA-compatible libfabric
+    ./configure --prefix=/usr/local --with-libfabric=/usr --enable-mpi-cxx && \
+    make -j$(nproc) all && \
+    make install && \
+    # Update the dynamic linker cache to find new libraries
+    ldconfig && \
+    \
+    # --- Build and Install amg2023 ---
+    cd /tmp && \
+    git clone --depth 1 https://github.com/LLNL/AMG.git && \
+    # Change into the root of the cloned AMG repository
+    cd AMG && \
+    # FIX: The build failed previously due to missing libraries (e.g., -lparcsr_ls).
+    # The correct procedure is to run 'make' from the project root. This ensures
+    # all dependency libraries are compiled before the final executable.
+    make && \
+    # Copy the final executable from its output location to a directory on the system PATH
+    cp test/amg /usr/local/bin/ && \
+    \
+    # --- Final Cleanup ---
+    # Remove all temporary build files and source code to reduce image size
+    rm -rf /tmp/* && \
+    # Clean apt cache
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# No CMD or ENTRYPOINT is specified. The container is designed to be run
+# by a workload manager which will provide the command and arguments at runtime,
+# e.g., mpirun -np <NUM_PROCS> amg -n <X> <Y> <Z>
+
