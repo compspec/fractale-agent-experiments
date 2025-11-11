@@ -21,7 +21,7 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 
-pandas.set_option('display.precision', 10)
+pandas.set_option("display.precision", 10)
 
 # Being lazy - let's create a global data frame of key/value pairs we can set for different metrics to plot.
 # Each app has a different set of runs - "vanilla" and then with a function.
@@ -37,19 +37,32 @@ df = pandas.DataFrame(
         "value",
         "unit",
         "agent",
+        "attempt",
     ]
 )
 df_idx = 0
 commands = {}
 
+# Keep track of full logs for lammps exploration for robust plot
+lammps_foms = []
+
 # Gemini df
 gemini_df = pandas.DataFrame(
-    columns=["Application", "Experiment", "Agent", "Attempt", "Prompt Tokens", "Candidate Tokens", "Total Tokens"]
+    columns=[
+        "Application",
+        "Experiment",
+        "Agent",
+        "Attempt",
+        "Prompt Tokens",
+        "Candidate Tokens",
+        "Total Tokens",
+    ]
 )
 
 # Don't include non experiment runs
 experiment_runs = [
     "kripke",
+    "amg2013",
     "amg2023",
     "laghos",
     "lammps-max-fom",
@@ -57,13 +70,18 @@ experiment_runs = [
     "laghos-decision-function",
     "lammps-decision-fom",
     "amg2023-4-nodes",
+    "amg2013-4-nodes",
     "lammps-4-nodes",
+    "amg2013-4-nodes-deploy",
+    "amg2013-4-nodes-build",
     "amg2023-4-nodes-deploy",
     "amg2023-4-nodes-build",
     "lammps-4-nodes-affinity",
     "kripke-4-nodes",
     "amg2023-function",
+    "amg2013-function",
     "amg2023-decision-function",
+    "amg2013-decision-function",
     "kripke-decision-function",
 ]
 
@@ -704,8 +722,6 @@ def generate_timing_plot(times_data, title):
     # Adjust figure size for better label spacing
     plt.figure(figsize=(10, 7))
     sns.set_theme(style="whitegrid")
-
-    # --- THE KEY CHANGE: Use boxplot instead of lineplot ---
     plot = sns.boxplot(
         data=df, x="Category", hue="Category", y="Time (s)", palette="viridis"
     )
@@ -787,14 +803,16 @@ def get_foms(foms_raw, app_name):
             for fom in foms_raw:
                 if "katom" in fom:
                     # k atom == kilo == 1000
-                    fom = float(fom.split(' ')[0]) * 1000
+                    fom = float(fom.split(" ")[0]) * 1000
                     foms.append(fom)
                 elif "Matom" in fom:
                     # M == mega == million
-                    fom = float(fom.split(' ')[0]) * 1000000                
+                    fom = float(fom.split(" ")[0]) * 1000000
                     foms.append(fom)
-                else: 
-                    print(f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}")
+                else:
+                    print(
+                        f"Warning: Could not convert all FOMs to float for {json_path}. Error: {e}"
+                    )
     return foms
 
 
@@ -930,6 +948,7 @@ def process_run_data(json_path, app_name):
                             pair[0],
                             unit,
                             agent,
+                            None,
                         ]
                         df_idx += 1
 
@@ -1130,7 +1149,7 @@ def get_application_name(app_name):
     elif "laghos" in app_name:
         application = "laghos"
     elif "amg" in app_name:
-        application = "amg2023"
+        application = "amg2013"
     return application
 
 
@@ -1139,14 +1158,18 @@ def get_experiment_type(experiment):
     # These are the "raw" runs where we let the LLM decide
     if experiment in [
         "kripke",
-        "amg2023",
+        "amg2013",
         "laghos",
         "lammps-max-fom",
     ]:
         experiment_type = "llm-decision"
     # These are controlled user decision - we provide a function that explicitly
     # instructs for next resources and setup
-    elif experiment in ["lammps-decision-function", "amg2023-decision-function"]:
+    elif experiment in [
+        "lammps-decision-function",
+        "amg2013-decision-function",
+        "amg2023-decision-function",
+    ]:
         experiment_type = "user-provided-function"
     # This is a user guided decision - give the agent information about scaling
     # and still allow it to decide resources, etc.
@@ -1154,15 +1177,17 @@ def get_experiment_type(experiment):
         "laghos-decision-function",
         "lammps-decision-fom",
         "amg2023-function",
+        "amg2013-function",
         "kripke-decision-function",
     ]:
         experiment_type = "user-guided-function"
     elif experiment in [
         "amg2023-4-nodes",
+        "amg2013-4-nodes",
         "lammps-4-nodes",
         "kripke-4-nodes",
     ]:
-        experiment_type = "multi-node"
+        experiment_type = "llm-decision-multi-node"
     else:
         experiment_type = "test"
     return experiment_type
@@ -1179,7 +1204,7 @@ def get_direction_unit(experiment):
         unit = "(atom-steps/second)"
     elif "kripke" in experiment:
         metric_name = "grind_time"
-        unit = "(iterations/second)"
+        unit = "(s/iter)/unknowns"
     elif "amg" in experiment:
         metric_name = "figure_of_merit"
         unit = "(nnz/s)"
@@ -1199,6 +1224,7 @@ def scan_results(results_dir):
     """
     global df
     global df_idx
+    global lammps_foms
     apps = defaultdict(
         lambda: {"summary": {"succeeded": 0, "failed": 0, "best_fom": None}, "runs": []}
     )
@@ -1238,16 +1264,56 @@ def scan_results(results_dir):
                         # Application
                         application = get_application_name(app_name)
 
+                        # If we have lammps, parse ALL foms again to get order of when didn't work.
+                        if "lammps" in application and step["agent"] == "minicluster":
+                            single_foms = []
+                            single_times = []
+                            for log in step["metadata"]["assets"]["logs"]:
+                                if "Total wall time:" in log["item"]:
+                                    line = (
+                                        [
+                                            x
+                                            for x in log["item"].split("\n")
+                                            if "Total wall time" in x
+                                        ][0]
+                                        .split(":")[-1]
+                                        .strip()
+                                    )
+                                    single_times.append(parse_wall_time(line))
+                                    line = " ".join(
+                                        [
+                                            x
+                                            for x in log["item"].split("\n")
+                                            if "step/s" in x
+                                        ][0].split(" ")[-2:]
+                                    )
+                                    single_foms += get_foms([line], "lammps")
+                                else:
+                                    single_times.append(None)
+                                    single_foms.append(None)
+                            lammps_foms.append(
+                                {
+                                    "foms": single_foms,
+                                    "experiment_type": experiment_type,
+                                    "experiment": experiment,
+                                    "times": single_times,
+                                }
+                            )
+
                         # Add attempts (this is on the level of a step)
                         experiment = os.path.basename(app_path)
                         if experiment.startswith("amg2023-4-nodes"):
-                            experiment = "amg2023-4-nodes"
+                            experiment = "amg2013-4-nodes"
                         if experiment == "lammps-4-nodes-affinity":
                             experiment = "lammps-4-nodes"
+                        if "amg20" in experiment:
+                            experiment = experiment.replace("amg2023", "amg2013")
                         attempts = step.get("attempts")
                         direction, metric_name, unit = get_direction_unit(experiment)
                         agent = step.get("agent")
                         experiment_type = get_experiment_type(experiment)
+
+                        # Record number of attempts
                         if attempts is not None:
                             df.loc[df_idx, :] = [
                                 application,
@@ -1260,6 +1326,7 @@ def scan_results(results_dir):
                                 attempts,
                                 "count",
                                 agent,
+                                None,
                             ]
                             df_idx += 1
 
@@ -1275,10 +1342,7 @@ def scan_results(results_dir):
                             best_fom = max(foms)
                         print(app_name + " " + experiment_type)
                         print(foms)
-
-                        # The first fom is from the deployment agent, and we explicitly ask for a small problem size
-                        for fom in foms:
-                            # for fom in foms[1:]:
+                        for i, fom in enumerate(foms):
                             df.loc[df_idx, :] = [
                                 application,
                                 file_path,
@@ -1290,14 +1354,19 @@ def scan_results(results_dir):
                                 fom,
                                 unit,
                                 agent,
+                                i,
                             ]
                             df_idx += 1
-                        break
 
                     if status == "Succeeded":
                         apps[app_name]["summary"]["succeeded"] += 1
                         current_best = apps[app_name]["summary"]["best_fom"]
-                        if best_fom and current_best is None or (app_name != kripke and best_fom > current_best) or (app_name == "kripke" and best_fom < current_best):
+                        if (
+                            best_fom
+                            and current_best is None
+                            or (app_name != "kripke" and best_fom > current_best)
+                            or (app_name == "kripke" and best_fom < current_best)
+                        ):
                             apps[app_name]["summary"]["best_fom"] = best_fom
                     else:
                         apps[app_name]["summary"]["failed"] += 1
@@ -1313,6 +1382,7 @@ def scan_results(results_dir):
                         "status",
                         status.lower(),
                         "status",
+                        None,
                         None,
                     ]
                     df_idx += 1
@@ -1378,7 +1448,6 @@ def main():
     print("Scanning results directory...")
     apps_data = scan_results(args.results_dir)
     all_runs_data = gather_all_run_data(args.results_dir)
-
     pygments_css = HtmlFormatter(style="monokai").get_style_defs(".highlight")
 
     # 1. Generate main index.html (the portal)
@@ -1457,23 +1526,33 @@ def main():
     global df_idx
 
     # Break down percentage of instance type chosen for each
-    instance_types = pandas.DataFrame(df[df.metric=='instance-type'].groupby(['app', 'value']).value.count())
-    instance_types['application'] = [x[0] for x in instance_types.index]
-    instance_types['instance'] = [x[1] for x in instance_types.index]
-    instance_types['percentage'] = instance_types['value'] / instance_types.groupby('application')['value'].transform('sum') * 100
+    instance_types = pandas.DataFrame(
+        df[df.metric == "instance-type"].groupby(["app", "value"]).value.count()
+    )
+    instance_types["application"] = [x[0] for x in instance_types.index]
+    instance_types["instance"] = [x[1] for x in instance_types.index]
+    instance_types["percentage"] = (
+        instance_types["value"]
+        / instance_types.groupby("application")["value"].transform("sum")
+        * 100
+    )
     img_outdir = os.path.join("data", "img")
 
     plt.figure(figsize=(14, 8))
-    plot = sns.barplot(data=instance_types, x='application', y='percentage', hue='instance')
-    plt.title('Agent Selection of Instance Types by Application', fontsize=16)
-    plt.xlabel('', fontsize=12)
-    plt.ylabel('Percentage of Deploys', fontsize=12)
+    plot = sns.barplot(
+        data=instance_types, x="application", y="percentage", hue="instance"
+    )
+    plt.title("Agent Selection of Instance Types by Application", fontsize=16)
+    plt.xlabel("", fontsize=12)
+    plt.ylabel("Percentage of Deploys", fontsize=12)
     plt.tight_layout()
-    plt.savefig(os.path.join(img_outdir, 'instance-selection.svg'), dpi=300)
+    plt.savefig(os.path.join(img_outdir, "instance-selection.svg"), dpi=300)
     plt.close()
 
     # Also look at instance selection per experiment (single nodes). We just need the max fom per app and experiment
-    metrics = pandas.DataFrame(columns=['app', 'experiment_type', 'best_fom'])
+    metrics = pandas.DataFrame(
+        columns=["app", "experiment_type", "best_fom", "filename"]
+    )
     metrics_idx = 0
     for app in df.app.unique():
         for experiment_type in df.experiment_type.unique():
@@ -1482,39 +1561,73 @@ def main():
                 continue
             if experiment_type == "test":
                 continue
-            if app in ['laghos', 'lammps', 'amg']:
-                best_fom = subset[subset.metric == 'fom'].value.max()
+            if app in ["laghos", "lammps", "amg"]:
+                best_fom = subset[subset.metric == "fom"].value.max()
             else:
-                best_fom = subset[subset.metric == 'fom'].value.min()            
-            metrics.loc[metrics_idx, :] = [app, experiment_type, best_fom]
+                best_fom = subset[subset.metric == "fom"].value.min()
+            # Get filename it is in
+            filename = subset[subset.value == best_fom].path.tolist()[0]
+            metrics.loc[metrics_idx, :] = [app, experiment_type, best_fom, filename]
             metrics_idx += 1
 
-    # Note that I will need to look up instance type for each best fom
-    print(metrics.sort_values(by=['app', 'best_fom']))
-            
+    # Note that I looked up instance type for each best fom
+    # Here we are getting the manifests
+    here = os.path.abspath(os.path.dirname(__file__))
+    best_fom_dir = os.path.join(here, "best-foms")
+    for i, row in metrics.iterrows():
+        with open(row.filename, "r") as f:
+            result = json.load(f)
+
+        # output directory
+        best_fom_outdir = os.path.join(best_fom_dir, row.app, row.experiment_type)
+        if not os.path.exists(best_fom_outdir):
+            os.makedirs(best_fom_outdir)
+
+        # Dockerfile is easily - it will be the last attempt
+        try:
+            dockerfile = [x for x in result["steps"] if x["agent"] == "build"][-1][
+                "metadata"
+            ]["assets"]["dockerfile"][-1]["item"]
+        except:
+            continue
+        with open(os.path.join(best_fom_outdir, "Dockerfile"), "w") as fd:
+            fd.write(dockerfile)
+
+    print(metrics.sort_values(by=["app", "best_fom"]))
+
     # Break down percentage of instance type chosen for each
-    it_df = pandas.DataFrame(df[df.metric.isin(['instance-type', 'fom'])].groupby(['app', 'value', 'experiment_type']).value.count())
-    instance_types['application'] = [x[0] for x in instance_types.index]
-    instance_types['instance'] = [x[1] for x in instance_types.index]
-    instance_types['percentage'] = instance_types['value'] / instance_types.groupby('application')['value'].transform('sum') * 100
+    it_df = pandas.DataFrame(
+        df[df.metric.isin(["instance-type", "fom"])]
+        .groupby(["app", "value", "experiment_type"])
+        .value.count()
+    )
+    instance_types["application"] = [x[0] for x in instance_types.index]
+    instance_types["instance"] = [x[1] for x in instance_types.index]
+    instance_types["percentage"] = (
+        instance_types["value"]
+        / instance_types.groupby("application")["value"].transform("sum")
+        * 100
+    )
     img_outdir = os.path.join("data", "img")
 
     plt.figure(figsize=(14, 8))
-    plot = sns.barplot(data=instance_types, x='application', y='percentage', hue='instance')
-    plt.title('Agent Selection of Instance Types by Application', fontsize=16)
-    plt.xlabel('', fontsize=12)
-    plt.ylabel('Percentage of Deploys', fontsize=12)
+    plot = sns.barplot(
+        data=instance_types, x="application", y="percentage", hue="instance"
+    )
+    plt.title("Agent Selection of Instance Types by Application", fontsize=16)
+    plt.xlabel("", fontsize=12)
+    plt.ylabel("Percentage of Deploys", fontsize=12)
     plt.tight_layout()
-    plt.savefig(os.path.join(img_outdir, 'instance-selection.svg'), dpi=300)
+    plt.savefig(os.path.join(img_outdir, "instance-selection.svg"), dpi=300)
     plt.close()
 
     # Get max and min FOMs
-    print(df[df.metric=='fom'].groupby(['app']).value.max())    
-    print(df[df.metric=='fom'].groupby(['app']).value.min())    
-    
+    print(df[df.metric == "fom"].groupby(["app"]).value.max())
+    print(df[df.metric == "fom"].groupby(["app"]).value.min())
+
     # Also organize by the type
-    print(df[df.metric=='fom'].groupby(['app', 'experiment_type']).value.max())    
-    print(df[df.metric=='fom'].groupby(['app', 'experiment_type']).value.min())    
+    print(df[df.metric == "fom"].groupby(["app", "experiment_type"]).value.max())
+    print(df[df.metric == "fom"].groupby(["app", "experiment_type"]).value.min())
 
     instance_types.to_csv(os.path.join("data", "instance-types.csv"))
     df.to_csv(os.path.join("data", "foms-results.csv"))
@@ -1524,6 +1637,8 @@ def main():
     # Filter out test data
     fom_df = df[df.experiment_type != "test"]
     fom_df = fom_df[fom_df.metric == "fom"]
+
+    # Individual apps
     for app in fom_df.app.unique():
         subset = fom_df[fom_df.app == app]
         fig = plt.figure(figsize=(6, 3.3))
@@ -1564,13 +1679,347 @@ def main():
         plt.savefig(os.path.join(img_outdir, f"{app}.svg"))
         plt.clf()
 
-    # TODO: make platfor, cores, etc, percentages and add min times for all
+    # One plot with all apps
+    apps = fom_df.app.unique()
+    unique_experiments = sorted(fom_df.experiment_type.unique())
+    exp_palette = sns.color_palette("muted", n_colors=len(unique_experiments))
+    exp_colors = dict(zip(unique_experiments, exp_palette))
+
+    fig, axes = plt.subplots(1, len(apps), figsize=(6 * len(apps), 6), sharey=False)
+    fig.suptitle("Application Performance by Experiment Type", fontsize=20)
+
+    # Iterate through each application and its corresponding subplot axis
+    for i, app in enumerate(apps):
+        subset = fom_df[fom_df.app == app]
+        ax = axes[i] if len(apps) > 1 else axes
+
+        unit = subset.unit.unique()[0]
+
+        sns.set_style("whitegrid")
+        sns.boxplot(
+            data=subset,
+            ax=ax,
+            x="experiment_type",
+            y="value",
+            hue="experiment_type",
+            palette=exp_colors,
+            #            err_kws={"color": "darkred"},
+        )
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
+        title = app.upper() + " " + metric_name
+        ax.set_title(title, fontsize=14)
+        ax.set_ylabel(unit, fontsize=14)
+        ax.set_xlabel("", fontsize=14)
+        labels = ax.get_xticklabels()
+        labels = [
+            "\n".join(x.get_text().replace("-", "-\n").splitlines()) for x in labels
+        ]
+        ax.set_xticklabels(labels, fontsize=10)
+
+        if app == "lammps":
+            ax.set_yscale("log")
+        # Remove the legend from each subplot to prepare for a single, global legend
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_apps_comparison.svg"))
+    plt.close()
+
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    fig.suptitle("Application Performance by Experiment Type", fontsize=14)
+    idxs = [[0, 0], [0, 1], [1, 0], [1, 1]]
+
+    hue_orders = {
+        "amg2013": [
+            "llm-decision",
+            "llm-decision-multi-node",
+            "user-guided-function",
+            "user-provided-function",
+        ],
+        "kripke": ["llm-decision", "llm-decision-multi-node", "user-guided-function"],
+        "lammps": [
+            "llm-decision",
+            "llm-decision-multi-node",
+            "user-guided-function",
+            "user-provided-function",
+        ],
+        "laghos": ["llm-decision", "user-guided-function"],
+    }
+
+    # Iterate through each application and its corresponding subplot axis
+    for i, app in enumerate(apps):
+        subset = fom_df[fom_df.app == app]
+        # subset = subset[subset.experiment_type != "multi-node"]
+        ax = axes[idxs[i][0], idxs[i][1]] if len(apps) > 1 else axes
+        unit = subset.unit.unique()[0]
+
+        sns.set_style("whitegrid")
+        sns.barplot(
+            data=subset,
+            ax=ax,
+            x="experiment_type",
+            y="value",
+            hue_order=hue_orders[app],
+            hue="experiment_type",
+            palette=exp_colors,
+            errorbar=None,
+            #            err_kws={"color": "darkred"},
+        )
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
+        title = app.upper() + " " + metric_name
+        ax.set_title(title, fontsize=12)
+        ax.set_ylabel(unit, fontsize=10)
+        ax.set_xlabel("", fontsize=12)
+        labels = ax.get_xticklabels()
+        labels = [
+            "\n".join(x.get_text().replace("-", "\n").splitlines()) for x in labels
+        ]
+        ax.set_xticklabels(labels, fontsize=10)
+        print(app)
+        print(sorted(labels))
+
+        if app == "lammps":
+            ax.set_yscale("log")
+        # Remove the legend from each subplot to prepare for a single, global legend
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_apps_comparison_square.svg"))
+    plt.close()
+
+    # Now just multi-node
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    fig.suptitle("Performance for LLM Decision Multi-Node Experiment", fontsize=14)
+    idxs = [[0, 0], [0, 1], [1, 0], [1, 1]]
+
+    # Iterate through each application and its corresponding subplot axis
+    for i, app in enumerate(apps):
+        subset = fom_df[fom_df.app == app]
+        subset = subset[subset.experiment_type == "llm-decision-multi-node"]
+        if subset.shape[0] == 0:
+            continue
+        ax = axes[idxs[i][0], idxs[i][1]] if len(apps) > 1 else axes
+        unit = subset.unit.unique()[0]
+
+        sns.set_style("whitegrid")
+        sns.barplot(
+            data=subset,
+            ax=ax,
+            x="experiment_type",
+            y="value",
+            hue="experiment_type",
+            palette=exp_colors,
+            errorbar=None,
+        )
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
+        title = app.upper() + " " + metric_name
+        ax.set_title(title, fontsize=12)
+        ax.set_ylabel(unit, fontsize=10)
+        ax.set_xlabel("", fontsize=12)
+        labels = ax.get_xticklabels()
+        labels = [
+            "\n".join(x.get_text().replace("-", "\n").splitlines()) for x in labels
+        ]
+        ax.set_xticklabels(labels, fontsize=10)
+        print(app)
+        print(sorted(labels))
+
+        if app == "lammps":
+            ax.set_yscale("log")
+        # Remove the legend from each subplot to prepare for a single, global legend
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_apps_comparison_multi.svg"))
+    plt.close()
+
+    # Now the same, but just with attempts and the top FOM
+    # Iterate through each application and its corresponding subplot axis
+    best_list = []
+    top_list = []
+    for i, app in enumerate(apps):
+        subset_app = fom_df[fom_df.app == app]
+        for exp_type in subset_app.experiment_type.unique():
+            subset = subset_app[subset_app.experiment_type == exp_type]
+            if app == "kripke":
+                best_file = subset[subset.value == subset.value.min()]
+                best_fom = best_file.path.values[0]
+            else:
+                best_file = subset[subset.value == subset.value.max()]
+                best_fom = best_file.path.values[0]
+            print(best_fom)
+            # Now filter df again back to that filename...
+            subset = fom_df[fom_df.path == best_fom]
+            subset["attempts"] = [
+                (x + 1) / (subset.attempt.max() + 1) for x in subset.attempt.values
+            ]
+            # These are added in their attempt order
+            best_list.append(subset)
+            top_list.append(best_file)
+
+    top_df = pandas.concat(best_list)
+    bar_df = pandas.concat(top_list)
+
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    fig.suptitle("Application Performance by Experiment Type", fontsize=16)
+    idxs = [[0, 0], [0, 1], [1, 0], [1, 1]]
+
+    # We don't know the attempt because not every attempt has a fom.
+    # update usability study to actual paper
+    for i, app in enumerate(apps):
+        subset = top_df[top_df.app == app]
+        subset = subset[subset.experiment_type != "llm-decision-multi-node"]
+        ax = axes[idxs[i][0], idxs[i][1]] if len(apps) > 1 else axes
+        unit = subset.unit.unique()[0]
+        sns.set_style("whitegrid")
+        sns.lineplot(
+            data=subset,
+            ax=ax,
+            x="attempt",
+            y="value",
+            markers=True,
+            hue="experiment_type",
+            palette=exp_colors,
+        )
+        sns.scatterplot(
+            data=subset,
+            ax=ax,
+            x="attempt",
+            y="value",
+            markers=True,
+            legend=None,
+            hue="experiment_type",
+            palette=exp_colors,
+        )
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
+        title = app.upper() + " " + metric_name
+        ax.set_title(title, fontsize=12)
+        ax.set_ylabel(unit, fontsize=10)
+        ax.set_xlabel("Successful Attempt", fontsize=12)
+        if app == "lammps":
+            ax.set_yscale("log")
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_apps_comparison_attempts.svg"))
+    plt.close()
+
+    # Create a special plot for lammps to show scaling study decisions
+    lammps_df = pandas.DataFrame(
+        columns=[
+            "experiment",
+            "experiment_type",
+            "iteration",
+            "attempt",
+            "duration",
+            "fom",
+        ]
+    )
+    idx = 0
+    for i, lammps_fom in enumerate(lammps_foms):
+        for v, value in enumerate(lammps_fom["foms"]):
+            lammps_duration = lammps_fom["times"][v]
+            lammps_df.loc[idx, :] = [
+                lammps_fom["experiment"],
+                lammps_fom["experiment_type"],
+                i,
+                v,
+                lammps_duration,
+                value,
+            ]
+            idx += 1
+
+    # Let's plot study that achieved max fom for each exp type
+    # lammps_max_df = []
+    # for exp_type in lammps_df.experiment_type.unique():
+    #    subset = lammps_df[lammps_df.experiment_type == exp_type]
+    #    max_fom = subset.fom.max()
+    #    max_iter = subset[subset.fom == max_fom].iteration.values[0]
+    #    lammps_max_df.append(subset[subset.iteration == max_iter])
+    import IPython
+
+    IPython.embed()
+    lammps_max_df = pandas.concat(lammps_max_df)
+    lammps_max_df = lammps_max_df.fillna(0)
+    fig, axes = plt.subplots(1, 1, figsize=(12, 8))
+    fig.suptitle("LAMMPS Optimization by Experiment Type", fontsize=16)
+    sns.set_style("whitegrid")
+    sns.lineplot(
+        data=lammps_df,
+        ax=axes,
+        x="attempt",
+        y="fom",
+        markers=True,
+        estimator=None,
+        units="iteration",
+        hue="experiment_type",
+    )
+    # ax.set_title(title, fontsize=12)
+    # ax.set_ylabel("", fontsize=10)
+    ax.set_xlabel("Attempt", fontsize=12)
+    ax.set_yscale("log")
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "lammps_attempts.svg"))
+    plt.close()
+
+    # Iterate through each application and its corresponding subplot axis
+    for i, app in enumerate(apps):
+        subset = fom_df[fom_df.app == app]
+        ax = axes[idxs[i][0], idxs[i][1]] if len(apps) > 1 else axes
+        unit = subset.unit.unique()[0]
+
+        sns.set_style("whitegrid")
+        sns.lineplot(
+            data=subset,
+            ax=ax,
+            x="experiment_type",
+            y="value",
+            hue_order=hue_orders[app],
+            hue="experiment_type",
+            palette=exp_colors,
+            #            err_kws={"color": "darkred"},
+        )
+        metric_name = " ".join(
+            [x.capitalize() for x in subset.metric_name.unique()[0].split("_")]
+        )
+        title = app.upper() + " " + metric_name
+        ax.set_title(title, fontsize=12)
+        ax.set_ylabel(unit, fontsize=10)
+        ax.set_xlabel("", fontsize=12)
+        labels = ax.get_xticklabels()
+        labels = [
+            "\n".join(x.get_text().replace("-", "\n").splitlines()) for x in labels
+        ]
+        ax.set_xticklabels(labels, fontsize=10)
+        print(app)
+        print(sorted(labels))
+
+        if app == "lammps":
+            ax.set_yscale("log")
+        # Remove the legend from each subplot to prepare for a single, global legend
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_apps_comparison_square.svg"))
+    plt.close()
+
     # Attempts plot
     subset = df[df.metric == "attempts"]
     plt.figure(figsize=(10, 7))
     sns.set_theme(style="whitegrid")
     plot = sns.boxplot(subset, x="app", y="value", hue="agent", palette="muted")
-    plot.set_title("Agent Attempts per Application", fontsize=16)
+    plot.set_title("Agent Attempts per Application", fontsize=12)
     plot.set_xlabel("Application")
     plot.set_ylabel("Number of Attempts")
     plot.legend().set_title(None)
@@ -1602,6 +2051,61 @@ def main():
 
     filtered = df[df.value != "t3.medium"]
 
+    # Define the metrics we want to plot
+    metrics_to_plot = ["platform", "memory", "cores", "instance-type"]
+    num_plots = len(metrics_to_plot)
+    fig, axes = plt.subplots(1, num_plots, figsize=(5.5 * num_plots, 7), sharey=True)
+    fig.suptitle("Distribution of Selections by Application", fontsize=20)
+
+    for i, metric in enumerate(metrics_to_plot):
+        subset = filtered[filtered.metric == metric]
+
+        # Select the correct subplot axis for the current metric
+        ax = axes[i]
+        sns.set_theme(style="whitegrid")
+
+        # Use seaborn.histplot with stat="percent"
+        sns.histplot(
+            data=subset,
+            x="app",
+            ax=ax,
+            multiple="dodge",
+            palette="muted",
+            hue="value",
+            shrink=0.8,
+            stat="percent",
+            common_norm=False,
+        )
+
+        title = " ".join([x.capitalize() for x in metric.split("-")])
+        ax.set_title(f"{title} Selections", fontsize=16)
+        ax.set_xlabel("Application", fontsize=12)
+
+        # Only set the Y-label for the first plot to avoid redundancy
+        if i == 0:
+            ax.set_ylabel("Percentage of Selections (%)", fontsize=12)
+        else:
+            ax.set_ylabel("")  # Hide redundant y-axis labels
+
+    handles, labels = ax.get_legend_handles_labels()
+    # Sort the legend items alphabetically for consistency
+    sorted_legend = sorted(zip(labels, handles), key=lambda t: t[0])
+    labels = [item[0] for item in sorted_legend]
+    handles = [item[1] for item in sorted_legend]
+    fig.legend(
+        handles,
+        labels,
+        title="Selection Value",
+        bbox_to_anchor=(1.01, 0.9),
+        loc="upper left",
+        fontsize=12,
+    )
+
+    # Adjust the layout to prevent titles/labels from overlapping and make space for the legend
+    plt.tight_layout()
+    plt.savefig(os.path.join(img_outdir, "all_selections_comparison.svg"))
+    plt.close(fig)
+
     # TODO: memory per core?
     for value in ["platform", "memory", "cores", "instance-type"]:
         subset = filtered[filtered.metric == value]
@@ -1631,14 +2135,14 @@ def main():
         plt.figure(figsize=(10, 7))
         sns.set_theme(style="whitegrid")
         plot = sns.scatterplot(
-          data=subset,
-          x="Prompt Tokens",
-          y="Candidate Tokens",
-          hue="Application",
-          size="Total Tokens",
-          sizes=(50, 500),  # Range of bubble sizes
-          palette="deep",
-          alpha=0.7,
+            data=subset,
+            x="Prompt Tokens",
+            y="Candidate Tokens",
+            hue="Application",
+            size="Total Tokens",
+            sizes=(50, 500),  # Range of bubble sizes
+            palette="deep",
+            alpha=0.7,
         )
         plot.set_title(f"Gemini API Token Usage per Call ({agent} Agent)", fontsize=16)
         plot.set_xlabel("Prompt Token Count (Input)")
@@ -1647,7 +2151,6 @@ def main():
         plt.tight_layout()
         plt.savefig(os.path.join("data", "img", f"gemini-queries-{agent}.svg"))
         plt.close()
-   
 
 
 if __name__ == "__main__":

@@ -1,0 +1,144 @@
+Found 4 pods, using pod/lammps-reax-hns-test-0-km66b
+Defaulted container "lammps-reax-hns-test" out of: lammps-reax-hns-test, flux-view (init)
+chmod: cannot access './wait-fs': No such file or directory
+mv: cannot stat './wait-fs': No such file or directory
+/flux_operator/wait-0.sh: line 57: goshare-wait-fs: command not found
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "lammps-reax-hns-test-0"
+curve
+    public-key = "/!C<5+Y0}Wn(%/R&#xu0X*8Q]85Mq+]L:a#.X%7:"
+    secret-key = "+DloKrE$q@j0E7>BdpD%aFHJL6gX%0TX/nk>8]Ea"
+
+Resources
+flux R encode --hosts=lammps-reax-hns-test-[0-3] --local
+{"version": 1, "execution": {"R_lite": [{"rank": "0-3", "children": {"core": "0-63"}}], "starttime": 0.0, "expiration": 0.0, "nodelist": ["lammps-reax-hns-test-[0-3]"]}}
+?? Hello, I'm lammps-reax-hns-test-0
+The main host is lammps-reax-hns-test-0
+The working directory is /opt/lammps-reax, contents include:
+README.txt	ffield.reax.hns  log.30Nov23.reaxff.hns.g++.1  wait-fs-arm
+data.hns-equil	in.reaxff.hns	 log.30Nov23.reaxff.hns.g++.4
+??️ Flux Option Flags defined
+Command provided is: lmp -v x 30 -v y 15 -v z 15 -in ./in.reaxff.hns -nocite
+Flags for flux are -N 4 -n256 -o cpu-affinity=per-task 
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 4 -n256 -o cpu-affinity=per-task  --quiet --watch lmp -v x 30 -v y 15 -v z 15 -in ./in.reaxff.hns -nocite
+Flags for flux are -N 4 -n256 -o cpu-affinity=per-task 
+broker.info[0]: start: none->join 0.348675ms
+broker.info[0]: parent-none: join->init 0.0217ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/01-sched-fluxion
+sched-fluxion-resource.info[0]: version 0.33.1
+sched-fluxion-resource.warning[0]: create_reader: allowlist unsupported
+sched-fluxion-resource.info[0]: populate_resource_db: loaded resources from core's resource.acquire
+sched-fluxion-qmanager.info[0]: version 0.33.1
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /etc/flux/rc1 Exited (rc=0) 0.2s
+broker.info[0]: rc1-success: init->quorum 0.220742s
+broker.info[0]: online: lammps-reax-hns-test-0 (ranks 0)
+broker.info[0]: online: lammps-reax-hns-test-[0-3] (ranks 0-3)
+broker.info[0]: quorum-full: quorum->run 2.7164s
+LAMMPS (22 Jul 2025 - Update 1)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread.
+  using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+  triclinic box = (0 0 0) to (22.326 11.1412 13.778966) with tilt (0 -5.02603 0)
+  8 by 4 by 8 MPI processor grid
+  reading atoms ...
+  304 atoms
+  reading velocities ...
+  304 velocities
+  read_data CPU = 0.075 seconds
+Replication is creating a 30x15x15 = 6750 times larger system...
+  triclinic box = (0 0 0) to (669.78 167.118 206.68449) with tilt (0 -75.39045 0)
+  16 by 4 by 4 MPI processor grid
+  bounding box image = (0 -1 -1) to (0 1 1)
+  bounding box extra memory = 0.03 MB
+  average # of replicas added to proc = 125.61 out of 6750 (1.86%)
+  2052000 atoms
+  replicate CPU = 0.056 seconds
+Neighbor list info ...
+  update: every = 20 steps, delay = 0 steps, check = no
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 11
+  ghost atom cutoff = 11
+  binsize = 5.5, bins = 136 31 38
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/ghost/newtoff
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reax, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 0
+  Time step     : 0.1
+Per MPI rank memory allocation (min/avg/max) = 454.9 | 458.9 | 462.5 Mbytes
+   Step          Temp          PotEng         Press          E_vdwl         E_coul         Volume    
+         0   300           -113.27833      439.01846     -111.57687     -1.7014647      23134669     
+        10   300.67165     -113.28016      713.04035     -111.57871     -1.7014447      23134669     
+        20   302.2529      -113.28473      1505.0602     -111.58339     -1.7013426      23134669     
+        30   302.36231     -113.28494      4071.4262     -111.58382     -1.7011223      23134669     
+        40   300.40187     -113.27902      6214.0067     -111.57822     -1.700802       23134669     
+        50   297.2804      -113.26968      6268.0487     -111.56924     -1.7004399      23134669     
+        60   294.69292     -113.26192      6021.1508     -111.56185     -1.7000694      23134669     
+        70   294.70093     -113.2619       6778.8012     -111.56221     -1.699688       23134669     
+        80   297.84652     -113.27125      8264.7138     -111.57195     -1.6993015      23134669     
+        90   301.70583     -113.28275      9418.7255     -111.58379     -1.6989535      23134669     
+       100   302.52062     -113.28512      10383.144     -111.58642     -1.6986972      23134669     
+Loop time of 82.0863 on 256 procs for 100 steps with 2052000 atoms
+
+Performance: 0.011 ns/day, 2280.176 hours/ns, 1.218 timesteps/s, 2.500 Matom-step/s
+99.8% CPU use with 256 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 42.164     | 45.364     | 47.929     |  17.3 | 55.26
+Neigh   | 0.62154    | 0.63881    | 0.67289    |   1.1 |  0.78
+Comm    | 0.94473    | 3.1499     | 6.7235     |  66.5 |  3.84
+Output  | 0.03053    | 0.06701    | 0.13488    |   9.1 |  0.08
+Modify  | 32.494     | 32.865     | 33.34      |   4.3 | 40.04
+Other   |            | 0.002      |            |       |  0.00
+
+Nlocal:        8015.62 ave        8128 max        7914 min
+Histogram: 12 31 20 37 31 39 38 33 6 9
+Nghost:        19259.7 ave       19439 max       19046 min
+Histogram: 10 30 34 15 8 19 42 52 36 10
+Neighs:    2.47728e+06 ave 2.51242e+06 max 2.45023e+06 min
+Histogram: 18 31 24 43 35 36 37 22 4 6
+
+Total # of neighbors = 6.3418466e+08
+Ave neighs/atom = 309.05685
+Neighbor list builds = 5
+Dangerous builds not checked
+Total wall time: 0:01:24
+broker.info[0]: rc2.0: flux submit -N 4 -n256 -o cpu-affinity=per-task --quiet --watch lmp -v x 30 -v y 15 -v z 15 -in ./in.reaxff.hns -nocite Exited (rc=0) 88.2s
+broker.info[0]: rc2-success: run->cleanup 1.47002m
+broker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.349775s
+broker.info[0]: children-complete: shutdown->finalize 48.1523ms
+broker.info[0]: rc3.0: running /etc/flux/rc3.d/01-sched-fluxion
+broker.info[0]: rc3.0: /etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.103895s
+broker.info[0]: goodbye: goodbye->exit 0.028961ms

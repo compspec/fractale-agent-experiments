@@ -1,0 +1,42 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: kripke-aws-arm-multinode
+  namespace: default
+spec:
+  # Requesting 4 nodes, the maximum allowed.
+  size: 4
+  # Spawning one task per core (4 nodes * 64 cores) for maximum parallelism.
+  tasks: 256
+  cleanup: false
+
+  # Pod spec additions for scheduling and node selection.
+  job:
+    pod:
+      spec:
+        nodeSelector:
+          # Pin to the specified ARM-based Graviton3 instances.
+          node.kubernetes.io/instance-type: m7g.16xlarge
+
+  containers:
+  - image: ghcr.io/converged-computing/fractale-agent-experiments:kripke
+    imagePullPolicy: Always
+    launcher: false
+    # Kripke command optimized for 256 MPI ranks with a larger problem size.
+    # --procs decomposes the 256 ranks into a 8x8x4 grid.
+    # --zones increases the work per rank to ensure the problem is not too small.
+    command: kripke --procs 8,8,4 --zones 32,32,32
+    resources:
+      limits:
+        vpc.amazonaws.com/efa: '1'
+      requests:
+        vpc.amazonaws.com/efa: '1'
+
+  # Flux settings for ARM architecture and EFA support.
+  flux:
+    arch: arm
+    container:
+      disable: true
+      image: ghcr.io/converged-computing/flux-view-ubuntu:arm-jammy
+  logging:
+    strict: true

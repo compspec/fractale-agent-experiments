@@ -1,0 +1,27 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  annotations:
+    optimization-strategy: The previous run achieved a peak FoM of 352.95 with '-rs
+      3'. The subsequent attempt with '-rs 4' timed out on an instance with 128 GiB
+      RAM, likely due to memory exhaustion. This configuration represents the optimal
+      balance of problem size and resource consumption found so far.
+  name: laghos-aws-cpu-experiment
+  namespace: default
+spec:
+  cleanup: false
+  containers:
+  - command: laghos -p 1 -m cube_311_hex.mesh -rs 3
+    image: ghcr.io/converged-computing/fractale-agent-experiments:laghos
+    launcher: false
+  flux:
+    container:
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+  logging:
+    strict: true
+  pod:
+    nodeSelector:
+      node.kubernetes.io/instance-type: hpc7g.16xlarge
+  size: 1
+  tasks: 64
+

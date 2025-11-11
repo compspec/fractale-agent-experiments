@@ -1,0 +1,57 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: efa-cluster
+  region: us-east-1
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+  - metadata:
+      name: cluster-autoscaler
+      namespace: kube-system
+    attachPolicy:
+      Version: "2012-10-17"
+      Statement:
+      - Effect: Allow
+        Action:
+        - "autoscaling:DescribeAutoScalingGroups"
+        - "autoscaling:DescribeAutoScalingInstances"
+        - "autoscaling:DescribeLaunchConfigurations"
+        - "ec2:DescribeImages"
+        - "ec2:DescribeInstanceTypes"
+        - "ec2:DescribeLaunchTemplateVersions"
+        - "ec2:GetInstanceTypesFromInstanceRequirements"
+        - "autoscaling:DescribeTags"
+        - "autoscaling:SetDesiredCapacity"
+        - "autoscaling:TerminateInstanceInAutoScalingGroup"
+        - "eks:DescribeNodegroup"        
+        Resource: '*'
+
+availabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"]
+managedNodeGroups:
+  - name: ng-hpc7g-16xlarge
+    instanceType: hpc7g.16xlarge
+    efaEnabled: true
+    placement:
+      groupName: performance-study
+    volumeSize: 30
+    volumeType: gp2
+    desiredCapacity: 8
+    labels:
+      vpc.amazonaws.com/efa: "true"
+    minSize: 8
+    maxSize: 8
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+    tags:
+      nodegroup: ng-hpc7g-large
+      kubernetes.io/cluster/efa-cluster: "owned"
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/efa-cluster: "owned"
+      k8s.io/cluster-autoscaler/node-template/label/nodegroup: ng-hpc7g-16xlarge
+      k8s.io/cluster-autoscaler/node-template/label/vpc.amazonaws.com/efa: "true"
+      Name: 'efa-cluster'
+    propagateASGTags: true

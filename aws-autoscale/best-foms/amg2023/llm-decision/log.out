@@ -1,0 +1,123 @@
+Defaulted container "amg-minicluster-aws-cpu" out of: amg-minicluster-aws-cpu, flux-view (init)
+/flux_operator/wait-0.sh: line 38: curl: command not found
+/flux_operator/wait-0.sh: line 38: wget: command not found
+chmod: cannot access './wait-fs': No such file or directory
+mv: cannot stat './wait-fs': No such file or directory
+
+Flux install root: /mnt/flux/view
+
+/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found
+Python version: /mnt/flux/view/bin/python3.11
+Python root: /mnt/flux/view/lib/python3.11
+PYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages
+PATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin
+/mnt/flux/view/lib/libpython3.11.so
+/mnt/flux/view/lib/libpython3.11.so.1.0
+/mnt/flux/view/lib/libpython3.so
+./mnt/flux/view/lib/libpython3.11.so
+./mnt/flux/view/lib/libpython3.11.so.1.0
+./mnt/flux/view/lib/libpython3.so
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so
+lrwxrwxrwx. 1 root root 117 Sep  7 20:20 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "amg-minicluster-aws-cpu-0"
+curve
+    public-key = "u[g<ndMO0q?Kh:h/5h2{dxkYMgabZ#=2Wjy?U-PV"
+    secret-key = "!TqXlW%(p(xvGa9q^U+WXWB$0IJ}gRw<88Cwj+H@"
+?? Hello, I'm amg-minicluster-aws-cpu-0
+The main host is amg-minicluster-aws-cpu-0
+The working directory is /, contents include:
+bin   build  etc	    home  media  opt   root  sbin  sys	usr
+boot  dev    flux_operator  lib   mnt	 proc  run   srv   tmp	var
+??️ Flux Option Flags defined
+Command provided is: amg -problem 2 -n 120 120 120 -P 8 4 2
+Flags for flux are -N 1 -n64  
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 1 -n64   --quiet --watch amg -problem 2 -n 120 120 120 -P 8 4 2
+Flags for flux are -N 1 -n64  
+broker.info[0]: start: none->join 0.432977ms
+broker.info[0]: parent-none: join->init 0.016828ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s
+broker.info[0]: rc1-success: init->quorum 0.638798s
+broker.info[0]: online: amg-minicluster-aws-cpu-0 (ranks 0)
+broker.info[0]: quorum-full: quorum->run 0.100278s
+job-manager.err[0]: jobtap: job.new: callback returned error
+Running with these driver parameters:
+  solver ID    = 3
+
+  Laplacian_27pt:
+    (Nx, Ny, Nz) = (960, 480, 240)
+    (Px, Py, Pz) = (8, 4, 2)
+
+=============================================
+Generate Matrix:
+=============================================
+Spatial Operator:
+  wall clock time = 3.559317 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 3.558951 seconds
+  cpu MFLOPS      = 0.000000
+
+  RHS vector has unit components
+  Initial guess is 0
+=============================================
+IJ Vector Setup:
+=============================================
+RHS and Initial Guess:
+  wall clock time = 0.099478 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 0.099480 seconds
+  cpu MFLOPS      = 0.000000
+
+=============================================
+Problem 2: Cumulative AMG-GMRES Solve Time:
+=============================================
+GMRES Solve:
+  wall clock time = 447.911150 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 447.893127 seconds
+  cpu MFLOPS      = 0.000000
+
+
+No. of Time Steps = 6
+Cum. No. of Iterations = 215
+Final Relative Residual Norm = 4.267196e-14
+
+
+nnz AP * (Iterations + time_steps) / Total Time: 
+
+Figure of Merit (FOM_2): 1.602391e+09
+
+
+job-manager.err[0]: jobtap: job.inactive-add: callback returned error
+broker.info[0]: rc2.0: flux submit -N 1 -n64 --quiet --watch amg -problem 2 -n 120 120 120 -P 8 4 2 Exited (rc=0) 456.9s
+broker.info[0]: rc2-success: run->cleanup 7.61503m
+broker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.305695s
+broker.info[0]: children-none: shutdown->finalize 0.034402ms
+broker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.132772s
+broker.info[0]: goodbye: goodbye->exit 0.019251ms
+

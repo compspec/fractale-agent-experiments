@@ -1,0 +1,61 @@
+# This corrected MiniCluster manifest runs the OSU latency benchmark on AWS ARM
+# instances, incorporating fixes for resource allocation and adding pod scheduling specifics.
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  # A descriptive name for the MiniCluster job
+  name: osu-latency-arm-aws
+  # Deployment will be in the 'default' namespace
+  namespace: default
+spec:
+  # The number of pods in the MiniCluster, corresponding to the two nodes for the test.
+  size: 2
+  # The total number of MPI tasks. For a point-to-point latency test, 2 tasks are required.
+  tasks: 2
+
+  # Limit job retries to 1 on failure to prevent excessive restarts.
+  backoffLimit: 1
+
+  # Do not delete pods after the job finishes to allow for log inspection and debugging.
+  cleanup: false
+
+  # Enable strict logging mode for detailed output from the Flux Operator.
+  logging:
+    strict: true
+
+  # Pod-level specifications, including scheduling and restart behavior.
+  pod:
+    # Ensure pods are scheduled on specific AWS ARM instances for this experiment.
+    nodeSelector:
+      node.kubernetes.io/instance-type: m7g.16xlarge
+    # Prevent Kubernetes from restarting the pod on failure, preserving logs for debugging.
+    restartPolicy: Never
+
+  # Flux-specific configuration section.
+  flux:
+    # Specify the architecture of the nodes is ARM.
+    arch: "arm"
+    container:
+      # Use an ARM-compatible Flux view image.
+      image: ghcr.io/converged-computing/flux-view-ubuntu:arm-jammy
+      # Disable the separate Flux container to inject Flux directly into the application container for performance.
+      disable: true
+
+  # Defines the application container to be run by Flux.
+  containers:
+    - image: ghcr.io/converged-computing/fractale-agent-experiments:osu-latency
+      # The command to execute. The Flux Operator will prepend `flux run -n <tasks>`.
+      # 'osu_latency' is the executable for the OSU Point-to-Point Latency test.
+      command: osu_latency
+      # Ensure the latest version of the container is used for the experiment.
+      imagePullPolicy: Always
+      # This container runs the application workload; it is not the lead broker/launcher.
+      launcher: false
+      # CORRECTED: Resource requests and limits must be defined at the container level.
+      # This requests one Elastic Fabric Adapter (EFA) device per pod for high-performance networking.
+      resources:
+        limits:
+          vpc.amazonaws.com/efa: "1"
+        requests:
+          vpc.amazonaws.com/efa: "1"
+

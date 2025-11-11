@@ -1,0 +1,123 @@
+Found 4 pods, using pod/amg-test-13-0-9bx6w
+Defaulted container "amg-test-13" out of: amg-test-13, flux-view (init)
+/flux_operator/wait-0.sh: line 38: curl: command not found
+
+Flux install root: /mnt/flux/view
+
+??️  wait-fs: 2025/10/01 15:28:23 wait-fs.go:40: /mnt/flux/flux-operator-done.txt
+??️  wait-fs: 2025/10/01 15:28:23 wait-fs.go:49: Found existing path /mnt/flux/flux-operator-done.txt
+Python version: /mnt/flux/view/bin/python3.11
+Python root: /mnt/flux/view/lib/python3.11
+PYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages
+PATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin
+/mnt/flux/view/lib/libpython3.11.so
+/mnt/flux/view/lib/libpython3.11.so.1.0
+/mnt/flux/view/lib/libpython3.so
+./mnt/flux/view/lib/libpython3.11.so
+./mnt/flux/view/lib/libpython3.11.so.1.0
+./mnt/flux/view/lib/libpython3.so
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+./mnt/flux/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+./opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so
+lrwxrwxrwx. 1 root root 117 Oct  1 15:28 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "amg-test-13-0"
+curve
+    public-key = "k>ta{@{NX.%l<q7=KHdPiF0wTqhE{Yvigh$z[VSa"
+    secret-key = "30NK@3Aw+NK.ULfslB$8U.7TLEDuSolZRzK-&cJ:"
+?? Hello, I'm amg-test-13-0
+The main host is amg-test-13-0
+The working directory is /, contents include:
+bin   dev  flux_operator  lib	 mnt  proc  run   srv  tmp  var
+boot  etc  home		  media  opt  root  sbin  sys  usr
+??️ Flux Option Flags defined
+Command provided is: amg -problem 2 -P 8 8 4 -n 90 90 90
+Flags for flux are -N 4 -n256 -o cpu-affinity=per-task 
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 4 -n256 -o cpu-affinity=per-task  --quiet --watch amg -problem 2 -P 8 8 4 -n 90 90 90
+Flags for flux are -N 4 -n256 -o cpu-affinity=per-task 
+broker.info[0]: start: none->join 0.356016ms
+broker.info[0]: parent-none: join->init 0.018962ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc1 Exited (rc=0) 0.6s
+broker.info[0]: rc1-success: init->quorum 0.613056s
+broker.info[0]: online: amg-test-13-0 (ranks 0)
+broker.info[0]: online: amg-test-13-[0-3] (ranks 0-3)
+broker.info[0]: quorum-full: quorum->run 0.284163s
+job-manager.err[0]: jobtap: job.new: callback returned error
+Running with these driver parameters:
+  solver ID    = 3
+
+  Laplacian_27pt:
+    (Nx, Ny, Nz) = (720, 720, 360)
+    (Px, Py, Pz) = (8, 8, 4)
+
+=============================================
+Generate Matrix:
+=============================================
+Spatial Operator:
+  wall clock time = 1.659315 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 1.657607 seconds
+  cpu MFLOPS      = 0.000000
+
+  RHS vector has unit components
+  Initial guess is 0
+=============================================
+IJ Vector Setup:
+=============================================
+RHS and Initial Guess:
+  wall clock time = 0.064497 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 0.064281 seconds
+  cpu MFLOPS      = 0.000000
+
+=============================================
+Problem 2: Cumulative AMG-GMRES Solve Time:
+=============================================
+GMRES Solve:
+  wall clock time = 188.763321 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 188.173525 seconds
+  cpu MFLOPS      = 0.000000
+
+
+No. of Time Steps = 6
+Cum. No. of Iterations = 215
+Final Relative Residual Norm = 1.912665e-13
+
+
+nnz AP * (Iterations + time_steps) / Total Time: 
+
+Figure of Merit (FOM_2): 6.424653e+09
+
+
+job-manager.err[0]: jobtap: job.inactive-add: callback returned error
+broker.info[0]: rc2.0: flux submit -N 4 -n256 -o cpu-affinity=per-task --quiet --watch amg -problem 2 -P 8 8 4 -n 90 90 90 Exited (rc=0) 196.5s
+broker.info[0]: rc2-success: run->cleanup 3.27473m
+broker.info[0]: cleanup.0: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.302659s
+broker.info[0]: online: amg-test-13-[0-2] (ranks 0-2)
+broker.info[0]: children-complete: shutdown->finalize 64.1716ms
+broker.info[0]: rc3.0: /opt/software/linux-rocky9-aarch64/gcc-11.3.1/flux-core-0.55.0-kvv3ljopccd4iuk22l5xpn3ivri567sh/etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.135884s
+broker.info[0]: goodbye: goodbye->exit 0.0237ms

@@ -1,0 +1,220 @@
+Found 5 pods, using pod/kripke-minicluster-27-0-228vk
+Defaulted container "kripke-minicluster-27" out of: kripke-minicluster-27, flux-view (init)
+chmod: cannot access './wait-fs': No such file or directory
+mv: cannot stat './wait-fs': No such file or directory
+
+Flux install root: /mnt/flux/view
+
+/flux_operator/wait-0.sh: line 61: goshare-wait-fs: command not found
+Python version: /mnt/flux/view/bin/python3.11
+Python root: /mnt/flux/view/lib/python3.11
+PYTHONPATH is :/mnt/flux/view/lib/python3.11/site-packages
+PATH is /opt/amazon/openmpi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/mnt/flux/view/bin
+/mnt/flux/view/lib/libpython3.11.so
+/mnt/flux/view/lib/libpython3.11.so.1.0
+/mnt/flux/view/lib/libpython3.so
+./software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so
+./software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+./software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.so
+lrwxrwxrwx. 1 root root 117 Oct  2 13:34 /mnt/flux/view/lib/libpython3.11.so.1.0 -> /opt/software/linux-rocky9-aarch64/gcc-11.3.1/python-3.11.6-m7jlon5ghbbvc5krswwmarg355xb3yby/lib/libpython3.11.so.1.0
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "kripke-minicluster-27-0"
+curve
+    public-key = "dfQ+{gb$fJLso?)!3AU:jo%=aw(Fgd3Oo1-:69dH"
+    secret-key = "md$V]EEMbHF::3vj(wvdCuYFiQJUOcpmUI6vQ(*{"
+?? Hello, I'm kripke-minicluster-27-0
+The main host is kripke-minicluster-27-0
+The working directory is /opt, contents include:
+amazon	  flux-core-0.61.2	   flux-sched-0.33.1	     software
+cmake.sh  flux-core-0.61.2.tar.gz  flux-sched-0.33.1.tar.gz  wait-fs-arm
+??️ Flux Option Flags defined
+Command provided is: kripke --zones 120,120,120 --procs 8,5,8
+Flags for flux are -N 5 -n320 -o cpu-affinity=per-task 
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 5 -n320 -o cpu-affinity=per-task  --quiet --watch kripke --zones 120,120,120 --procs 8,5,8
+Flags for flux are -N 5 -n320 -o cpu-affinity=per-task 
+broker.info[0]: start: none->join 0.366218ms
+broker.info[0]: parent-none: join->init 0.026265ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/01-sched-fluxion
+sched-fluxion-resource.info[0]: version 0.33.1
+sched-fluxion-resource.warning[0]: create_reader: allowlist unsupported
+sched-fluxion-resource.info[0]: populate_resource_db: loaded resources from core's resource.acquire
+sched-fluxion-qmanager.info[0]: version 0.33.1
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /etc/flux/rc1 Exited (rc=0) 0.3s
+broker.info[0]: rc1-success: init->quorum 0.261602s
+broker.info[0]: online: kripke-minicluster-27-0 (ranks 0)
+broker.info[0]: online: kripke-minicluster-27-[0-4] (ranks 0-4)
+broker.info[0]: quorum-full: quorum->run 0.740675s
+
+   _  __       _         _
+  | |/ /      (_)       | |
+  | ' /  _ __  _  _ __  | | __ ___
+  |  <  | '__|| || '_ \ | |/ // _ \ 
+  | . \ | |   | || |_) ||   <|  __/
+  |_|\_\|_|   |_|| .__/ |_|\_\\___|
+                 | |
+                 |_|        Version 1.2.4
+
+LLNL-CODE-775068
+
+Copyright (c) 2014-2019, Lawrence Livermore National Security, LLC
+
+Kripke is released under the BSD 3-Clause License, please see the
+LICENSE file for the full license
+
+This work was produced under the auspices of the U.S. Department of
+Energy by Lawrence Livermore National Laboratory under Contract
+DE-AC52-07NA27344.
+
+Author: Adam J. Kunen <kunen1@llnl.gov>
+
+Compilation Options:
+  Architecture:           Sequential
+  Compiler:               /opt/amazon/openmpi/bin/mpicxx
+  Compiler Flags:         "     -Wall -Wextra  "
+  Linker Flags:           " "
+  CHAI Enabled:           No
+  CUDA Enabled:           No
+  MPI Enabled:            Yes
+  OpenMP Enabled:         No
+  Caliper Enabled:        No
+
+Input Parameters
+================
+
+  Problem Size:
+    Zones:                 120 x 120 x 120  (1728000 total)
+    Groups:                32
+    Legendre Order:        4
+    Quadrature Set:        Dummy S2 with 96 points
+
+  Physical Properties:
+    Total X-Sec:           sigt=[0.100000, 0.000100, 0.100000]
+    Scattering X-Sec:      sigs=[0.050000, 0.000050, 0.050000]
+
+  Solver Options:
+    Number iterations:     10
+
+  MPI Decomposition Options:
+    Total MPI tasks:       320
+    Spatial decomp:        8 x 5 x 8 MPI tasks
+    Block solve method:    Sweep
+
+  Per-Task Options:
+    DirSets/Directions:    8 sets, 12 directions/set
+    GroupSet/Groups:       2 sets, 16 groups/set
+    Zone Sets:             1 x 1 x 1
+    Architecture:          Sequential
+    Data Layout:           DGZ
+
+Generating Problem
+==================
+
+  Decomposition Space:   Procs:      Subdomains (local/global):
+  ---------------------  ----------  --------------------------
+  (P) Energy:            1           2 / 2
+  (Q) Direction:         1           8 / 8
+  (R) Space:             320         1 / 320
+  (Rx,Ry,Rz) R in XYZ:   8x5x8       1x1x1 / 8x5x8
+  (PQR) TOTAL:           320         16 / 5120
+
+  Material Volumes=[8.000000e+03, 1.200000e+05, 2.752000e+06]
+
+  Memory breakdown of Field variables:
+  Field Variable            Num Elements    Megabytes
+  --------------            ------------    ---------
+  data/sigs                        15360        0.117
+  dx                                 120        0.001
+  dy                                 120        0.001
+  dz                                 120        0.001
+  ell                               2400        0.018
+  ell_plus                          2400        0.018
+  i_plane                       44236800      337.500
+  j_plane                       44236800      337.500
+  k_plane                       44236800      337.500
+  mixelem_to_fraction            1728000       13.184
+  phi                         1382400000    10546.875
+  phi_out                     1382400000    10546.875
+  psi                         5308416000    40500.000
+  quadrature/w                        96        0.001
+  quadrature/xcos                     96        0.001
+  quadrature/ycos                     96        0.001
+  quadrature/zcos                     96        0.001
+  rhs                         5308416000    40500.000
+  sigt_zonal                    55296000      421.875
+  volume                         1728000       13.184
+  --------                  ------------    ---------
+  TOTAL                      13573115304   103554.652
+
+  Generation Complete!
+
+Steady State Solve
+==================
+
+  iter 0: particle count=3.626670e+07, change=1.000000e+00
+  iter 1: particle count=5.423618e+07, change=3.313190e-01
+  iter 2: particle count=6.311164e+07, change=1.406311e-01
+  iter 3: particle count=6.748645e+07, change=6.482503e-02
+  iter 4: particle count=6.963851e+07, change=3.090337e-02
+  iter 5: particle count=7.069485e+07, change=1.494223e-02
+  iter 6: particle count=7.121217e+07, change=7.264392e-03
+  iter 7: particle count=7.146492e+07, change=3.536786e-03
+  iter 8: particle count=7.158814e+07, change=1.721238e-03
+  iter 9: particle count=7.164809e+07, change=8.366566e-04
+  Solver terminated
+
+Timers
+======
+
+  Timer                    Count       Seconds
+  ----------------  ------------  ------------
+  Generate                     1       0.38682
+  LPlusTimes                  10      10.06337
+  LTimes                      10      11.74027
+  Population                  10       0.72081
+  Scattering                  10       2.17504
+  Solve                        1      31.91788
+  Source                      10       0.00165
+  SweepSolver                 10       6.62299
+  SweepSubdomain             160       1.80526
+
+TIMER_NAMES:Generate,LPlusTimes,LTimes,Population,Scattering,Solve,Source,SweepSolver,SweepSubdomain
+TIMER_DATA:0.386824,10.063367,11.740272,0.720813,2.175040,31.917878,0.001649,6.622990,1.805264
+
+Figures of Merit
+================
+
+  Throughput:         1.663148e+09 [unknowns/(second/iteration)]
+  Grind time :        6.012693e-10 [(seconds/iteration)/unknowns]
+  Sweep efficiency :  27.25753 [100.0 * SweepSubdomain time / SweepSolver time]
+  Number of unknowns: 5308416000
+
+END
+broker.info[0]: rc2.0: flux submit -N 5 -n320 -o cpu-affinity=per-task --quiet --watch kripke --zones 120,120,120 --procs 8,5,8 Exited (rc=0) 35.9s
+broker.info[0]: rc2-success: run->cleanup 35.9286s
+broker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.349013s
+broker.info[0]: children-complete: shutdown->finalize 50.1458ms
+broker.info[0]: rc3.0: running /etc/flux/rc3.d/01-sched-fluxion
+broker.info[0]: rc3.0: /etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.111451s
+broker.info[0]: goodbye: goodbye->exit 0.029353ms
+

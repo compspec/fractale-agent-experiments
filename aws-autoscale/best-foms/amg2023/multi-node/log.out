@@ -1,0 +1,49 @@
+Found 4 pods, using pod/amg-test-cpu-multinode-final-0-ngqh4
+Defaulted container "amg-test-cpu-multinode-final" out of: amg-test-cpu-multinode-final, flux-view (init)
+Running with these driver parameters:
+  solver ID    = 3
+
+  Laplacian_27pt:
+    (Nx, Ny, Nz) = (2048, 2048, 64)
+    (Px, Py, Pz) = (16, 16, 1)
+
+=============================================
+Generate Matrix:
+=============================================
+Spatial Operator:
+  wall clock time = 2.301541 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 2.298301 seconds
+  cpu MFLOPS      = 0.000000
+
+  RHS vector has unit components
+  Initial guess is 0
+=============================================
+IJ Vector Setup:
+=============================================
+RHS and Initial Guess:
+  wall clock time = 0.080003 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 0.080005 seconds
+  cpu MFLOPS      = 0.000000
+
+=============================================
+Problem 2: Cumulative AMG-GMRES Solve Time:
+=============================================
+GMRES Solve:
+  wall clock time = 280.829601 seconds
+  wall MFLOPS     = 0.000000
+  cpu clock time  = 280.805871 seconds
+  cpu MFLOPS      = 0.000000
+
+
+No. of Time Steps = 6
+Cum. No. of Iterations = 214
+Final Relative Residual Norm = 7.554005e-15
+
+
+nnz AP * (Iterations + time_steps) / Total Time: 
+
+Figure of Merit (FOM_2): 6.132476e+09
+
+

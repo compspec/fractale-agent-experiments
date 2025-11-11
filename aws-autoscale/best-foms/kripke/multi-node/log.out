@@ -1,0 +1,210 @@
+Found 4 pods, using pod/kripke-aws-arm-multinode-0-7z6ql
+Defaulted container "kripke-aws-arm-multinode" out of: kripke-aws-arm-multinode, flux-view (init)
+chmod: cannot access './wait-fs': No such file or directory
+mv: cannot stat './wait-fs': No such file or directory
+/flux_operator/wait-0.sh: line 57: goshare-wait-fs: command not found
+
+Hello user root
+
+??️ Curve Certificate
+curve.cert
+#   ****  Generated on 2023-04-26 22:54:42 by CZMQ  ****
+#   ZeroMQ CURVE **Secret** Certificate
+#   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
+    
+metadata
+    name = "flux-cert-generator"
+    keygen.hostname = "kripke-aws-arm-multinode-0"
+curve
+    public-key = "MB>/E^/-SLcadMhh$^5kHT(uX1e96/Jd2t96R=p!"
+    secret-key = "7lBOf7l$-R]xUk$Lh+@?dj5uX]NRIp?tkS3@<P(%"
+
+?? Resources
+flux R encode --hosts=kripke-aws-arm-multinode-[0-3] --local
+{"version": 1, "execution": {"R_lite": [{"rank": "0-3", "children": {"core": "0-63"}}], "starttime": 0.0, "expiration": 0.0, "nodelist": ["kripke-aws-arm-multinode-[0-3]"]}}
+?? Hello, I'm kripke-aws-arm-multinode-0
+The main host is kripke-aws-arm-multinode-0
+The working directory is /opt, contents include:
+amazon	  flux-core-0.61.2	   flux-sched-0.33.1	     software
+cmake.sh  flux-core-0.61.2.tar.gz  flux-sched-0.33.1.tar.gz  wait-fs-arm
+??️ Flux Option Flags defined
+Command provided is: kripke --procs 8,8,4 --zones 32,32,32
+Flags for flux are -N 4 -n256  
+
+?? Submit Mode: flux start -o --config /mnt/flux/view/etc/flux/config -Scron.directory=/etc/flux/system/cron.d   -Stbon.fanout=256   -Srundir=/mnt/flux/view/run/flux    -Sstatedir=/mnt/flux/view/var/lib/flux -Slocal-uri=local:///mnt/flux/view/run/flux/local -Stbon.connect_timeout=5s     -Slog-stderr-level=6    -Slog-stderr-mode=local  flux submit  -N 4 -n256   --quiet --watch kripke --procs 8,8,4 --zones 32,32,32
+Flags for flux are -N 4 -n256  
+broker.info[0]: start: none->join 0.367098ms
+broker.info[0]: parent-none: join->init 0.027625ms
+cron.info[0]: synchronizing cron tasks to event heartbeat.pulse
+job-manager.info[0]: restart: 0 jobs
+job-manager.info[0]: restart: 0 running jobs
+job-manager.info[0]: restart: checkpoint.job-manager not found
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/01-sched-fluxion
+sched-fluxion-resource.info[0]: version 0.33.1
+sched-fluxion-resource.warning[0]: create_reader: allowlist unsupported
+sched-fluxion-resource.info[0]: populate_resource_db: loaded resources from core's resource.acquire
+sched-fluxion-qmanager.info[0]: version 0.33.1
+broker.info[0]: rc1.0: running /etc/flux/rc1.d/02-cron
+broker.info[0]: rc1.0: /etc/flux/rc1 Exited (rc=0) 0.2s
+broker.info[0]: rc1-success: init->quorum 0.227222s
+broker.info[0]: online: kripke-aws-arm-multinode-0 (ranks 0)
+broker.info[0]: online: kripke-aws-arm-multinode-[0-3] (ranks 0-3)
+broker.info[0]: quorum-full: quorum->run 5.12735s
+
+   _  __       _         _
+  | |/ /      (_)       | |
+  | ' /  _ __  _  _ __  | | __ ___
+  |  <  | '__|| || '_ \ | |/ // _ \ 
+  | . \ | |   | || |_) ||   <|  __/
+  |_|\_\|_|   |_|| .__/ |_|\_\\___|
+                 | |
+                 |_|        Version 1.2.5-dev
+
+LLNL-CODE-775068
+
+Copyright (c) 2014-25, Lawrence Livermore National Security, LLC
+
+Kripke is released under the BSD 3-Clause License, please see the
+LICENSE file for the full license
+
+This work was produced under the auspices of the U.S. Department of
+Energy by Lawrence Livermore National Laboratory under Contract
+DE-AC52-07NA27344.
+
+Author: Adam J. Kunen <kunen1@llnl.gov>
+
+Compilation Options:
+  Architecture:           Sequential
+  Compiler:               /opt/amazon/openmpi/bin/mpicxx
+  Compiler Flags:         "    "
+  Linker Flags:           " "
+  CHAI Enabled:           No
+  CUDA Enabled:           No
+  MPI Enabled:            Yes
+  OpenMP Enabled:         No
+  Caliper Enabled:        No
+
+Input Parameters
+================
+
+  Problem Size:
+    Zones:                 32 x 32 x 32  (32768 total)
+    Groups:                32
+    Legendre Order:        4
+    Quadrature Set:        Dummy S2 with 96 points
+
+  Physical Properties:
+    Total X-Sec:           sigt=[0.100000, 0.000100, 0.100000]
+    Scattering X-Sec:      sigs=[0.050000, 0.000050, 0.050000]
+
+  Solver Options:
+    Number iterations:     10
+
+  MPI Decomposition Options:
+    Total MPI tasks:       256
+    Spatial decomp:        8 x 8 x 4 MPI tasks
+    Block solve method:    Sweep
+
+  Per-Task Options:
+    DirSets/Directions:    8 sets, 12 directions/set
+    GroupSet/Groups:       2 sets, 16 groups/set
+    Zone Sets:             1 x 1 x 1
+    Architecture:          Sequential
+    Data Layout:           DGZ
+
+Generating Problem
+==================
+
+  Decomposition Space:   Procs:      Subdomains (local/global):
+  ---------------------  ----------  --------------------------
+  (P) Energy:            1           2 / 2
+  (Q) Direction:         1           8 / 8
+  (R) Space:             256         1 / 256
+  (Rx,Ry,Rz) R in XYZ:   8x8x4       1x1x1 / 8x8x4
+  (PQR) TOTAL:           256         16 / 4096
+
+  Material Volumes=[9.305420e+03, 1.299133e+05, 2.740781e+06]
+
+  Memory breakdown of Field variables:
+  Field Variable            Num Elements    Megabytes
+  --------------            ------------    ---------
+  data/sigs                        15360        0.117
+  dx                                  32        0.000
+  dy                                  32        0.000
+  dz                                  32        0.000
+  ell                               2400        0.018
+  ell_plus                          2400        0.018
+  i_plane                        3145728       24.000
+  j_plane                        3145728       24.000
+  k_plane                        3145728       24.000
+  mixelem_to_fraction              33992        0.259
+  phi                           26214400      200.000
+  phi_out                       26214400      200.000
+  psi                          100663296      768.000
+  quadrature/w                        96        0.001
+  quadrature/xcos                     96        0.001
+  quadrature/ycos                     96        0.001
+  quadrature/zcos                     96        0.001
+  rhs                          100663296      768.000
+  sigt_zonal                     1048576        8.000
+  volume                           32768        0.250
+  --------                  ------------    ---------
+  TOTAL                        264328552     2016.667
+
+  Generation Complete!
+
+Steady State Solve
+==================
+
+  iter 0: particle count=4.290953e+07, change=1.000000e+00
+  iter 1: particle count=6.393344e+07, change=3.288406e-01
+  iter 2: particle count=7.428598e+07, change=1.393606e-01
+  iter 3: particle count=7.938537e+07, change=6.423592e-02
+  iter 4: particle count=8.189377e+07, change=3.062984e-02
+  iter 5: particle count=8.312515e+07, change=1.481356e-02
+  iter 6: particle count=8.372825e+07, change=7.203074e-03
+  iter 7: particle count=8.402294e+07, change=3.507241e-03
+  iter 8: particle count=8.416660e+07, change=1.706874e-03
+  iter 9: particle count=8.423648e+07, change=8.296252e-04
+  Solver terminated
+
+Timers
+======
+
+  Timer                    Count       Seconds
+  ----------------  ------------  ------------
+  Generate                     1       0.79437
+  LPlusTimes                  10       0.03397
+  LTimes                      10       0.03040
+  Population                  10       0.03144
+  Scattering                  10       0.04051
+  Solve                        1       0.78470
+  Source                      10       0.00007
+  SweepSolver                 10       0.63724
+  SweepSubdomain             160       0.03076
+
+TIMER_NAMES:Generate,LPlusTimes,LTimes,Population,Scattering,Solve,Source,SweepSolver,SweepSubdomain
+TIMER_DATA:0.794366,0.033970,0.030399,0.031441,0.040508,0.784700,0.000069,0.637242,0.030765
+
+Figures of Merit
+================
+
+  Throughput:         1.282825e+09 [unknowns/(second/iteration)]
+  Grind time :        7.795293e-10 [(seconds/iteration)/unknowns]
+  Sweep efficiency :  4.82779 [100.0 * SweepSubdomain time / SweepSolver time]
+  Number of unknowns: 100663296
+
+END
+broker.info[0]: rc2.0: flux submit -N 4 -n256 --quiet --watch kripke --procs 8,8,4 --zones 32,32,32 Exited (rc=0) 4.8s
+broker.info[0]: rc2-success: run->cleanup 4.83156s
+broker.info[0]: cleanup.0: flux jobtap remove perilog 2>/dev/null || true Exited (rc=0) 0.1s
+broker.info[0]: cleanup.1: flux queue stop --quiet --all --nocheckpoint Exited (rc=0) 0.1s
+broker.info[0]: cleanup.2: flux cancel --user=all --quiet --states RUN Exited (rc=0) 0.1s
+broker.info[0]: cleanup.3: flux queue idle --quiet Exited (rc=0) 0.1s
+broker.info[0]: cleanup-success: cleanup->shutdown 0.341207s
+broker.info[0]: children-complete: shutdown->finalize 48.648ms
+broker.info[0]: rc3.0: running /etc/flux/rc3.d/01-sched-fluxion
+broker.info[0]: rc3.0: /etc/flux/rc3 Exited (rc=0) 0.1s
+broker.info[0]: rc3-success: finalize->goodbye 0.109725s
+broker.info[0]: goodbye: goodbye->exit 0.03471ms
+
