@@ -224,23 +224,20 @@ def plot_lammps(ax1):
 
 
 sns.set_theme(style="whitegrid", context="talk")
-fig, axes = plt.subplots(2, 2, figsize=(20, 20))  # 1 row, 3 columns, wider figure
+fig, axes = plt.subplots(3, 1, figsize=(10, 20))  # 1 row, 3 columns, wider figure
 
 # Call the functions to draw on all three axes
-lines, labels = plot_kripke(axes[0, 0])
-plot_amg(axes[0, 1])
-plot_lammps(axes[1, 0])
+lines, labels = plot_kripke(axes[0])
+plot_amg(axes[1])
+plot_lammps(axes[2])
 
 # Turn off the axis for the empty subplot where the legend will go
-axes[1, 1].set_axis_off()
-
-# 3. Create the legend on the figure, placing it in the center of the last subplot's area
-fig.legend(lines, labels, loc="center", bbox_to_anchor=(0.75, 0.25), fontsize=20)
+# axes[1, 1].set_axis_off()
 
 # Optional: Add a title to the whole figure if desired
 # Add a main title for the entire figure
 fig.suptitle(
-    "Application Performance and Scaling Efficiency on hpc7g.16xlarge Instances",
+    "Scaling Efficiency on hpc7g.16xlarge Instances",
     fontsize=22,
 )
 
@@ -248,4 +245,4 @@ fig.suptitle(
 fig.tight_layout()
 
 # Save and show
-plt.savefig(os.path.join(here, "data", "img", "combined_scaling.svg"), dpi=300)
+plt.savefig(os.path.join(here, "data", "img", "combined_scaling_long.svg"), dpi=300)
