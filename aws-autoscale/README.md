@@ -206,3 +206,29 @@ mkdir -p $outdir
 fractale agent --plan ./plans/scaling-study/scale-kripke.yaml --results $outdir --incremental
 ```
 
+```bash
+python plot_strategies.py 
+```
+```console
+app        strategy                      runs          mean           std          best
+----------------------------------------------------------------------------------------
+amg2013    llm decision                    10   7.96297e+08   8.39396e+08   1.60489e+09
+amg2013    llm decision (multi-node)        3    4.0525e+09   3.50288e+09   6.13248e+09
+amg2013    user guided function             8    3.5526e+08   5.74021e+08   1.41708e+09
+amg2013    user provided function           8   1.87753e+07    3.4875e+07   8.04864e+07
+
+kripke     llm decision                     8   1.67036e-08   3.12912e-08   7.33812e-10
+kripke     llm decision (multi-node)        4   2.01309e-08   2.21968e-08   7.79529e-10
+kripke     user guided function             8   5.48985e-08   3.42945e-08   2.09771e-08
+
+lammps     llm decision                    10      0.611914      0.241672      0.724238
+lammps     llm decision (multi-node)       12       1.30983      0.815326           2.5
+lammps     user guided function            10     0.0538191      0.106395      0.355524
+lammps     user provided function          10       0.17211      0.293298       0.72655
+
+laghos     llm decision                    10       192.642       107.752       352.954
+laghos     user guided function             9       37.7111       49.1123       134.342
+
+wrote data/img/strategy_comparison.svg
+wrote data/img/strategy_comparison.png
+```
